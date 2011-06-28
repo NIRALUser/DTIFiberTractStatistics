@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
       filecheck.close();
     }
 
-  if(output_stats_file =="")
+  if(output_stats_file=="")
     {
       std::cout<<"Please provide the output file name (.fvp format) "<<std::endl;
       return -1;
@@ -65,13 +65,10 @@ int main(int argc, char* argv[])
 
   //Cut Plane definition
   bool planeautoOn = true;
-  if(plane_file.compare("")!=0)
+  if(plane_file == "")
     {
+      std::cout<<"No plane file is specified. A plane will be selected automatically"<<std::endl;
       planeautoOn=false;
-    }
-    else
-    {
-	 std::cout<<"No plane file is specified. A plane will be selected automatically"<<std::endl;
     }
   
 
@@ -237,6 +234,7 @@ int main(int argc, char* argv[])
       cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n";
       all_flag++;
     }
+
     std::vector< std::vector<double> > all_results_main = REG->get_all_results();
     int reg_counter = all_results_main.size();
 
@@ -244,8 +242,14 @@ int main(int argc, char* argv[])
     ofstream fp_output_stats_file;
     fp_output_stats_file.open(output_stats_file.c_str(),ios::app);
     fp_output_stats_file<<"Number of samples along the bundle: "<<reg_counter<<"\n";
-    fp_output_stats_file<<"Arc_Length , #_fiber_points , FA , MD , FRO , L1 , L2 , L3 , AD , RD , GA\n";
-	
+    fp_output_stats_file<<"Arc_Length , #_fiber_points ,";
+    
+    for (int a=0; a<=param-1; a++)
+      {
+	fp_output_stats_file<<parameter_list[a]<<" , ";
+      }
+    fp_output_stats_file<<"\n";
+    
     for (int i=0;i<reg_counter;i++)
     {
       fp_output_stats_file<<all_results_main[i][0];
