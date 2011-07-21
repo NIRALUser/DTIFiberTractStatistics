@@ -185,18 +185,22 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       }
       else if (param>=2 && param <=8)
       {
+	//DEBUG
+	//std::cout<<"getting length for "<<param_str<<std::endl;
 	length[l_counter].push_back((*pit).GetField(param_str.c_str()));
       }
       else 
-      {
-	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
-	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("FRO"));
-	all[l_counter].push_back((*pit).GetField("l2"));
-	all[l_counter].push_back((*pit).GetField("l3"));
-	all[l_counter].push_back(all[l_counter][4]);				//AD
-	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
-	all[l_counter].push_back((*pit).GetField("GA"));
+	{
+	  //DEBUG
+	  //std::cout<<"getting length for "<<param_str<<std::endl;
+	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
+	  all[l_counter].push_back((*pit).GetField("MD"));
+	  all[l_counter].push_back((*pit).GetField("FRO"));
+	  all[l_counter].push_back((*pit).GetField("l2"));
+	  all[l_counter].push_back((*pit).GetField("l3"));
+	  all[l_counter].push_back(all[l_counter][4]);				//AD
+	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	  all[l_counter].push_back((*pit).GetField("GA"));
       }
       l_counter++;
 

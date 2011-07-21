@@ -35,12 +35,13 @@ void regression::regression_main(std::string output_file,int param,std::string p
   ofstream fp_output_file;
   //sorting the list based on arc length
   int length_size = length.size();
+  std::cout<<"size of length is "<<length_size;
   std::vector< std::vector<double> > length_sorted = sort_list(length, length_size);
 
   //Writing header information to output file
   if (all_flag==-1 || all_flag==1)
   {
-    fp_output_file.open(output_file.c_str(),ios::out);
+    fp_output_file.open(output_file.c_str(),ios::app);
     fp_output_file<<"Cut Plane Origin: "<<origin[0]<<" "<<origin[1]<<" "<<origin[2]<<"\n";
     fp_output_file<<"Cut Plane Normal: "<<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<"\n";
     if (noise_model == 1 && stat!=1)
@@ -73,14 +74,18 @@ void regression::regression_main(std::string output_file,int param,std::string p
     if (noise_model == 1 && stat!=1)	
     {
       //Calling Regression_Beta_Gaussian function	for Beta (1)
+      //DEBUG
+      //std::cout<<"writing result for the parameter "<<param_str<<std::endl;
       Regression_Beta_Gaussian(output_file, length_sorted, step_size, bandwidth, noise_model, stat, all_flag, windowOn, window, output_viz_file);
-      cout<<"REGRESSION FUNCTION CALLED WITH BETA NOISE MODEL: Regression_Beta_Gaussian, stat:"<<stat<< endl;
+      cout<<"REGRESSION FUNCTION CALLED WITH BETA NOISE MODEL: Regression_Beta_Gaussian, stat (Quantile,Mean,Mode):"<<stat<< endl;
     }
     else if (noise_model == 2 && stat!=1)
     {
       //Calling Regression_Beta_Gaussian function	for Gaussian (2)
+      //DEBUG
+      //std::cout<<"writing result for the parameter "<<param_str<<std::endl;
       Regression_Beta_Gaussian(output_file, length_sorted, step_size, bandwidth, noise_model, stat, all_flag, windowOn, window, output_viz_file);
-      cout<<"REGRESSION FUNCTION CALLED WITH GAUSSIAN NOISE MODEL: Regression_Beta_Gaussian, stat:"<< stat<<endl;
+      cout<<"REGRESSION FUNCTION CALLED WITH GAUSSIAN NOISE MODEL: Regression_Beta_Gaussian, stat(Quantile,Mean,Mode):"<< stat<<endl;
     }
     else if (stat == 1)
     {	
@@ -255,6 +260,7 @@ void regression::Regression_Quantile(std::string output_file, std::vector< std::
   //Writing the given parameter along with std deviation, using the given noise model and MLE
   if (all_flag==-1)
   {
+   
     fp_output_file.open(output_file.c_str(),ios::app);
     fp_output_file<<"Number of samples along the bundle: "<<reg_counter<<"\n";
     fp_output_file<<"Arc_Length,#_fiber_points,Parameter_Value,Std_Dev,Param+Std_Dev,Param-Std_Dev\n";
