@@ -1431,7 +1431,7 @@ void DTIAtlasFiberAnalyzerguiwindow::openparam()
 	
 	if(filename!=NULL)
 	{
-		std::ifstream file((filename.toStdString()).c_str() , ios::in);  // open in reading
+	  std::ifstream file((filename.toStdString()).c_str() , std::ios::in);  // open in reading
 		std::string str,buf1,buf2;
 		
 		if(file)  // if open
@@ -1620,7 +1620,7 @@ void DTIAtlasFiberAnalyzerguiwindow::openparam()
 			
 			file.close();
 		}
-		else cerr << "ERROR: No parameters file found" << endl;
+		else std::cerr << "ERROR: No parameters file found" << std::endl;
 	}
 }
 

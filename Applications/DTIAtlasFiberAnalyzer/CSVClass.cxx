@@ -83,7 +83,7 @@ void CSVClass::LineInVector(std::string line)
 void CSVClass::SaveFile(std::string filename)
 {
 	/* Open a file in writing */
-	ofstream bfile(filename.c_str(), ios::out);
+  std::ofstream bfile(filename.c_str(), std::ios::out);
 	
 	if(bfile)
 	{
@@ -97,7 +97,7 @@ void CSVClass::SaveFile(std::string filename)
 				else
 					bfile << m_data[i][j];
 			}
-			bfile << endl;
+			bfile << std::endl;
 		}
 		
 		bfile.close();
@@ -137,7 +137,7 @@ void CSVClass::AddData(std::string StringColumn, int row, int column)
 /********************************************************************************* 
  * Get the vector of data
  ********************************************************************************/
-vector< vstring >* CSVClass::getData()
+std::vector< vstring >* CSVClass::getData()
 {
 	return &m_data;
 }

@@ -6,12 +6,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream.h>
-#include <fstream.h>
-#include <vector.h>
+#include <iostream>
+#include <fstream>
+#include <vector>
 
-typedef vector<std::string> vstring;
-typedef vector<vstring> v2string;
+typedef std::vector<std::string> vstring;
+typedef std::vector<vstring> v2string;
 
 class CSVClass
 {
@@ -21,7 +21,7 @@ class CSVClass
 		void LineInVector(std::string line);
 		void SaveFile(std::string filename);
 		void clearData();
-		vector< vstring >* getData();
+		std::vector< vstring >* getData();
 		void AddData(std::string StringColumn, int row, int column);
 		void SetFilename(std::string filename);
 		std::string getFilename();
@@ -33,7 +33,7 @@ class CSVClass
 		bool m_debug;
 		
 		/*vector with data */
-		vector< vstring > m_data;
+		std::vector< vstring > m_data;
 		
 		/* Input */
 		std::string m_csvfilename;

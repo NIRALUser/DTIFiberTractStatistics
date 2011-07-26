@@ -167,7 +167,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 		       QWidget* parent)
 {
 	int col=-1;
-	vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false,2  cancel
+	std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false,2  cancel
 	skipdata.push_back(false);
 	skipdata.push_back(false);
 	skipdata.push_back(false);
@@ -313,7 +313,7 @@ bool DataExistedInFiberColumn(CSVClass* CSV, int row, int column,std::string out
 /* Return true if there filename exists */
 bool FileExisted(std::string Filename)
 {
-	ofstream file(Filename.c_str(), ios::in | ios::out | ios::ate);
+	std::ofstream file(Filename.c_str(), std::ios::in | std::ios::out | std::ios::ate);
 	
 	if(file)
 	{
@@ -348,9 +348,9 @@ std::string NameOfCase(CSVClass* CSV, int row, int NameCol, int DataCol)
 	return namecase;
 }
 /* return the value of skip and alldata*/
-vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget*parent)
+std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget*parent)
 {
-	vector<bool> value;
+	std::vector<bool> value;
 	bool skip = false;
 	bool alldata = false;
 	bool cancel = false;
@@ -555,7 +555,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 {
 	int col=-1;
 	bool ExistedFile,DataAdded;
-	vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false, 2  cancel
+	std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false, 2  cancel
 	skipdata.push_back(false);
 	skipdata.push_back(false);
 	std::string outputname, name_of_fiber, header, namecase, nameoffile;
@@ -704,7 +704,7 @@ void GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int NumberOf
 {
 	// variables
 	std::string fibername,filename,outputprofilefolder;
-	vector<v2string> FiberProfiles;
+	std::vector<v2string> FiberProfiles;
 	v2string profiles;
 	
 	/* create the output folder where there will be all of the gathering data */
@@ -821,11 +821,11 @@ bool ReadProfileInformation(std::string fibername,std::string filename, v2string
 /********************************************************************************* 
  * Write profile information
  ********************************************************************************/
-void WriteProfile(CSVClass* CSV, std::string filename, vector<v2string> FiberProfiles, int DataCol, int NameCol, 
+void WriteProfile(CSVClass* CSV, std::string filename, std::vector<v2string> FiberProfiles, int DataCol, int NameCol, 
 		  int ParamCol,bool transposeColRow)
 {
 	/* Open a file in writing */
-	ofstream bfile(filename.c_str(), ios::out);
+	std::ofstream bfile(filename.c_str(), std::ios::out);
 	
 	if(bfile)
 	{
@@ -840,7 +840,7 @@ void WriteProfile(CSVClass* CSV, std::string filename, vector<v2string> FiberPro
 				else
 					bfile << FiberProfiles[0][i][0];
 			}
-			bfile << endl;
+			bfile << std::endl;
 			
 			//Take the fibers profiles information (FA for example) for each data; one data = one line 
 			//in the csv
@@ -862,7 +862,7 @@ void WriteProfile(CSVClass* CSV, std::string filename, vector<v2string> FiberPro
 					else
 						bfile << FiberProfiles[data][line][ParamCol];
 				}
-				bfile << endl;
+				bfile << std::endl;
 			}
 		}
 		else
@@ -879,7 +879,7 @@ void WriteProfile(CSVClass* CSV, std::string filename, vector<v2string> FiberPro
 				else
 					bfile << (*CSV->getData())[i+1][NameCol]<< "," ;
 			}
-			bfile << endl;
+			bfile << std::endl;
 			
 			//Take the fibers profiles information (FA for example) for each data; one arc lenght
 			//value = one line in the csv
@@ -896,7 +896,7 @@ void WriteProfile(CSVClass* CSV, std::string filename, vector<v2string> FiberPro
 					else
 						bfile << FiberProfiles[data][line][ParamCol];
 				}
-				bfile << endl;
+				bfile << std::endl;
 			}
 		}
 		bfile.close();
@@ -914,20 +914,20 @@ void saveparam(std::string filename,std::string CSVFilename, int DataCol, int De
 {
 	std::string ListOfFiber = "";
 	
-	std::ofstream savefile(filename.c_str(), ios::out);
+	std::ofstream savefile(filename.c_str(), std::ios::out);
 	if(savefile)
 	{
-		savefile << "Parameters for DTIAtlasFiberAnalyzer : " <<endl;
+		savefile << "Parameters for DTIAtlasFiberAnalyzer : " <<std::endl;
 		
-		savefile << "CSVFile : " << CSVFilename <<endl;
-		savefile << "#Data/Case/Deformation Column --> index starts at 1" <<endl;
-		savefile << "Data Column : " << DataCol +1 <<endl;
+		savefile << "CSVFile : " << CSVFilename <<std::endl;
+		savefile << "#Data/Case/Deformation Column --> index starts at 1" <<std::endl;
+		savefile << "Data Column : " << DataCol +1 <<std::endl;
 		if(DefCol!=-1)
-			savefile << "Defomation Field Column : " << DefCol +1 <<endl;
+			savefile << "Defomation Field Column : " << DefCol +1 <<std::endl;
 		if(NameCol!=-1)
-			savefile << "Case Column : " << NameCol +1 <<endl;
-		savefile << "Output Folder : " << OutputFolder <<endl;
-		savefile << "Atlas Fiber Folder : " << AtlasFiberFolder <<endl;
+			savefile << "Case Column : " << NameCol +1 <<std::endl;
+		savefile << "Output Folder : " << OutputFolder <<std::endl;
+		savefile << "Atlas Fiber Folder : " << AtlasFiberFolder <<std::endl;
 		for(unsigned int i=0;i<FiberSelectedname.size();i++)
 		{
 			if(i!=(FiberSelectedname.size()-1))
@@ -935,22 +935,22 @@ void saveparam(std::string filename,std::string CSVFilename, int DataCol, int De
 			else
 				ListOfFiber = ListOfFiber + FiberSelectedname[i];
 		}
-		savefile << "#Selected Fibers in the Atlas--> give the name of the file without the path"<<endl;
-		savefile << "Selected Fibers : " << ListOfFiber <<endl;
+		savefile << "#Selected Fibers in the Atlas--> give the name of the file without the path"<<std::endl;
+		savefile << "Selected Fibers : " << ListOfFiber <<std::endl;
 		if(parameters.compare("")!=0)
 		{
-			savefile << "#Profile parameter --> choice between fa,md,fro,ad,rd,l2,l3,ga "<<endl;
-			savefile << "Profile parameter : " << parameters <<endl;
+			savefile << "#Profile parameter --> choice between fa,md,fro,ad,rd,l2,l3,ga "<<std::endl;
+			savefile << "Profile parameter : " << parameters <<std::endl;
 		}
 		if(transposeColRow)
 		{
-			savefile << "#What for col and row --> choice between 'Case' or 'Arc lenght' with after 'in row' or 'in column'/'in col'" <<endl;
-			savefile << "Col and Row : " << "Case in column" <<endl;
+			savefile << "#What for col and row --> choice between 'Case' or 'Arc lenght' with after 'in row' or 'in column'/'in col'" <<std::endl;
+			savefile << "Col and Row : " << "Case in column" <<std::endl;
 		}
 		else
 		{
-			savefile << "#What for col and row --> choice between 'Case' or 'Arc lenght' with after 'in row' or 'in column'/'in col'" <<endl;
-			savefile << "Col and Row : " << "Case in row" <<endl;
+			savefile << "#What for col and row --> choice between 'Case' or 'Arc lenght' with after 'in row' or 'in column'/'in col'" <<std::endl;
+			savefile << "Col and Row : " << "Case in row" <<std::endl;
 		}
 		
 		savefile.close();
@@ -972,7 +972,7 @@ bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std:
 	
 	if(filename.compare("")!=0)
 	{
-		std::ifstream file(filename.c_str() , ios::in);  // open in reading
+		std::ifstream file(filename.c_str() , std::ios::in);  // open in reading
 		std::string str,buf1,buf2;
 			
 		if(file)  // if open
@@ -1067,7 +1067,7 @@ bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std:
 		}
 		else 
 		{
-			std::cout << "ERROR: No parameters file found" << endl;
+			std::cout << "ERROR: No parameters file found" << std::endl;
 			return false;
 		}
 	}

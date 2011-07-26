@@ -25,7 +25,7 @@ bool FileExisted(std::string Filename);
 /* Give the name of the case */
 std::string NameOfCase(CSVClass* CSV, int row, int NameCol, int DataCol);
 /* Give the choice of the user about skip the computation */
-vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget*parent=NULL);
+std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget*parent=NULL);
 
 /* Call fiberprocess */
 int CallFiberProcess(std::string pathFiberProcess, std::string AtlasFolder, std::string outputname, 
@@ -61,7 +61,7 @@ void GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int NumberOf
 bool ReadProfileInformation(std::string fibername, std::string filename, v2string &Profiles);
 
 /* Write Profile information in an csv file */
-void WriteProfile(CSVClass* CSV, std::string filename,vector< v2string > FiberProfiles,int DataCol,int NameCol,
+void WriteProfile(CSVClass* CSV, std::string filename,std::vector< v2string > FiberProfiles,int DataCol,int NameCol,
 		  int ParamCol, bool transposeColRow);
 
 /* Write the parameters in a file */

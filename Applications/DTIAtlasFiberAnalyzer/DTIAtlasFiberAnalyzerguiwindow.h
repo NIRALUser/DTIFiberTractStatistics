@@ -23,7 +23,7 @@
 #include "ui_DTIAtlasFiberAnalyzerguiwindow.h"
 #include "CSVClass.h"
 
-typedef vector<std::string> vstring;
+typedef std::vector<std::string> vstring;
 
 class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow 
 {
