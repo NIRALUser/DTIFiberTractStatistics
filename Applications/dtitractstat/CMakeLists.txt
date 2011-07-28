@@ -21,9 +21,6 @@ ENDIF(VTK_FOUND)
 find_package(GenerateCLP REQUIRED)
 include(${GenerateCLP_USE_FILE})
 
-find_package(Slicer3 REQUIRED)
-include(${Slicer3_USE_FILE})
-
 SET(CXX_FILES
 dtitractstat.cxx
 fiberprocessing.cxx
@@ -42,6 +39,3 @@ GENERATECLP(dtitractstat_SOURCE dtitractstat.xml)
 
 ADD_EXECUTABLE(dtitractstatCLP ${CXX_FILES} ${H_FILES})
 TARGET_LINK_LIBRARIES(dtitractstatCLP ITKCommon ITKIO  vtkIO)
-
-slicer3_set_plugins_output_path(dtitractstatCLP)
-slicer3_install_plugins(dtitractstatCLP)
