@@ -1,3 +1,4 @@
+
 #include <string>
 #include <cmath>
 #include <memory>
@@ -233,6 +234,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	cumulative_distance_1 += current_length;
 	
 	//multiplying by -1 to make arc length on 1 side of plane as negative
+	
 	length.push_back(std::vector<double>());
 	all.push_back(std::vector<double>());
 	length[l_counter].push_back(-1 * cumulative_distance_1);
@@ -256,6 +258,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	  all[l_counter].push_back((*pit).GetField("GA"));
 	}
+	//add x,y,z information to vectors all/length by YUNDI SHI
+	for (int pt_index = 0;pt_index<3;++pt_index)
+	  {
+	    length[l_counter].push_back(p1[pt_index]);
+	    all[l_counter].push_back(p1[pt_index]);
+	  }
+	
 	l_counter++;
 	count++;
       }
@@ -311,6 +320,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	  all[l_counter].push_back((*pit).GetField("GA"));
 	}
+	//add x,y,z information to vectors all/length by YUNDI SHI
+	for (int pt_index = 0;pt_index<3;++pt_index)
+	  {
+	    length[l_counter].push_back(p1[pt_index]);
+	    all[l_counter].push_back(p1[pt_index]);
+	  }
+	
 	l_counter++;
 	count++;
       }
@@ -379,6 +395,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
       }
+      //add x,y,z information to vectors all/length by YUNDI SHI
+      for (int pt_index = 0;pt_index<3;++pt_index)
+	{
+	  length[l_counter].push_back(p1[pt_index]);
+	  all[l_counter].push_back(p1[pt_index]);
+	}
+	
       l_counter++;
       
       
@@ -433,6 +456,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	  all[l_counter].push_back((*pit).GetField("GA"));
 	}
+	//add x,y,z information to vectors all/length by YUNDI SHI
+	for (int pt_index = 0;pt_index<3;++pt_index)
+	  {
+	    length[l_counter].push_back(p1[pt_index]);
+	    all[l_counter].push_back(p1[pt_index]);
+	  }
+	
 	pit++;
 	l_counter++;
 	count++;
@@ -491,6 +521,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	  all[l_counter].push_back((*pit).GetField("GA"));
 	}
+	//add x,y,z information to vectors all/length by YUNDI SHI
+	for (int pt_index = 0;pt_index<3;++pt_index)
+	  {
+	    length[l_counter].push_back(p1[pt_index]);
+	    all[l_counter].push_back(p1[pt_index]);
+	  }
+	
 	pit--;
 	l_counter++;
 	count++;
