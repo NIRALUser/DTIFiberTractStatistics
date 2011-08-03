@@ -180,21 +180,36 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       all.push_back(std::vector<double>());
       length[l_counter].push_back(0.0);
       all[l_counter].push_back(0.0);
+      //add x,y,z information to vectors all/length by YUNDI SHI
+      itk::Point<double, 3> p1;
+      p1=(*pit).GetPosition();
+      if (worldspace)
+	{
+	  p1[0] = (p1[0] * spacing[0]) + offset[0];
+	  p1[1] = (p1[1] * spacing[1]) + offset[1];
+	  p1[2] = (p1[2] * spacing[2]) + offset[2];
+	}
+
       if (param ==1)
       {
-	length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
+	//DEBUG
+	//std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
+	length[l_counter].push_back((*pit).GetField(param_str.c_str()));
+	//if (param_str.c_str() == "FA"):
+	//length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
+	//else
       }
       else if (param>=2 && param <=8)
       {
 	//DEBUG
-	//std::cout<<"getting length for "<<param_str<<std::endl;
+	////std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
 	length[l_counter].push_back((*pit).GetField(param_str.c_str()));
       }
       else 
 	{
 	  //DEBUG
 	  //std::cout<<"getting length for "<<param_str<<std::endl;
-	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
+	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
 	  all[l_counter].push_back((*pit).GetField("MD"));
 	  all[l_counter].push_back((*pit).GetField("FRO"));
 	  all[l_counter].push_back((*pit).GetField("l2"));
@@ -203,6 +218,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	  all[l_counter].push_back((*pit).GetField("GA"));
       }
+      //add x,y,z information to vectors all/length by YUNDI SHI
+      for (int pt_index = 0;pt_index<3;++pt_index)
+	{
+	  length[l_counter].push_back(p1[pt_index]);
+	  all[l_counter].push_back(p1[pt_index]);
+	}
+	
       l_counter++;
 
       //to find the total distance from origin to the current sample
@@ -241,10 +263,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	if (param ==1)
 	{
-	  length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
+	  ////std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
+	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
+	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
 	else if (param>=2 && param <=8)
 	{
+	  
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
 	else
@@ -303,7 +328,9 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back(cumulative_distance_2);
 	if (param ==1)
 	{
-	  length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
+	  ////std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
+	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
+	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
 	else  if (param>=2 && param <=8)
 	{
@@ -311,7 +338,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	}
 	else
 	{
-	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
+	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
 	  all[l_counter].push_back((*pit).GetField("MD"));
 	  all[l_counter].push_back((*pit).GetField("FRO"));
 	  all[l_counter].push_back((*pit).GetField("l2"));
@@ -336,11 +363,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
     else 
     {
       int count=1;
+      
       // For each point along the fiber
       for(pit = pointlist.end(); pit != pointlist.begin(); --pit)
       {
 	typedef DTIPointType::PointType PointType;
 	itk::Point<double, 3> position = (*pit).GetPosition();
+
 	if (worldspace)
 	{
 	  position[0] = (position[0] * spacing[0]) + offset[0];
@@ -376,9 +405,21 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       all.push_back(std::vector<double>());
       length[l_counter].push_back(0.0);
       all[l_counter].push_back(0.0);
+
+      itk::Point<double, 3> p_inter;
+      p_inter=(*pit).GetPosition();
+      if (worldspace)
+	{
+	  p_inter[0] = (p_inter[0] * spacing[0]) + offset[0];
+	  p_inter[1] = (p_inter[1] * spacing[1]) + offset[1];
+	  p_inter[2] = (p_inter[2] * spacing[2]) + offset[2];
+	}
+
       if (param ==1)
       {
-	length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
+	//std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
+	length[l_counter].push_back((*pit).GetField(param_str.c_str()));		
+	//length[l_counter].push_back((*pit).GetField(param_str.c_str()));
       }
       else if (param>=2 && param <=8)
       {
@@ -398,8 +439,8 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       //add x,y,z information to vectors all/length by YUNDI SHI
       for (int pt_index = 0;pt_index<3;++pt_index)
 	{
-	  length[l_counter].push_back(p1[pt_index]);
-	  all[l_counter].push_back(p1[pt_index]);
+	  length[l_counter].push_back(p_inter[pt_index]);
+	  all[l_counter].push_back(p_inter[pt_index]);
 	}
 	
       l_counter++;
@@ -439,7 +480,9 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	if (param ==1)
 	{
-	  length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
+	  //std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
+	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
+	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
 	else if (param>=2 && param <=8)
 	{
@@ -503,9 +546,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all.push_back(std::vector<double>());
 	all[l_counter].push_back(cumulative_distance_2);
 	if (param ==1)
-	{
-	  length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
-	}
+	  {
+	    length[l_counter].push_back((*pit).GetField(param_str.c_str()));
+	    // length[l_counter].push_back((*pit).GetField(param_str.c_str()));
+	  }
 	else if (param>=2 && param <=8)
 	{
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));

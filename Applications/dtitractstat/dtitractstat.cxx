@@ -195,31 +195,42 @@ int main(int argc, char* argv[])
 
   fiberprocessing* FP;
   FP = new fiberprocessing;
-
-  FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, "fa");
+  itk::Vector<double, 3> origin;
+  itk::Vector<double, 3> normal;
+  
   //DEBUG
   //std::cout<<"param is "<<param<<std::endl;
-  itk::Vector<double, 3> origin = FP->get_plane_origin();
-  itk::Vector<double, 3> normal = FP->get_plane_normal();
-
+  
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   regression* REG;
   REG = new regression;
   int all_flag = -1;
+  std::cout<<"there are "<<param<<" parameters"<<std::endl;
   if (param>=1 && param <8) 	//that is, default is not selected where ALL diffusion parameters are evaluated
   {
     for (int a=0; a<=param-1; a++)	
     {
-      std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(param);
       FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, parameter_list[a]);
+      std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(param);
+      if (a == 0){
+	origin = FP->get_plane_origin();
+	normal = FP->get_plane_normal();
+	std::cout<<"origin is "<<origin<<" and normal is "<<normal<<std::endl;
+      }
+      
       REG->regression_main(output_stats_file,param,parameter_list[a], length_main, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, stat, noisemodelOn, int_noise_model, qpercOn, q_perc, all_flag, windowOn, window, window_file,worldspace);
+      
       std::cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n"<<std::endl;
     }
+    
   }
   else{				//get all diffusion parameters
    
     all_flag=1;
+    FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, "All parameters");
     std::vector< std::vector<double> > all_main = FP->get_arc_length_parametrized_fiber(param);
+    origin = FP->get_plane_origin();
+    normal = FP->get_plane_normal();
     int l_counter=all_main.size();
     
     for (int a=0; a<=param-1; a++)	
@@ -238,7 +249,8 @@ int main(int argc, char* argv[])
       }
     std::vector< std::vector<double> > all_results_main = REG->get_all_results();
     int reg_counter = all_results_main.size();
-    
+    //Write parametrized fiber by Yundi Shi
+
     //Writing results to the output file	
     ofstream fp_output_stats_file;
     fp_output_stats_file.open(output_stats_file.c_str(),ios::app);
