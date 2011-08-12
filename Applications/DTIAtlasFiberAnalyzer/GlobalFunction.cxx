@@ -19,7 +19,7 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 	
 	//read the parameters from the file
 	if(!ReadParametersFromFile(parametersfile,csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol,
-	    NameCol,SelectedFibers, transposeColRow))
+		 NameCol,SelectedFibers, transposeColRow))
 		return false;
 	
 	if(debug)
@@ -82,7 +82,7 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 		}
 		//Call fiberprocess
 		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol,
-				  NameCol, SelectedFibers,parameters,transposeColRow,true);
+								NameCol, SelectedFibers,parameters,transposeColRow,true);
 		
 		/* Looking for dti_tract_stat */
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
@@ -94,8 +94,8 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 		}
 		//Call dti_tract_stat
 		Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, SelectedFibers,
-				    Selectedfibersplane,parameters, DataCol, DefCol, NameCol, transposeColRow,
-				    true);
+								  Selectedfibersplane,parameters, DataCol, DefCol, NameCol, transposeColRow,
+								  true);
 	}
 	else
 	{
@@ -109,7 +109,7 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 		}
 		//Call fiberprocess
 		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol,
-				  NameCol, fibers,parameters,transposeColRow,true);
+								NameCol, fibers,parameters,transposeColRow,true);
 		
 		/* Looking for dti_tract_stat */
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
@@ -121,7 +121,7 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 		}
 		//Call dti_tract_stat
 		Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, fibers,
-				    fibersplane,parameters, DataCol, DefCol, NameCol,transposeColRow,true);
+								  fibersplane,parameters, DataCol, DefCol, NameCol,transposeColRow,true);
 	}
 	
 	//calcul the number of parameters
@@ -154,17 +154,17 @@ bool CreateDirectoryForData(std::string outputfolder, std::string name)
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
  ********************************************************************************/
 bool Applyfiberprocess(CSVClass* CSV,
-		       std::string pathFiberProcess,
-		       std::string AtlasFiberDir,
-		       std::string OutputFolder,
-		       int DataCol,
-		       int DefCol,
-		       int NameCol,
-		       vstring fibers,
-		       std::string parameters,
-		       bool transposeColRow,
-		       bool nogui,
-		       QWidget* parent)
+							  std::string pathFiberProcess,
+							  std::string AtlasFiberDir,
+							  std::string OutputFolder,
+							  int DataCol,
+							  int DefCol,
+							  int NameCol,
+							  vstring fibers,
+							  std::string parameters,
+							  bool transposeColRow,
+							  bool nogui,
+							  QWidget* parent)
 {
 	int col=-1;
 	std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false,2  cancel
@@ -231,10 +231,10 @@ bool Applyfiberprocess(CSVClass* CSV,
 						{
 							/* If fiberprocess worked */
 							if(CallFiberProcess(pathFiberProcess, AtlasFiberDir,
-									outputname, 
-									(*CSV->getData())[row][DataCol],
-									(*CSV->getData())[row][DefCol],fibers[j],
-									namecase)==0)
+								outputname, 
+								(*CSV->getData())[row][DataCol],
+								(*CSV->getData())[row][DefCol],fibers[j],
+								namecase)==0)
 							{
 								//Check if the output exist
 								if(FileExisted(outputname))
@@ -280,7 +280,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 	filename = OutputFolder + "/" + takeoffExtension(takeoffPath(CSV->getFilename()))
 			+"_parameters.txt";
 	saveparam(filename, CSV->getFilename(), DataCol, DefCol, NameCol, OutputFolder,AtlasFiberDir, fibers,
-		  parameters, transposeColRow);
+				 parameters, transposeColRow);
 	
 	return true;
 }
@@ -305,7 +305,7 @@ bool DataExistedInFiberColumn(CSVClass* CSV, int row, int column,std::string out
 	{
 		//check there is a data
 		if((*CSV->getData())[row][column].compare(outputname)==0)
-				return true;
+			return true;
 	}
 	
 	return false;
@@ -330,12 +330,12 @@ std::string NameOfCase(CSVClass* CSV, int row, int NameCol, int DataCol)
 	/* Filename */
 	if(NameCol>=0 && ((*CSV->getData())[row][NameCol].compare("")!=0 &&
 		  (*CSV->getData())[row][NameCol].compare("no")!=0 && 
-		   (*CSV->getData())[row][NameCol].compare("no name")!=0))
+		  (*CSV->getData())[row][NameCol].compare("no name")!=0))
 	{
 		namecase = (*CSV->getData())[row][NameCol];
 	}
 	else if(DataCol>=0 && ((*CSV->getData())[row][DataCol].compare("")!=0 &&
-		       (*CSV->getData())[row][DataCol].compare("no data")!=0))
+				 (*CSV->getData())[row][DataCol].compare("no data")!=0))
 	{
 		namecase = takeoffPath((*CSV->getData())[row][DataCol]);
 		namecase = takeoffExtension(namecase);
@@ -425,12 +425,12 @@ std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget
  * Call Fiberprocess
  ********************************************************************************/
 int CallFiberProcess(std::string pathFiberProcess, 
-		     std::string AtlasFolder,
-		     std::string outputname,
-		     std::string Data,
-		     std::string DeformationField,
-		     std::string Fiber,
-		     std::string nameofcase)
+							std::string AtlasFolder,
+							std::string outputname,
+							std::string Data,
+							std::string DeformationField,
+							std::string Fiber,
+							std::string nameofcase)
 {
 	int state=0;
 	QProcess *process= new QProcess();
@@ -493,7 +493,7 @@ void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::s
 				{
 					extensionfiberplane = ExtensionofFile(AtlasDirectory.GetFile(j));
 					if(extensionfiberplane.compare("fvb")==0 ||
-									    extensionfiberplane.compare("fvp")==0)
+									 extensionfiberplane.compare("fvp")==0)
 					{
 						fibersplane.push_back(AtlasDirectory.GetFile(j));
 						noplane = true;
@@ -550,8 +550,8 @@ std::string ExtensionofFile(std::string filename)
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-			 std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
-			 int DataCol, int DefCol, int NameCol, bool transposeColRow, bool nogui, QWidget *parent)
+								 std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
+								 int DataCol, int DefCol, int NameCol, bool transposeColRow, bool nogui, QWidget *parent)
 {
 	int col=-1;
 	bool ExistedFile,DataAdded;
@@ -559,6 +559,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 	skipdata.push_back(false);
 	skipdata.push_back(false);
 	std::string outputname, name_of_fiber, header, namecase, nameoffile;
+	CreateDirectoryForData(OutputFolder,"Fibers");
 	
 	/* Loop for all the fibers */
 	for(unsigned int j=0;j<fibers.size();j++)
@@ -599,7 +600,9 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 			if(skipdata[0] && ExistedFile)
 			{
 				if(!DataExistedInFiberColumn(CSV,row,col,outputname))
+				{
 					CSV->AddData(outputname,row,col);
+				}
 			}
 			else
 			{
@@ -612,11 +615,13 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 						std::string input_fiber = (*CSV->getData())[row][fibercol];
 						/* If dti_tract_stat worked */
 						if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
-								input_fiber, outputname, fibersplane[j],
-								parameters)==0)
+							input_fiber, outputname, fibersplane[j],
+							parameters)==0)
 						{
 							if(FileExisted(outputname))
+							{
 								CSV->AddData(outputname,row,col);
+							}
 						}
 						else
 							std::cout<<"Fail during dti_tract_stat!"<< std::endl;
@@ -626,6 +631,23 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 					CSV->AddData("no",row,col);
 			}
 		}
+		
+		std::string inputname=AtlasDirectory+"/"+fibers[j];
+		outputname=OutputFolder+"/Fibers/"+header;
+		if(FileExisted(outputname))
+		{
+			ExistedFile = true;
+			if(!skipdata[1])
+				skipdata = MessageExistedFile(nogui, header, parent);
+		}
+		if(skipdata[2] == true)
+			return false;
+		else if(!skipdata[0] || !ExistedFile)
+		{
+			if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory, inputname, outputname, fibersplane[j], parameters)!=0)
+				std::cout<<"Fail during dti_tract_stat!"<<std::endl;
+		}
+		
 	}
 	
 	//save
@@ -639,7 +661,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 	filename = OutputFolder + "/" + takeoffExtension(takeoffPath(CSV->getFilename()))
 			+"_parameters.txt";
 	saveparam(filename, CSV->getFilename(), DataCol, DefCol, NameCol, OutputFolder, AtlasDirectory, fibers,
-		  parameters, transposeColRow);
+				 parameters, transposeColRow);
 	
 	return true;
 }
@@ -649,11 +671,11 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
  * Call dti_tract_stat
  ********************************************************************************/
 int Calldti_tract_stat(std::string pathdti_tract_stat,
-		       std::string AtlasDirectory,
-		       std::string Input_fiber_file,
-		       std::string Output_fiber_file,
-		       std::string plane,
-		       std::string parameter)
+							  std::string AtlasDirectory,
+							  std::string Input_fiber_file,
+							  std::string Output_fiber_file,
+							  std::string plane,
+							  std::string parameter)
 {
 	int state=0;
 	QProcess *process= new QProcess();
@@ -700,7 +722,7 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
  * It stocks the data in an vector(case) of vector(line) of vstring (data)
  ********************************************************************************/
 void GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int NumberOfParameters, int DataCol, int NameCol,
-			   bool transposeColRow)
+									bool transposeColRow)
 {
 	// variables
 	std::string fibername,filename,outputprofilefolder;
@@ -739,16 +761,14 @@ void GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int NumberOf
 					/* write the information in a file for each parameters */
 					for(int i=0;i<NumberOfParameters;i++)
 					{
-						
 						if(FiberProfiles[0][0].size()> static_cast<unsigned int>(i+2))
 						{
 							//the two first columns are Arclenght and fiberpoints
 							filename = OutputFolder + "/" + fibername + "/" 
 									+ FiberProfiles[0][0][i+2]
 									+ "_" + fibername + ".csv";
-							
 							WriteProfile(CSV, filename,FiberProfiles,DataCol,
-									NameCol,i+2,transposeColRow);
+											 NameCol,i+2,transposeColRow);
 						}
 					}
 				}
@@ -798,7 +818,7 @@ bool ReadProfileInformation(std::string fibername,std::string filename, v2string
 					it = line.begin();
 					//erase the first word in the line
 					line = line.substr(line.find_first_of(",")+1,
-							line.size()-line.find_first_of(",")+1);
+											 line.size()-line.find_first_of(",")+1);
 				}
 				else
 				{
@@ -822,7 +842,7 @@ bool ReadProfileInformation(std::string fibername,std::string filename, v2string
  * Write profile information
  ********************************************************************************/
 void WriteProfile(CSVClass* CSV, std::string filename, std::vector<v2string> FiberProfiles, int DataCol, int NameCol, 
-		  int ParamCol,bool transposeColRow)
+						int ParamCol,bool transposeColRow)
 {
 	/* Open a file in writing */
 	std::ofstream bfile(filename.c_str(), std::ios::out);
@@ -857,10 +877,17 @@ void WriteProfile(CSVClass* CSV, std::string filename, std::vector<v2string> Fib
 				for(unsigned int line=1;line<FiberProfiles[data].size();line++)
 				{
 					/* Write line per line from the fiberprofiles vector */
-					if(line!=(FiberProfiles[data].size()-1))
-						bfile << FiberProfiles[data][line][ParamCol] << "," ;
-					else
-						bfile << FiberProfiles[data][line][ParamCol];
+					if((unsigned int)ParamCol<FiberProfiles[data][line].size())
+					{
+						if(line!=(FiberProfiles[data].size()-1))
+						{
+							bfile << FiberProfiles[data][line][ParamCol] << "," ;
+						}
+						else
+						{
+							bfile << FiberProfiles[data][line][ParamCol];
+						}
+					}
 				}
 				bfile << std::endl;
 			}
@@ -909,8 +936,8 @@ void WriteProfile(CSVClass* CSV, std::string filename, std::vector<v2string> Fib
  * save the parameters for DTIAtlasFiberAnalyzer in a file
  ********************************************************************************/
 void saveparam(std::string filename,std::string CSVFilename, int DataCol, int DefCol, int NameCol,
-	       std::string OutputFolder, std::string AtlasFiberFolder, vstring FiberSelectedname, 
-	       std::string parameters, bool transposeColRow)
+					std::string OutputFolder, std::string AtlasFiberFolder, vstring FiberSelectedname, 
+					std::string parameters, bool transposeColRow)
 {
 	std::string ListOfFiber = "";
 	
@@ -963,8 +990,8 @@ void saveparam(std::string filename,std::string CSVFilename, int DataCol, int De
  * Read the parameters for DTIAtlasFiberAnalyzer from a file
  ********************************************************************************/
 bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std::string &AtlasFiberDir,
-			    std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol,
-			    int &NameCol, vstring &SelectedFibers, bool &transposeColRow)
+									 std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol,
+									 int &NameCol, vstring &SelectedFibers, bool &transposeColRow)
 {
 	//variables
 	vstring fibers;
@@ -1028,9 +1055,9 @@ bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std:
 								SelectedFibers.push_back(word);
 								it = ListOfFiber.begin();
 								ListOfFiber = ListOfFiber.substr(
-									      ListOfFiber.find_first_of(",")+1,
-								              ListOfFiber.size() -
-									      ListOfFiber.find_first_of(",")+1);
+										ListOfFiber.find_first_of(",")+1,
+								ListOfFiber.size() -
+										ListOfFiber.find_first_of(",")+1);
 							}
 							else
 							{
@@ -1046,8 +1073,8 @@ bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std:
 					else if(buf1.compare(0,14,"Col and Row : ")==0)
 					{
 						if(buf1.substr(14,buf1.size()-14).compare("Case in column")==0 ||
-						   buf1.substr(14,buf1.size()-14).compare("Case in col")==0 ||
-						   buf1.substr(14,buf1.size()-14).compare("Arc lenght in row")==0)
+											buf1.substr(14,buf1.size()-14).compare("Case in col")==0 ||
+											buf1.substr(14,buf1.size()-14).compare("Arc lenght in row")==0)
 							transposeColRow = true;
 						else
 							transposeColRow = false;
@@ -1091,7 +1118,7 @@ int CalculNumberOfProfileParam(std::string parameters)
 		{
 			//look for the first ","
 			parameters = parameters.substr(parameters.find_first_of(",")+1,
-					parameters.size()-parameters.find_first_of(",")+1);
+													 parameters.size()-parameters.find_first_of(",")+1);
 			NumberOfParameters++;
 		}
 		else
@@ -1136,3 +1163,260 @@ int PlaneAssociatedToFiber(std::string fibername,int type, vstring fibersplane, 
 	}
 	return -1;
 }
+
+ /************************************************************************************
+ * convert: conversion of each line of read file into 2D double QVector.
+ ************************************************************************************/
+ 
+ void convert(QVector <std::string> line, QVector < QVector <double> >& data)
+{
+	QVector <double> buffer;
+	int i=0;
+	for(i=0; line[i]!=line[line.size()-1]; i++)
+	{
+		buffer.append(atof(line[i].c_str()));
+	}
+	buffer.append(atof(line[i].c_str()));
+	data.append(buffer);
+}
+
+ /************************************************************************************
+ * LineInVector : Like previous definition of LineInVector, take line with data 
+ * 	separated by ',' and put it in a 2D double vector.
+ ************************************************************************************/
+void LineInVector(std::string line, QVector < QVector <double> >& data)
+{
+	QVector <std::string> column;
+	//Iterator on the string line
+	std::string::iterator it;
+	std::string word;
+	it = line.begin();
+	//add each word or number between two "," in the vector
+	while(it != line.end())
+	{
+		//if the line is at the last word, set the iterator at the end of the string
+		if(line.find_first_of(",")!=std::string::npos)
+		{
+			word = line.substr(0, line.find_first_of(","));
+			column.append(word);
+			it = line.begin();
+			//erase the first word in the line
+			line = line.substr(line.find_first_of(",")+1,line.size()-line.find_first_of(",")+1);
+		}
+		else
+		{
+			column.append(line);
+			it = line.end();
+		}
+	}
+	convert(column, data);
+}
+
+
+ /************************************************************************************
+ * LineInVector : Like previous definition of LineInVector, take line with data 
+ * 	separated by ',' and put it in a string vector.
+ ************************************************************************************/
+
+void  LineInVector(std::string line, vstring& v_string)
+{
+	vstring  column;
+	//Iterator on the string line
+	std::string::iterator it;
+	std::string word;
+	it = line.begin();
+	//add each word or number between two "," in the vector
+	while(it != line.end())
+	{
+		//if the line is at the last word, set the iterator at the end of the string
+		if(line.find_first_of(",")!=std::string::npos)
+		{
+			word = line.substr(0, line.find_first_of(","));
+			column.push_back(word);
+			it = line.begin();
+			//erase the first word in the line
+			line = line.substr(line.find_first_of(",")+1,line.size()-line.find_first_of(",")+1);
+		}
+		else
+		{
+			//if(line.compare(0,2,"  ")!=0)
+			column.push_back(line);
+			it = line.end();
+		}
+	}
+	v_string=column;
+}
+
+/************************************************************************************
+ * getnb_of_samples : return the number of data samples from the 6 informations lines
+ ************************************************************************************/
+
+int getnb_of_samples(vstring parameterslines)
+{
+	int i=0, nb_of_samples;
+	std::string buffer;
+	buffer=parameterslines[0];
+	while( buffer.compare(0,36,"Number of samples along the bundle: ")!=0)
+	{
+		i++;
+		buffer=parameterslines[i];
+	}
+	nb_of_samples=atoi(buffer.substr(35, buffer.size()-35).c_str());
+	return nb_of_samples;
+}
+
+/************************************************************************************
+ * getdata : put every data lines read from the file in a 2D double vector
+ ************************************************************************************/
+
+QVector < QVector <double> > getdata(std::ifstream& fvpfile, int nb_of_samples)
+{
+	std::string buffer;
+	QVector < QVector <double> > data;
+	for(int i=0; i<nb_of_samples; i++)
+	{
+		getline(fvpfile, buffer);
+		LineInVector(buffer, data);
+	}
+	return data;	
+}
+
+/************************************************************************************
+ * GetColumn : As the data is stored by line, this function allow users to get a
+ * 	column of data for plot.
+ ************************************************************************************/
+
+QVector <double> GetColumn(int column, QVector < QVector <double> > data)
+{
+	QVector <double> QV_column;
+	for(int i=0; i<data.size(); i++)
+	{
+		QV_column.append(data[i][column]);
+	}
+	return QV_column;
+}
+
+/************************************************************************************
+ * getFiberIndex : return the index associated to the name of a fiber. This index
+ * 	correspond to index of fibermean vector.
+ ************************************************************************************/
+
+int getFiberIndex(std::string filename)
+{
+	std::string fibername;
+// 	if(filename.find_last_of("_")!=std::string::npos)
+	fibername=filename.substr(filename.find_last_of("_")+1,filename.size()-filename.find_last_of("_")+1);
+	fibername=takeoffExtension(fibername);
+	if(fibername=="Genu")
+		return 0;
+	else if(fibername=="ILF-Left")
+		return 1;
+	else if(fibername=="ILF-Right")
+		return 2;
+	else if(fibername=="Splenium")
+		return 3;
+	else if(fibername=="Uncinate-Left")
+		return 4;
+	else if(fibername=="Uncinate-Right")
+		return 5;
+	else
+		return -1;
+}
+
+double getMean(QVector< double > data)
+{
+	double mean=0;
+	for(int i=0; i<data.size(); i++)
+		mean+=data[i];
+	mean/=data.size();
+	return mean;
+}
+
+double getStd(QVector <double> data, double mean)
+{
+	double std=0;
+	for(int i=0; i<data.size(); i++)
+		std+=pow(data[i]-mean,2);
+	std/=data.size();
+	std=sqrt(std);
+	return std;
+}
+
+QVector <QVector <double> > getStdData(QVector <QVector <double> > data, int factor)
+{
+	double mean, std;
+	QVector <double> stdlinedata;
+	QVector <QVector <double> > stddata;
+	
+	stddata.push_back(data[0]);
+	for(int i=1; i<data.size(); i++)
+	{
+		mean=0;
+		std=0;
+		mean=getMean(data[i]);
+		std=getStd(data[i], mean);
+		for(int j=0; j<data[i].size(); j++)
+			stdlinedata.push_back(data[i][j]+factor*std);
+		stddata.push_back(stdlinedata);
+		stdlinedata.clear();
+	}
+	return stddata;
+}
+
+QVector<QVector<double> > getCrossMeanData(qv3double data)
+{
+	QVector<QVector<double> > MeanData;
+	QVector<double> MeanLine;
+	double MeanValue=0;
+	MeanData.push_back(data[0][0]);
+	for(int j=1; j<data[0].size(); j++)
+	{
+		for(int k=0; k<data[0][0].size(); k++)
+		{
+			for(unsigned int l=0; l<data.size(); l++)
+			{
+				if(l%3==0)
+					MeanValue+=data[l][j][k];
+			}
+			MeanValue/=data.size()/3;
+			MeanLine.push_back(MeanValue);
+			MeanValue=0;
+		}
+		MeanData.push_back(MeanLine);
+		MeanLine.clear();
+	}
+	
+	return MeanData;
+}
+
+QVector<QVector<double> > getCrossStdData(qv3double data, QVector<QVector<double> > crossmean, int factor)
+{
+	QVector<QVector<double> > StdData;
+	QVector<double> StdLine;
+	long double StdValue=0;
+	StdData.push_back(crossmean[0]);
+	for(int j=1; j<data[0].size(); j++)
+	{
+		for(int k=0; k<data[0][0].size(); k++)
+		{
+			for(unsigned int l=0; l<data.size(); l++)
+			{
+				if(l%3==0)
+				{
+					StdValue+=powl((data[l][j][k]-crossmean[j][k]),2);	
+				}
+			}
+			StdValue/=data.size()/3;
+			StdValue=sqrtl(StdValue);
+			StdLine.push_back(crossmean[j][k]+factor*StdValue);
+			StdValue=0;
+			
+		}
+		StdData.push_back(StdLine);
+		StdLine.clear();
+	}
+	return StdData;
+}
+
+
+

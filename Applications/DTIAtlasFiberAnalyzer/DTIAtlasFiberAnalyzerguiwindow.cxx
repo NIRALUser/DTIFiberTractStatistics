@@ -1,5 +1,6 @@
 #include "DTIAtlasFiberAnalyzerguiwindow.h"
 #include "GlobalFunction.h"
+
 #include <sstream>
 
 /********************************************************************************* 
@@ -36,9 +37,11 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(bool debug, QWidg
 	Fiberprocesstitle->setFont(QFont("Courrier", 20,4));
 	Propertiestitle->setFont(QFont("Courrier", 20,4));
 	
-	//Enable every tab except the first one
-	for(int i=1; i<3; i++)
+	//Disable every tab except the first one
+	for(int i=1; i<4; i++)
 		PrincipalWidget->setTabEnabled (m_numberstep + i,false);
+	
+	
 	
 	/* Signaux and slot */
 	/* Tab 1 */
@@ -56,12 +59,12 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(bool debug, QWidg
 	//Column
 	connect(this->addcolumn, SIGNAL(clicked()), this, SLOT(AddC()));
 	connect(this->CSVtable, SIGNAL(currentItemChanged(QTableWidgetItem *, QTableWidgetItem *)), 
-		this, SLOT(SetCurrentColumn()));
+			  this, SLOT(SetCurrentColumn()));
 	connect(this->deletecolumn, SIGNAL(clicked()), this, SLOT(DeleteC()));
 	//Row
 	connect(this->addrow, SIGNAL(clicked()), this, SLOT(AddR()));
 	connect(this->CSVtable, SIGNAL(currentItemChanged(QTableWidgetItem *, QTableWidgetItem *)), 
-		this, SLOT(SetCurrentRow()));
+			  this, SLOT(SetCurrentRow()));
 	connect(this->deleterow, SIGNAL(clicked()), this, SLOT(DeleteR()));
 	//Column for data/deformation
 	connect(this->ColumnData, SIGNAL(editingFinished()), this, SLOT(SetDataColumn()));
@@ -69,7 +72,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(bool debug, QWidg
 	connect(this->ColumnNameCases, SIGNAL(editingFinished()), this, SLOT(SetNameColumn()));
 	connect(this->CSVtable, SIGNAL(cellDoubleClicked( int, int)),this, SLOT(CellAsBrowser(int,int)));
 	connect(this->CSVtable->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this,
-		SLOT(ChangeHeader(int)));
+			  SLOT(ChangeHeader(int)));
 	connect(this->browserOutputFolder, SIGNAL(clicked()), this, SLOT(BrowserOutputFolder()));
 	connect(this->outputfolder, SIGNAL(editingFinished()), this, SLOT(EnterOutputFolder()));
 
@@ -86,9 +89,14 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(bool debug, QWidg
 	/* Tab 3 */
 	connect(this->ApplyDTI_tract_stat, SIGNAL(clicked()), this, SLOT(Computedti_tract_stat()));
 	
+	
 	//"File" action
 	connect(this->actionSave_parameters, SIGNAL(triggered()), SLOT(saveparamaction()));
 	connect(this->actionOpen_parameters, SIGNAL(triggered()), SLOT(openparam()));
+	
+	/* Tab 4 */
+	connect(this->PlotButton, SIGNAL(clicked()), this, SLOT(OpenPlotWindow()));
+	connect(this->PrincipalWidget, SIGNAL(currentChanged(int)), this, SLOT(disableTab4()));
 }
 
 /* Slots */
@@ -100,6 +108,7 @@ void DTIAtlasFiberAnalyzerguiwindow::NextStep()
 	//If the user click on an other tab without using previous step, he is still able to clik on next
 	if(PrincipalWidget->currentIndex()!=m_numberstep)
 	{
+		nextstep->setEnabled(true);
 		m_nextStep = true;
 		m_numberstep = m_numberstep -1;
 	}
@@ -132,17 +141,22 @@ void DTIAtlasFiberAnalyzerguiwindow::NextStep()
 				m_CSV->SetFilename(m_csvfilename);
 				SaveCSV();
 			}
-			if(m_numberstep < 3)
+			if(m_numberstep < 4)
 			{
 				/* Enable the next tab */
 				PrincipalWidget->setTabEnabled (m_numberstep + 1,true);
 				/* move to the next tab */
 				PrincipalWidget->setCurrentWidget (stepwidget(m_numberstep + 1));
+				if(m_numberstep==2)
+					FillDataFilesList();
 				/* Increment numberstep */
 				m_numberstep = m_numberstep + 1;
 				m_nextStep = false;
 				previousstep->setEnabled (true);
+				if(m_numberstep==3)
+					nextstep->setEnabled(false);
 			}
+			
 		}
 		else 
 			QMessageBox::information(this, "Warning", "No Output folder Specified!");
@@ -153,6 +167,7 @@ void DTIAtlasFiberAnalyzerguiwindow::NextStep()
 		QMessageBox::information(this, "Warning", "Compute to attribute fibers, first!");
 	else if(m_numberstep==2)
 		QMessageBox::information(this, "Warning", "Compute to calculate properties, first!");
+	
 }
 
 
@@ -173,9 +188,9 @@ void DTIAtlasFiberAnalyzerguiwindow::PreviousStep()
 		/* decrement numberstep */
 		m_numberstep = Previousstep;
 		m_nextStep = true;
-		nextstep->setEnabled (true);
+		nextstep->setEnabled(true);
 		if(m_numberstep==0)
-			previousstep->setEnabled (false);
+			previousstep->setEnabled(false);
 	}
 }
 
@@ -193,6 +208,8 @@ QWidget* DTIAtlasFiberAnalyzerguiwindow::stepwidget(int numberstep)
 			return Step2;
 		case 2:
 			return Step3;
+		case 3:
+			return Step4;
 	}
 	return NULL;
 }
@@ -218,7 +235,7 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserCSVFilename()
 	
 	QString filename,type;
 	filename = QFileDialog::getOpenFileName(this, "Open CSV File", "/", 
-			"Text (*.csv *.txt)",&type);
+														 "Text (*.csv *.txt)",&type);
 	
 	if(m_debug)
 		std::cout<<"Filename : "<< (filename.toStdString()).c_str() <<std::endl;
@@ -503,7 +520,7 @@ void DTIAtlasFiberAnalyzerguiwindow::DeleteCSV()
 	m_currentColumn = -1;
 	m_numberstep = 0;
 	//Enable every tab except the first one
-	for(int i=1; i<3; i++)
+	for(int i=1; i<4; i++)
 		PrincipalWidget->setTabEnabled (m_numberstep + i,false);
 	//Clear the vector of fiber
 	AtlasFiberFolder->clear();
@@ -760,7 +777,7 @@ void DTIAtlasFiberAnalyzerguiwindow::SetDeformationColumn()
 void DTIAtlasFiberAnalyzerguiwindow::SetNameColumn()
 {
 	if(ColumnNameCases->text().toInt() - 1 < CSVtable->columnCount() && ColumnNameCases->text().toInt()!=0
-		   && ColumnNameCases->text().toInt()>0)
+		  && ColumnNameCases->text().toInt()>0)
 	{
 		// decolor the last column
 		DecolorCol(3);
@@ -892,7 +909,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ChangeHeader(int col)
 	QTableWidgetItem *header=  new QTableWidgetItem;
 	//ask the name
 	QString headername = QInputDialog::getText(this,"header", "name of the column :", QLineEdit::Normal,
-					       QString::null, &ok);
+															 QString::null, &ok);
 	if(ok && !headername.isEmpty())
 	{
 		header->setData( 0, headername );
@@ -982,7 +999,7 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserIndividualData(int row)
 {
 	QString filename,type;
 	filename = QFileDialog::getOpenFileName(this, "Open Individual Data", "/", 
-			"Images (*.gipl *.hdr *.nhdr *.nrrd)",&type);
+														 "Images (*.gipl *.hdr *.nhdr *.nrrd)",&type);
 	
 	if(m_debug)
 		std::cout<<"Filename : "<< (filename.toStdString()).c_str() <<std::endl;
@@ -1137,7 +1154,7 @@ void DTIAtlasFiberAnalyzerguiwindow::AddFiberInList()
 				m_FiberSelectedname.push_back(((SelectedFiber.at(i))->text()).toStdString());
 				/* Check the plane and add/erase it */
 				plane = PlaneAssociatedToFiber(((SelectedFiber.at(i))->text()).toStdString(),1,
-						m_Fibersplane, m_FibersplaneSelected);
+															m_Fibersplane, m_FibersplaneSelected);
 				if(plane!=-1)
 				{
 					m_FibersplaneSelected.push_back(m_Fibersplane[plane]);
@@ -1228,7 +1245,7 @@ void DTIAtlasFiberAnalyzerguiwindow::RemoveFiberInList()
 				
 				/* Plane */
 				plane = PlaneAssociatedToFiber(((SelectedFiber.at(i))->text()).toStdString(),2,
-						m_Fibersplane, m_FibersplaneSelected);
+															m_Fibersplane, m_FibersplaneSelected);
 				if(plane!=-1)
 				{
 					FiberPlaneFile->takeItem(plane);
@@ -1318,7 +1335,7 @@ void DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
 		if(pathFiberProcess.empty()==true)
 		{
 			ret = QMessageBox::information(this, "fiberprocess",
-					"Select the folder where fiberprocess* is saved .");
+													 "Select the folder where fiberprocess* is saved .");
 			pathFiberProcess = (QFileDialog::getExistingDirectory(this)).toStdString();
 			pathFiberProcess = pathFiberProcess +"/fiberprocess";
 		}
@@ -1327,8 +1344,8 @@ void DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
 		{
 			//Apply fiberprocess on CSV data
 			if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,
-			    m_DataCol, m_DeformationCol, m_NameCol, m_FiberSelectedname, m_parameters,
-			    m_transposeColRow, false, this))
+				 m_DataCol, m_DeformationCol, m_NameCol, m_FiberSelectedname, m_parameters,
+				 m_transposeColRow, false, this))
 				std::cout<<"fiberprocess has been cancel!"<<std::endl;
 			else
 				m_nextStep = true;
@@ -1368,7 +1385,6 @@ void DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		
 		//Add the data to the CSV
 		AddDataFromTableToCSV();
-		
 		//Find path for fiberprocess
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
 		
@@ -1376,7 +1392,7 @@ void DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		if(pathdti_tract_stat.empty()==true)
 		{
 			QMessageBox::information(this, "dtitractstatCLP", 
-					"Select the folder where dti_tract_stat is located .");
+											 "Select the folder where dti_tract_stat is located .");
 			pathdti_tract_stat = (QFileDialog::getExistingDirectory(this)).toStdString();
 			pathdti_tract_stat = pathdti_tract_stat +"/dtitractstatCLP";
 		}
@@ -1385,13 +1401,15 @@ void DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		{
 			//Apply fiberprocess on CSV data
 			if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder,
-					    m_FiberSelectedname, m_FibersplaneSelected,m_parameters, m_DataCol,
-					    m_DeformationCol, m_NameCol, m_transposeColRow, false, this))
+				 m_FiberSelectedname, m_FibersplaneSelected,m_parameters, m_DataCol,
+				 m_DeformationCol, m_NameCol, m_transposeColRow, false, this))
+			{
 				std::cout<<"dtitractstat has been cancel"<<std::endl;
+			}
 			else
 			{
 				GatheringFiberProfile(m_CSV,m_OutputFolder,m_NumberOfParameters,m_DataCol,
-						m_NameCol, m_transposeColRow);
+											 m_NameCol, m_transposeColRow);
 				m_nextStep = true;
 			}
 			
@@ -1404,6 +1422,8 @@ void DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 }
 
 
+
+
 /********************************************************************************* 
  * Save the value of the parameters
  ********************************************************************************/
@@ -1411,7 +1431,7 @@ void DTIAtlasFiberAnalyzerguiwindow::saveparamaction()
 {
 	QString filename = QFileDialog::getSaveFileName(this, "Save parameters file", QString(), "Text (*.txt)");
 	saveparam(filename.toStdString(), m_csvfilename, m_DataCol, m_DeformationCol, m_NameCol, m_OutputFolder,
-		  m_AtlasFiberDir, m_FiberSelectedname, m_parameters, m_transposeColRow);
+				 m_AtlasFiberDir, m_FiberSelectedname, m_parameters, m_transposeColRow);
 }
 
 
@@ -1431,7 +1451,7 @@ void DTIAtlasFiberAnalyzerguiwindow::openparam()
 	
 	if(filename!=NULL)
 	{
-	  std::ifstream file((filename.toStdString()).c_str() , std::ios::in);  // open in reading
+		std::ifstream file((filename.toStdString()).c_str() , std::ios::in);  // open in reading
 		std::string str,buf1,buf2;
 		
 		if(file)  // if open
@@ -1539,7 +1559,7 @@ void DTIAtlasFiberAnalyzerguiwindow::openparam()
 								ListOfFiber =
 										ListOfFiber.substr(
 										ListOfFiber.find_first_of(",")+1,
-										ListOfFiber.size() -
+								ListOfFiber.size() -
 										ListOfFiber.find_first_of(",")+1);
 							}
 							else
@@ -1591,8 +1611,8 @@ void DTIAtlasFiberAnalyzerguiwindow::openparam()
 					else if(buf1.compare(0,14,"Col and Row : ")==0)
 					{
 						if(buf1.substr(14,buf1.size()-14).compare("Case in column")==0 ||
-						   buf1.substr(14,buf1.size()-14).compare("Case in col")==0 ||
-						   buf1.substr(14,buf1.size()-14).compare("Arc lenght in row")==0)
+											buf1.substr(14,buf1.size()-14).compare("Case in col")==0 ||
+											buf1.substr(14,buf1.size()-14).compare("Arc lenght in row")==0)
 						{
 							m_transposeColRow = true;
 							CaseOnArc->setChecked(true);
@@ -1607,8 +1627,8 @@ void DTIAtlasFiberAnalyzerguiwindow::openparam()
 				
 				//next step true if there is an cvs and an output
 				if(loaded && csvfilename->text().compare("")!=0 
-							       && outputfolder->text().compare("")!=0 
-							       && m_CSVcreated)
+							  && outputfolder->text().compare("")!=0 
+							  && m_CSVcreated)
 					m_nextStep = true;
 				
 				
@@ -1685,3 +1705,459 @@ void DTIAtlasFiberAnalyzerguiwindow::checkBoxProfile(std::string parameters)
 	}
 }
 
+/***************************************************
+ * 					TAB 4
+ ***************************************************/
+ 
+ void DTIAtlasFiberAnalyzerguiwindow::disableTab4()
+{
+	if(m_numberstep!=2)
+		PrincipalWidget->setTabEnabled(3,false);
+	if(m_numberstep==3)
+		nextstep->setEnabled(true);
+}
+
+ /************************************************************************************
+ * setFibers : Fill the m_Fibers string vector with selected fiber's names
+ ************************************************************************************/
+
+void DTIAtlasFiberAnalyzerguiwindow::setFibers()
+{
+	std::string fiber;
+	m_Fibers.clear();
+	for(int j=0; j<FiberSelectedList->count(); j++)
+	{
+		fiber=takeoffExtension(((FiberSelectedList->item(j))->text()).toStdString());
+		m_Fibers.push_back(fiber);
+	}
+}
+
+ /************************************************************************************
+ * setCases : Fill the m_Cases string vector with case's names from .csv
+ ************************************************************************************/
+
+void DTIAtlasFiberAnalyzerguiwindow::setCases()
+{
+	std::string casename;
+	m_Cases.clear();
+	for(unsigned int row=1; row<m_CSV->getRowSize(); row++)
+	{
+		casename=NameOfCase(m_CSV, row, m_NameCol, m_DataCol);
+		m_Cases.push_back(casename);
+	}
+}
+	
+ 
+ /************************************************************************************
+ * ReadDataFilesNameInCaseDirectory : Fill the datafiles vector with every file name
+ * 	in the Case directory.
+ ************************************************************************************/
+ 
+void DTIAtlasFiberAnalyzerguiwindow::ReadDataFilesNameInDirectory(vstring &datafiles, std::string Dir)
+{
+	itksys::Directory directory;
+	directory.Load(Dir.c_str());
+	unsigned long NumberOfFiles = directory.GetNumberOfFilesInDirectory(Dir.c_str());
+	std::string filename, extensionoffile, fiber, filefiber;
+	
+	//save the name of the Data Files in an vstring
+	for(int j=0; j<FiberSelectedList->count(); j++)
+	{
+		fiber=takeoffExtension(((FiberSelectedList->item(j))->text()).toStdString());
+		for( unsigned long i=0;i<NumberOfFiles;i++)
+		{
+			filename=directory.GetFile(i);
+			filefiber=takeoffExtension(filename);
+// 			if(filefiber.find_last_of("_")!=std::string::npos)
+			filefiber=filefiber.substr(filefiber.find_last_of("_")+1, filename.size()-filename.find_last_of("_")+1);
+			extensionoffile = ExtensionofFile(filename);
+			if(extensionoffile.compare("fvp")==0 && filefiber.compare(0, filefiber.size(), fiber)==0)
+				datafiles.push_back(filename);
+		}
+	}
+}
+ 
+ /************************************************************************************
+ * FillDataFilesList : Fill the DataFiles QWidgetList with relevent .fvp files
+ ************************************************************************************/
+ 
+void DTIAtlasFiberAnalyzerguiwindow::FillDataFilesList()
+{
+	vstring datafiles;
+	std::string casename, Dir, Item;
+	setFibers();
+	
+	for(unsigned int row=1; row<m_CSV->getRowSize(); row++)
+	{
+		casename=NameOfCase(m_CSV, row, m_NameCol, m_DataCol);
+		Dir=m_OutputFolder + "/Cases/" + casename + "/";
+		ReadDataFilesNameInDirectory(datafiles, Dir);
+	}
+	
+// 	for(unsigned int i=0; i<m_Fibers.size(); i++)
+// 	{
+// 		Dir=m_OutputFolder + "/Fibers/";
+// 		ReadDataFilesNameInCaseDirectory(datafiles,Dir);
+// 	}
+	
+	//Print the name in the ListWidget
+	for(unsigned int j=0;j<datafiles.size();j++)
+	{
+		//Avoid double definitions
+		if(DataFilesList->findItems(datafiles[j].c_str(), Qt::MatchExactly).size()==0)
+			DataFilesList->addItem(datafiles[j].c_str());
+	}
+	
+	
+	
+// 	if(m_CSV->getRowSize()>1)
+// 	{
+// 		//Read fiber selected at step 2
+// 		for(int j=0; j<FiberSelectedList->count(); j++)
+// 		{
+// 			Item="Mean_";
+// 			Item+=takeoffExtension(((FiberSelectedList->item(j))->text()).toStdString());
+// 			if(DataFilesList->findItems(Item.c_str(), Qt::MatchExactly).size()==0)
+// 				DataFilesList->addItem(Item.c_str());
+// 		}
+// 	}
+}
+
+/************************************************************************************
+ * OpenPlotWindow : Get and calculate every data samples and call PlotWindow class
+ ************************************************************************************/
+
+void DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
+{
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+	
+	QVector <QVector <double> > data, temp;
+	std::string filepath, casename, filename; 
+	
+	//Fill m_Parameters, m_Cases, and m_Fibers vector
+	setParam();
+	setCases();
+	setFibers();
+	
+	for(int i=0; i<6; i++)
+	{
+		m_casedata[i].clear();
+		m_atlasdata[i].clear();
+		m_statdata[i].clear();
+	}
+	
+	for(int j=0; j<DataFilesList->count(); j++)
+	{
+		filename=DataFilesList->item(j)->text().toStdString();
+		
+		casename=filename.substr(0,filename.find_last_of("_"));
+		filepath=m_OutputFolder+"/Cases/"+casename+"/"+filename;
+		data=getdatatable(filepath);
+		
+		//Filling m_casedata with data samples
+		m_casedata[getFiberIndex(filename)].push_back(data);
+		
+		//Filling m_casedata with data samples + std
+		temp=getStdData(data, 1);
+		m_casedata[getFiberIndex(filename)].push_back(temp);
+		
+		//Filling m_casedata with data samples - std
+		temp=getStdData(data, -1);
+		m_casedata[getFiberIndex(filename)].push_back(temp);
+	}
+	
+	for(unsigned int j=0; j<m_Fibers.size(); j++)
+	{
+		filename=m_Fibers[j];
+		
+		//filename is an atlas file
+		filepath=m_OutputFolder + "/Fibers/" + filename + ".fvp";
+		data=getdatatable(filepath);
+				
+		m_atlasdata[getFiberIndex(filename)].push_back(data);
+		
+		//Filling m_casedata with data samples + std
+		temp=getStdData(data, 1);
+		m_atlasdata[getFiberIndex(filename)].push_back(temp);
+		
+		//Filling m_casedata with data samples - std
+		temp=getStdData(data, -1);
+		m_atlasdata[getFiberIndex(filename)].push_back(temp);
+		
+		temp=getfiberpoints(filepath);
+		m_atlasdata[getFiberIndex(filename)].push_back(temp);
+		
+		//Filling m_statdata with mean samples
+		data=getCrossMeanData(m_casedata[getFiberIndex(filename)]);
+		m_statdata[getFiberIndex(filename)].push_back(data);
+		
+		//Filling m_statdata with mean samples + std
+		temp=getCrossStdData(m_casedata[getFiberIndex(filename)], data, 1);
+		m_statdata[getFiberIndex(filename)].push_back(temp);
+		
+		//Filling m_statdata with mean samples - std
+		temp=getCrossStdData(m_casedata[getFiberIndex(filename)], data, -1);
+		m_statdata[getFiberIndex(filename)].push_back(temp);
+	}
+	
+	
+// 	CompleteWithMeanData();
+// 	CompleteWithCrossStdData();
+	
+	
+	
+	//Open Plot Window
+	m_plotwindow=new PlotWindow(m_casedata, m_atlasdata, m_statdata, m_parameters, this);
+	m_plotwindow->setWindowTitle("Selected curves' plot");
+	m_plotwindow->show();
+	
+	QApplication::restoreOverrideCursor();
+}
+
+/************************************************************************************
+ * getdatatable : Get data from .fvp file and create finaldata vector as following:
+ *		first line correspond to x_data and then each line correspond to a parameter's values
+ ************************************************************************************/
+
+QVector <QVector <double> > DTIAtlasFiberAnalyzerguiwindow::getdatatable(std::string filepath)
+{
+	std::string buffer;
+	QVector < QVector <double> > data, finaldata;
+	QVector <double> x_data, y_data;
+	
+	//Open file at string filepath
+	std::ifstream file(filepath.c_str(), std::ios::in);
+	m_parameterslines=getparameterslines(file);
+	
+	//Start reading
+	getline(file,buffer);
+	
+	//Get data from file. In data, each column correspond to a parameter
+	data=getdata(file, getnb_of_samples(m_parameterslines));
+	
+	//Get x data : Arc_lengh values
+	x_data=GetColumn(0, data);
+	
+	//In Final data, each line correspond to a parameter
+	finaldata.push_back(x_data);
+	
+	//All parameters were not checked...
+	if(m_NumberOfParameters<8)
+	{
+		//...then column 2 contains relevant values for each parameter
+		y_data=GetColumn(2, data);
+		finaldata.push_back(y_data);
+		
+		//Skip irrelevant text
+		getparameterslines(file);
+		getline(file,buffer);
+		
+		for(int i=1; i<m_NumberOfParameters; i++)
+		{
+			
+			data=getdata(file, getnb_of_samples(m_parameterslines));
+			y_data=GetColumn(2, data);
+			finaldata.push_back(y_data);
+			
+			//Skip irrelevant text
+			getparameterslines(file);
+			getline(file,buffer);
+		}
+	}
+	
+	//All parameters were checked...
+	else
+	{
+		//...then each column corresond to a parameter
+		for(unsigned int i=0; i<8; i++)
+		{
+			y_data=GetColumn(i+2, data);
+			finaldata.push_back(y_data);
+		}
+	}
+	return finaldata;
+}
+
+QVector <QVector <double> > DTIAtlasFiberAnalyzerguiwindow::getfiberpoints(std::string filepath)
+{
+	std::string buffer;
+	QVector < QVector <double> > data, finaldata;
+	QVector <double> x_data, y_data;
+	
+	//Open file at string filepath
+	std::ifstream file(filepath.c_str(), std::ios::in);
+	m_parameterslines=getparameterslines(file);
+	
+	//Start reading
+	getline(file,buffer);
+	
+	//Get data from file. In data, each column correspond to a parameter
+	data=getdata(file, getnb_of_samples(m_parameterslines));
+	
+	//Get x data : Arc_lengh values
+	x_data=GetColumn(0, data);
+	
+	//In Final data, each line correspond to a parameter
+	finaldata.push_back(x_data);
+	
+	//All parameters were not checked...
+	if(m_NumberOfParameters<8)
+	{
+		//...then column 2 contains relevant values for each parameter
+		y_data=GetColumn(1, data);
+		finaldata.push_back(y_data);
+		
+		//Skip irrelevant text
+		getparameterslines(file);
+		getline(file,buffer);
+		
+		for(int i=1; i<m_NumberOfParameters; i++)
+		{
+			
+			data=getdata(file, getnb_of_samples(m_parameterslines));
+			y_data=GetColumn(1, data);
+			finaldata.push_back(y_data);
+			
+			//Skip irrelevant text
+			getparameterslines(file);
+			getline(file,buffer);
+		}
+	}
+	
+	//All parameters were checked...
+	else
+	{
+		//...then each parameter have same fiber points data
+		for(unsigned int i=0; i<8; i++)
+		{
+			y_data=GetColumn(1, data);
+			finaldata.push_back(y_data);
+		}
+	}
+	return finaldata;
+}
+
+
+/************************************************************************************
+* CompleteWithMeanData : Complete data vector with mean between each cases for each
+* 	selected fibers.
+ ************************************************************************************/
+
+// void DTIAtlasFiberAnalyzerguiwindow::CompleteWithMeanData()
+// {
+// 	QVector<QVector<double> > MeanData;
+// 	QVector<double> MeanLine;
+// 	double MeanValue=0;
+// 	int fiberindex;
+// 	for(unsigned int i=0; i<m_Fibers.size(); i++)
+// 	{
+// 		fiberindex=getFiberIndex(m_Fibers[i].c_str());
+// 		for(int j=0; j<m_casedata[fiberindex][0].size(); j++)
+// 		{
+// 			for(int k=0; k<m_casedata[fiberindex][0][0].size(); k++)
+// 			{
+// 				for(unsigned int l=0; l<m_Cases.size(); l++)
+// 					MeanValue+=(m_casedata[fiberindex])[l][j][k];
+// 				MeanValue/=m_casedata[fiberindex].size();
+// 				MeanLine.push_back(MeanValue);
+// 				MeanValue=0;
+// 			}
+// 			MeanData.push_back(MeanLine);
+// 			MeanLine.clear();
+// 		}
+// 		m_casedata[fiberindex].push_back(MeanData);
+// 		MeanData.clear();
+// 	}
+// }
+
+
+
+/************************************************************************************
+* CompleteWithStdData : Complete data vector with mean+std and mean-std for each
+* 	selected fibers.
+ ************************************************************************************/
+
+// void DTIAtlasFiberAnalyzerguiwindow::CompleteWithCrossStdData()
+// {
+// 	QVector<QVector<double> > StdDataPlus, StdDataMinus;
+// 	QVector<double> StdLinePlus, StdLineMinus;
+// 	double StdValue=0;
+// 	int fiberindex;
+// 	for(unsigned int i=0; i<m_Fibers.size(); i++)
+// 	{
+// 		fiberindex=getFiberIndex(m_Fibers[i].c_str());
+// 		for(int j=0; j<m_casedata[fiberindex][0].size(); j++)
+// 		{
+// 			for(int k=0; k<m_casedata[fiberindex][0][0].size(); k++)
+// 			{
+// 				for(unsigned int l=0; l<m_Cases.size(); l++)
+// 					StdValue+=pow((m_casedata[fiberindex][l][j][k]-m_casedata[fiberindex][m_Cases.size()][j][k]),2);
+// 				StdValue/=m_Cases.size();
+// 				StdValue=sqrt(StdValue);
+// 				StdLinePlus.push_back(m_casedata[fiberindex][m_Cases.size()][j][k]+StdValue);
+// 				StdLineMinus.push_back(m_casedata[fiberindex][m_Cases.size()][j][k]-StdValue);
+// 				StdValue=0;
+// 			}
+// 			StdDataPlus.push_back(StdLinePlus);
+// 			StdDataMinus.push_back(StdLineMinus);
+// 			StdLinePlus.clear();
+// 			StdLineMinus.clear();
+// 		}
+// 		m_casedata[fiberindex].push_back(StdDataPlus);
+// 		m_casedata[fiberindex].push_back(StdDataMinus);
+// 		StdDataPlus.clear();
+// 		StdDataMinus.clear();
+// 	}
+// }
+
+
+
+/************************************************************************************
+* getparameterslines : read the 6 informations lines of a .fvpfile and put it in a 
+* 	string vector (one line = one string). The reference allow to continue along the input
+* 	stream.
+ ************************************************************************************/
+
+vstring DTIAtlasFiberAnalyzerguiwindow::getparameterslines(std::ifstream& fvpfile)
+{
+	vstring parameterslines;
+	std::string buffer;
+
+//Put first line in buffer
+	getline(fvpfile, buffer);
+
+//Stop at last line of information or if it's the end of file
+	while(buffer.compare(0,35,"Number of samples along the bundle:")!=0 && !fvpfile.eof())
+	{
+		parameterslines.push_back(buffer);
+		getline(fvpfile,buffer);
+	}
+	parameterslines.push_back(buffer);
+	return parameterslines;
+}
+
+/************************************************************************************
+* getparameterslines : Same function that opens the file corresponding to the string fiber
+ ************************************************************************************/
+ 
+vstring DTIAtlasFiberAnalyzerguiwindow::getparameterslines(std::string fiber)
+{
+	vstring parameterslines;
+	std::string buffer, filepath;
+
+//Open first .fvp file corresponding to string fiber (the case doesn't matter)
+	filepath=m_OutputFolder+"/Cases/"+m_Cases[0]+"/"+m_Cases[0]+"_"+fiber+".fvp";
+	std::ifstream fvpfile(filepath.c_str(), std::ios::in);
+
+//Put first line in buffer
+	getline(fvpfile, buffer);
+
+//Stop at last line of information or if it's the end of file
+	while(buffer.compare(0,35,"Number of samples along the bundle:")!=0 && !fvpfile.eof())
+	{
+		parameterslines.push_back(buffer);
+		getline(fvpfile,buffer);
+	}
+	parameterslines.push_back(buffer);
+	return parameterslines;
+}

@@ -4,6 +4,8 @@
 /* Specific librairies */
 #include "DTIAtlasFiberAnalyzerguiwindow.h"
 
+typedef QVector<QVector<QVector<double> > > qv3double;
+
 /* Functions defined in, exported from Globalfunc.cxx */
 /* Call when there is nogui */
 bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug);
@@ -18,12 +20,16 @@ bool Applyfiberprocess(CSVClass* CSV, std::string pathFiberProcess, std::string 
 
 /* Check if the header existed */
 int HeaderExisted(CSVClass* CSV, std::string header);
+
 /* Check if there is a data */
 bool DataExistedInFiberColumn(CSVClass* CSV, int row, int column, std::string outputname);
+
 /* Check if the file existed */
 bool FileExisted(std::string Filename);
+
 /* Give the name of the case */
 std::string NameOfCase(CSVClass* CSV, int row, int NameCol, int DataCol);
+
 /* Give the choice of the user about skip the computation */
 std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget*parent=NULL);
 
@@ -79,5 +85,38 @@ int CalculNumberOfProfileParam(std::string parameters);
 
 /* look for a plane associated to fiber */
 int PlaneAssociatedToFiber(std::string fibername,int type, vstring fibersplane, vstring Selectedfibersplane);
+
+void convert(QVector <std::string> line, QVector < QVector <double> >& data);
+
+void LineInVector(std::string line, QVector < QVector <double> >& data);
+
+void LineInVector(std::string line, std::vector <std::string>& v_string);
+
+std::vector <std::string> getparameterslines(std::ifstream& fvpfile);
+std::vector <std::string> getparameterslines(std::string fiber);
+
+int getnb_of_samples(std::vector <std::string> parameterslines);
+
+QVector < QVector <double> > getdata(std::ifstream& fvpfile, int nb_of_samples);
+
+QVector <double> GetColumn(int column, QVector < QVector <double> > data);
+
+void ReadDataFilesNameInCaseDirectory(vstring &datafiles, std::string CaseDir);
+
+int getFiberIndex(std::string filename);
+
+double getMean(QVector< double > data);
+
+double getStd(QVector <double> data, double mean);
+
+QVector <QVector <double> > getStdData(QVector <QVector <double> > data, int factor);
+
+QVector<QVector<double> > getCrossMeanData(qv3double data);
+
+QVector<QVector<double> > getCrossStdData(qv3double data, QVector<QVector<double> > crossmean, int factor);
+
+
+
+
 
 #endif

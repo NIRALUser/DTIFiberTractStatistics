@@ -22,14 +22,20 @@
 //Specific librairies
 #include "ui_DTIAtlasFiberAnalyzerguiwindow.h"
 #include "CSVClass.h"
+#include "DTIPlotWindow.h"
 
+class PlotWindow;
 typedef std::vector<std::string> vstring;
+typedef QVector<QVector<QVector<double> > > qv3double;
 
 class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow 
 {
 	Q_OBJECT
 	public:
 		DTIAtlasFiberAnalyzerguiwindow(bool debug=false, QWidget * parent = 0, Qt::WFlags f = 0 );
+		vstring getCases(){return m_Cases;}
+		vstring getFibers(){return m_Fibers;}
+		vstring getparameterslines(std::string fiber);
 		
 		
 	private slots:
@@ -63,8 +69,10 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void EnterOutputFolder();
 		void Computefiberprocess();
 		void Computedti_tract_stat();
+		void OpenPlotWindow();
 		void saveparamaction();
 		void openparam();
+		void disableTab4();
 		
 	protected:
 		QWidget* stepwidget(int numberstep);
@@ -83,6 +91,16 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void AutoSaveCSV();
 		void AddDataFromTableToCSV();
 		void checkBoxProfile(std::string parameters);
+		void setCases();
+		void setFibers();
+		void FillDataFilesList();
+		void ReadDataFilesNameInDirectory(vstring &datafiles, std::string Dir);
+		QVector <QVector <double> > getdatatable(std::string filepath);
+		QVector <QVector <double> > getfiberpoints(std::string filepath);
+		void CompleteWithMeanData();
+		void CompleteWithCrossStdData();
+		vstring getparameterslines(std::ifstream& fvpfile);
+
 		
 	private:
 		/* debug */
@@ -97,6 +115,8 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		vstring m_Fibersplane;
 		vstring m_FiberSelectedname;
 		vstring m_FibersplaneSelected;
+		vstring m_Fibers;
+		vstring m_Cases;
 		std::string m_csvfilename;
 		std::string m_OutputFolder;
 		std::string m_AtlasFiberDir;
@@ -115,6 +135,12 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		int m_currentRow;
 		int m_currentColumn;
 		int m_transposeColRow; //just for the gathering spreadsheet
+		
+		PlotWindow* m_plotwindow;
+		qv3double m_casedata[6];
+		qv3double m_atlasdata[6];
+		qv3double m_statdata[6];
+		vstring m_parameterslines;
 };
 
 #endif
