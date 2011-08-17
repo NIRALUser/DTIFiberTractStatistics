@@ -33,22 +33,27 @@ ELSE(QT_USE_FILE)
 ENDIF(QT_USE_FILE)
 
 # Qwt include directory
-set(QWT_INCLUDE_DIR CACHE PATH "Qwt include directory")
+FIND_PATH(QWT_INCLUDE_DIR qwt.h
+  /usr/local/qwt/include
+  /usr/local/include
+  /usr/include/qwt
+  /usr/include
+)
 if(NOT QWT_INCLUDE_DIR)
-  message(FATAL_ERROR "QWT_INCLUDE_DIR should be set to a path like '/home/jchris/Projects/qwt-6.0.1-svn/include'")
+  message(FATAL_ERROR "QWT_INCLUDE_DIR not found. It should be set to a path containing qwt.h, like '/Projects/qwt-6.0.1-svn/include'")
 endif()
 include_directories(${QWT_INCLUDE_DIR})
 
 # Qwt libraries
-set(QWT_LIBRARY CACHE FILEPATH "Qwt library")
+SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
+FIND_LIBRARY(QWT_LIBRARY
+  NAMES ${QWT_NAMES}
+  PATHS /usr/local/qwt/lib /usr/local/lib /usr/lib
+)
 if(NOT QWT_LIBRARY)
-  message(FATAL_ERROR "QWT_LIBRARY should be set to a filepath like '/home/jchris/Projects/qwt-6.0.1-svn/lib/libqwt.so'")
+  message(FATAL_ERROR "QWT_LIBRARY not found. It should be set to a filepath like '/Projects/qwt-6.0.1-svn/lib/libqwt.a'")
 endif()
-set(QWT_MATHML_LIBRARY CACHE FILEPATH "Qwt library")
-if(NOT QWT_MATHML_LIBRARY)
-  message(FATAL_ERROR "QWT_MATHML_LIBRARY should be set to a filepath like '/home/jchris/Projects/qwt-6.0.1-svn/lib/libqwtmathml.so'")
-endif()
-set(qwt_libraries ${QWT_LIBRARY} ${QWT_MATHML_LIBRARY})
+set(QWT_LIBRARIES ${QWT_LIBRARY})
 
 INCLUDE_DIRECTORIES(
   ${QT_INCLUDE_DIR}
@@ -68,5 +73,5 @@ TARGET_LINK_LIBRARIES(DTIAtlasFiberAnalyzer
   ${ITK_LIBRARIES}
   vtkHybrid
   ${QT_LIBRARIES}
-  ${qwt_libraries}
+  ${QWT_LIBRARIES}
 )

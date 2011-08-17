@@ -10,7 +10,7 @@ ENDIF(${CMAKE_SOURCE_DIR} STREQUAL ${DTIFiberTractMain_SOURCE_DIR})
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
 set(CMAKE_HELPER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
-include(ExternalProject)
+include(${CMAKE_HELPER_DIR}/ExternalProject.cmake)
 include(${CMAKE_HELPER_DIR}/CMakeBuildMacros.cmake)
 include(${CMAKE_HELPER_DIR}/PreventInSourceBuilds.cmake)
 include(${CMAKE_HELPER_DIR}/CMakeCommonExternalDefinitions.cmake)
@@ -31,10 +31,8 @@ OPTION(COMPILE_DTITRACTSTAT "Compile dtitractstat." ON)
 IF(COMPILE_DTITRACTSTAT)
   set(proj dtitractstat)
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY "https://www.nitrc.org/svn/dti_tract_stat/trunk/Applications/dtitractstat"
-    SVN_USERNAME slicerbot
-    SVN_PASSWORD slicer
-    SOURCE_DIR ${proj}
+    DOWNLOAD_COMMAND ""
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Applications/${proj}
     BINARY_DIR ${proj}-build
     DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${GenerateCLP_DEPEND}
     CMAKE_GENERATOR ${gen}
@@ -51,12 +49,11 @@ ENDIF(COMPILE_DTITRACTSTAT)
 
 OPTION(COMPILE_DTIATLASFIBERANALYZER "Compile DTIAtlasFiberAnalyzer." ON)
 IF(COMPILE_DTIATLASFIBERANALYZER)
+  include(${CMAKE_HELPER_DIR}/FindQwt.cmake)
   set(proj DTIAtlasFiberAnalyzer)
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY "https://www.nitrc.org/svn/dti_tract_stat/trunk/Applications/DTIAtlasFiberAnalyzer"
-    SVN_USERNAME slicerbot
-    SVN_PASSWORD slicer
-    SOURCE_DIR ${proj}
+    DOWNLOAD_COMMAND ""
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Applications/${proj}
     BINARY_DIR ${proj}-build
     DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${GenerateCLP_DEPEND}
     CMAKE_GENERATOR ${gen}
@@ -65,6 +62,8 @@ IF(COMPILE_DTIATLASFIBERANALYZER)
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DQWT_INCLUDE_DIR:PATH=${QWT_INCLUDE_DIR}
+      -DQWT_LIBRARY:STRING=${QWT_LIBRARY}
     INSTALL_COMMAND ""
     INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
   )
