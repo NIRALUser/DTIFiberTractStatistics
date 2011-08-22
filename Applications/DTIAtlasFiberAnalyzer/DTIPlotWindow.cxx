@@ -4,16 +4,17 @@
  *Constructor
  ********************************************************************************/
 
-PlotWindow::PlotWindow(qv3double casedata[], qv3double atlasdata[], qv3double statdata[], std::string parameters, DTIAtlasFiberAnalyzerguiwindow* parent) : QWidget(0)
+PlotWindow::PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata, QVector<qv3double> statdata, std::string parameters, DTIAtlasFiberAnalyzerguiwindow* parent) : QWidget(0)
 {	
 	
 	m_parent=parent;
 	m_SpecialCurves=4;
 	
-	//Fill the m_Parameters, m_Cases and m_Fibers vectors
+	//Fill the m_Parameters, m_Cases, m_Fibers and m_Corr vectors
 	LineInVector(parameters, m_Parameters);
 	m_Cases=m_parent->getCases();
 	m_Fibers=m_parent->getFibers();
+	ComputeCorr(casedata, statdata);
 	
 	//Fill style vectors vector
 	CreateCaseStyle();
@@ -29,12 +30,11 @@ PlotWindow::PlotWindow(qv3double casedata[], qv3double atlasdata[], qv3double st
 	m_Plot->setAxisTitle(QwtPlot::xBottom,"Arc_Lengh");
 	m_Plot->setAxisTitle(QwtPlot::yRight,"Nb_of_fiber_points");
 	m_Plot->setAxisTitle(QwtPlot::yLeft,"fa");
-// 	QwtPlotZoomer zoom(m_Plot->canvas());
-// 	zoom.setTrackerMode(QwtPicker::AlwaysOn);
-// 	zoom.setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-// 	zoom.setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
 }
 
+/********************************************************************************
+ *InitWidget: Initialisation of all widget and alignment settings.
+ ********************************************************************************/
 
 void PlotWindow::InitWidget()
 {
@@ -51,6 +51,7 @@ void PlotWindow::InitWidget()
 	m_StatLayout=new QGridLayout;
 	m_FiberLayout=new QVBoxLayout;
 	m_PixelGridLayout=new QGridLayout;
+	m_CorrLayout=new QGridLayout;
 	m_CaseLcd=new QLCDNumber(this);
 	m_CaseSlider=new QSlider(Qt::Horizontal, this);
 	m_AtlasLcd=new QLCDNumber(this);
@@ -58,9 +59,16 @@ void PlotWindow::InitWidget()
 	m_StatLcd=new QLCDNumber(this);
 	m_StatSlider=new QSlider(Qt::Horizontal, this);
 	m_Plot=new QwtPlot;
-	m_CasePxSize=new QLabel("Case pixel size", this);
-	m_AtlasPxSize=new QLabel("Atlas pixel size", this);
-	m_StatPxSize=new QLabel("Stat pixel size", this);
+	m_CasePxSize=new QLabel("Case width", this);
+	m_AtlasPxSize=new QLabel("Atlas width", this);
+	m_StatPxSize=new QLabel("Stat width", this);
+	m_ComputeCorr=new QPushButton("Compute and color correlation", this);
+	m_ComputeCorr->setMinimumSize(150, 30);
+	m_DecomputeCorr=new QPushButton("Decolor correlation", this);
+	m_DecomputeCorr->setMinimumSize(150, 30);
+	m_DecomputeCorr->setVisible(false);
+	m_CorrText=new QTextEdit("", this);
+	InitCorrText();
 	QGroupBox* DetailledInfo=new QGroupBox("Detailled Information");
 	QGroupBox* CurveDisplay=new QGroupBox("Choose Curve to diplay");
 	QGroupBox* GroupParameters=new QGroupBox("Parameters");
@@ -69,6 +77,7 @@ void PlotWindow::InitWidget()
 	QGroupBox* GroupStat=new QGroupBox("Stat");
 	QGroupBox* GroupFibers=new QGroupBox("Fibers");
 	QGroupBox* GroupPxSize=new QGroupBox("Pixels size");
+	QGroupBox* GroupCorr=new QGroupBox("Correlation");
 	
 	setSliderLcd();
 	
@@ -82,7 +91,6 @@ void PlotWindow::InitWidget()
 	m_AtlasLayout->setAlignment(Qt::AlignTop);
 	m_StatLayout->setAlignment(Qt::AlignTop);
 	m_FiberLayout->setAlignment(Qt::AlignTop);
-	m_PixelGridLayout->setAlignment(Qt::AlignLeft);
 	m_PixelGridLayout->setVerticalSpacing(15);
 	GroupPxSize->setAlignment(Qt::AlignLeft);
 	
@@ -114,9 +122,16 @@ void PlotWindow::InitWidget()
 	m_PixelGridLayout->setHorizontalSpacing(1);
 	m_PixelGridLayout->setColumnStretch(3,1);
 	GroupPxSize->setLayout(m_PixelGridLayout);
+	m_CorrLayout->addWidget(m_ComputeCorr,0,0);
+	m_CorrLayout->addWidget(m_DecomputeCorr,0,0);
+	m_CorrLayout->addWidget(m_CorrText,1,0);
+	m_CorrLayout->setColumnStretch(1,1);
+	GroupCorr->setLayout(m_CorrLayout);
 	m_VLayout->addWidget(DetailledInfo);
 	m_VLayout->addWidget(CurveDisplay);
 	m_VLayout->addWidget(GroupPxSize);
+	m_VLayout->addWidget(GroupCorr);
+	m_VLayout->addWidget(m_CorrText);
 	m_MainLayout->addWidget(m_Plot);
 	m_MainLayout->addLayout(m_VLayout);
 	setLayout(m_MainLayout);
@@ -133,8 +148,14 @@ void PlotWindow::InitWidget()
 	connect(m_CaseSlider, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth(int)));
 	connect(m_AtlasSlider, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth(int)));
 	connect(m_StatSlider, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth(int)));
+	connect(m_ComputeCorr, SIGNAL(clicked()), this, SLOT(ColorCorr()));
+	connect(m_DecomputeCorr, SIGNAL(clicked()), this, SLOT(DecolorCorr()));
 	
 }
+
+/********************************************************************************
+ *setSliderLcd: Geometry settings of Lcd and Slider widgets
+ ********************************************************************************/
 
 void PlotWindow::setSliderLcd()
 {
@@ -153,15 +174,29 @@ void PlotWindow::setSliderLcd()
 	m_StatSlider->setMinimumSize(200,20);
 }
 
+void PlotWindow::InitCorrText()
+{
+	std::ostringstream corrtext;
+	m_CorrText->setVisible(false);
+	m_CorrText->setReadOnly(true);
+	for(unsigned int i=0; i<m_Cases.size(); i++)
+	{
+		corrtext<<m_Cases[i]<<" : "<<m_Corr[0][i][0]<<" ";
+		if(i%5==0&&i!=0)
+			corrtext<<std::endl;
+	}
+	m_CorrText->setText(corrtext.str().c_str());
+}
+
 /**********************************************************************************************
- *FillStyleVector : Fill the StyleVector with different color for each parameters.
+ *CreateStyle : Fill the style vector of each type of curves with different pens.
  **********************************************************************************************/
  
 void PlotWindow::CreateCaseStyle()
 {	
 	QColor color;
 	QPen pen;
-	int RandInt=0;
+	double coef;
 	QVector <qreal> dashes;
 	dashes<<10<<5;
 	
@@ -170,17 +205,19 @@ void PlotWindow::CreateCaseStyle()
 	{
 		if(i%3==0)
 		{
-			RandInt=rand()%236;
+			if(m_Cases.size()==1)
+				coef=0;
+			else
+				coef=i/((m_Cases.size()-1)*3);
 			//Generate random RGB color based on red
-			color.setRgb(255, RandInt, RandInt);
+			if(coef*242<=116)
+				color.setRgb(139+coef*242, 0, 0);
+			else
+				color.setRgb(255, coef*242-116, coef*242-116);
 			pen.setStyle(Qt::SolidLine);
 		}
 		else
-		{
-			//Generate random RGB color based on blue
-			color.setRgb(RandInt, RandInt, 255);
 			pen.setDashPattern(dashes);
-		}
 		pen.setColor(color);
 		m_CaseStyle.push_back(pen);
 	}
@@ -220,8 +257,13 @@ void PlotWindow::CreateStatStyle()
 	m_StatStyle.push_back(pen);
 }
 
+/********************************************************************************
+ *setPenWidth: Slot bind to sliders to set pen width at the slider's value
+ ********************************************************************************/
+
 void PlotWindow::setPenWidth(int width)
 {
+	QPen pen;
 	if(sender()==m_CaseSlider)
 	{
 		for(unsigned int i=0; i<m_CaseStyle.size(); i++)
@@ -232,7 +274,11 @@ void PlotWindow::setPenWidth(int width)
 			for(unsigned int j=0; j<m_CaseStyle.size(); j++)
 			{
 				for(unsigned int k=0; k<m_Parameters.size(); k++)
-					m_CaseCurves[i][j][k]->setPen(m_CaseStyle[j]);
+				{
+					pen=m_CaseCurves[i][j][k]->pen();
+					pen.setWidth(width);
+					m_CaseCurves[i][j][k]->setPen(pen);
+				}
 			}
 		}
 	}
@@ -264,19 +310,20 @@ void PlotWindow::setPenWidth(int width)
 			}
 		}
 	}
+	
 	m_Plot->replot();
 }
 
 /**********************************************************************************************
- *setCurveVisible bind checkboxes and curves with member setVisible of QwtPlotCurve class.
- *		All indices used in ParameterCurves, m_ParameterButtons and m_Parameters are corresponding
- *		each other.
+ *setCurveVisible : bind checkboxes and curves with member setVisible of QwtPlotCurve class.
+ *		An expression using modulo operand is required to match curve's indexes and box's indexes.
  **********************************************************************************************/
 
 void PlotWindow::setCurveVisible()
 {
 	int paramindex, fiberindex, boxindex;
 	std::vector <int> caseindex, atlasindex, statindex;
+	std::ostringstream corrtext;
 	vstring parameterslines;
 	paramindex=GetCheckedParameter();
 	fiberindex=GetCheckedFiber();
@@ -305,9 +352,17 @@ void PlotWindow::setCurveVisible()
 				if(j%3!=2)
 					boxindex++;
 				if(i==fiberindex && std::find(atlasindex.begin(), atlasindex.end(),boxindex )!=atlasindex.end() && k==paramindex)
+				{
+					if(j==3)
+						m_Plot->enableAxis(QwtPlot::yRight, true);
 					m_AtlasCurves[i][j][k]->setVisible(true);
+				}
 				else
+				{
+					if(j==3 && std::find(atlasindex.begin(), atlasindex.end(),2 )==atlasindex.end())
+						m_Plot->enableAxis(QwtPlot::yRight, false);
 					m_AtlasCurves[i][j][k]->setVisible(false);
+				}
 			}
 			boxindex=-1;
 			for(int j=0; j<m_StatCurves[0].size(); j++)
@@ -322,6 +377,7 @@ void PlotWindow::setCurveVisible()
 			if(k==paramindex)
 				m_Plot->setAxisTitle(QwtPlot::yLeft,m_Parameters[k].c_str());
 		}
+		//Change the information label for informations of selected fiber
 		if(i==fiberindex)
 		{
 			parameterslines=m_parent->getparameterslines(m_Fibers[i].c_str());
@@ -329,7 +385,75 @@ void PlotWindow::setCurveVisible()
 		}
 	}
 	m_Plot->replot();
+	if(fiberindex>=0 && paramindex>=0)
+	{
+		for(unsigned int i=0; i<m_Cases.size(); i++)
+		{
+			corrtext<<m_Cases[i]<<" : "<<m_Corr[fiberindex][i][paramindex]<<" ";
+			if(i%5==0&&i!=0)
+				corrtext<<std::endl;
+		}
+		m_CorrText->setText(corrtext.str().c_str());
+	}
+		
+}		
+
+void PlotWindow::ColorCorr()
+{
+	QPen pen;
+	QColor color;
+	for(unsigned int i=0; i<m_Fibers.size(); i++)
+	{
+		for(unsigned int j=0; j<m_Cases.size(); j++)
+		{
+			for(unsigned int k=0; k<m_Parameters.size(); k++)
+			{
+				color.setRgb(215*fabs(m_Corr[i][j][k]),215*fabs(m_Corr[i][j][k]),215*fabs(m_Corr[i][j][k]));
+				pen.setColor(color);
+				pen.setWidth(m_CaseLcd->intValue());
+				m_CaseCurves[i][j*3][k]->setPen(pen);
+			}
+		}
+	}
+	m_Plot->replot();
+	
+	m_ComputeCorr->setVisible(false);
+	m_DecomputeCorr->setVisible(true);
+	m_CorrText->setVisible(true);
 }
+
+void PlotWindow::DecolorCorr()
+{
+	for(unsigned int i=0; i<m_Fibers.size(); i++)
+	{
+		for(unsigned int j=0; j<m_Cases.size(); j++)
+		{
+			for(unsigned int k=0; k<m_Parameters.size(); k++)
+				m_CaseCurves[i][j*3][k]->setPen(m_CaseStyle[j*3]);
+		}
+	}
+	m_Plot->replot();
+	
+	m_ComputeCorr->setVisible(true);
+	m_DecomputeCorr->setVisible(false);
+	m_CorrText->setVisible(false);
+}
+
+void PlotWindow::ComputeCorr(QVector<qv3double> casedata, QVector<qv3double> statdata)
+{
+	QVector<QVector<double> > corr;
+	m_Corr.clear();
+	for(unsigned int i=0; i<m_Fibers.size(); i++)
+	{
+		for(unsigned int j=0; j<m_Cases.size(); j++)
+			corr.push_back(getCorr(casedata[i][j*3], statdata[i][0]));
+		m_Corr.push_back(corr);
+		corr.clear();
+	}
+}
+/********************************************************************************
+ *GetChecked...: Return indexes of checked buttons and boxes.
+ ********************************************************************************/
 
 int PlotWindow::GetCheckedParameter()
 {
@@ -391,7 +515,9 @@ int PlotWindow::GetCheckedFiber()
 
 /**********************************************************************************************
  *CreateBoxes : Dynamic definitions of CheckBoxes and Radio button following previous 
- *		checked parameters, cases and fibers.
+ *		checked parameters, cases and fibers. 
+ *		Specific rules apply for CheckBoxes : There are 2 boxes per case, 3 for atlas curves and 
+ *			2 for stat curves. 
  **********************************************************************************************/
 
 void PlotWindow::CreateParameterButtons()
@@ -423,12 +549,12 @@ void PlotWindow::CreateCaseBoxes()
 		box="<font color="+m_CaseStyle[styleindex].color().name().toStdString()+">"+box+"</font>";
 		m_CaseBoxes.push_back(new QCheckBox("", this));
 		m_CaseLabel.push_back(new QLabel(box.c_str(),this));
-		m_CaseLayout->addWidget(m_CaseBoxes[i],i,0);
-		m_CaseLayout->addWidget(m_CaseLabel[i],i,1);
+		m_CaseLayout->addWidget(m_CaseBoxes[i],i%14,(int)(i/14));
+		m_CaseLayout->addWidget(m_CaseLabel[i],i%14,(int)(1+i/14));
 		
 		connect(this->m_CaseBoxes[i], SIGNAL(stateChanged(int)), this, SLOT(setCurveVisible()));
 	}
-	m_CaseLayout->setColumnStretch(3,1);
+	m_CaseLayout->setColumnStretch((int)(2+m_Cases.size()/7),1);
 	m_CaseBoxes[0]->setChecked(true);
 }
 
@@ -551,7 +677,7 @@ void PlotWindow::CreateCurves()
 }
 
 /**********************************************************************************************
- *FillInfoLabel : Fill the information layout from a std::string vector containing 6 first lines of .fvp file
+ *FillInfoLabel : Fill the information layout from a string vector containing 6 first lines of .fvp file
  **********************************************************************************************/
 
 void PlotWindow::CreateInfoLabel()
@@ -601,12 +727,12 @@ void PlotWindow::ChangeInfoLabel(vstring v_string)
 }
 
 /**********************************************************************************************
- *PlotWindow : Display curve with data samples in 4D vector 'data'. For each fiber you have
- * 	an amount of cases, for each case you have an amount of lines and for each line you have
- * 	an amount of columns.
+ *Plotting : Display curve with data samples in 4D vector 'data'. For each fiber you have
+ * 	an 3 data tables per cases(Value Value+std Value-std) or 4 data tables in Atlas type 
+ * 	(Value Value+std Value-std Nb of Fiber points) or 3 data tables in Stat type(Mean Mean+std Mean-std)
  **********************************************************************************************/
 
-void PlotWindow::Plotting(qv3double data[], std::string type)
+void PlotWindow::Plotting(QVector<qv3double> data, std::string type)
 {
 	qv3double fiberdata;
 	std::vector <std::vector <std::vector <QwtPlotCurve*> > > curves;
@@ -635,7 +761,7 @@ void PlotWindow::Plotting(qv3double data[], std::string type)
 	
 	for(unsigned int i=0; i<m_Fibers.size(); i++)
 	{
-		fiberdata=data[getFiberIndex(m_Fibers[i].c_str())];
+		fiberdata=data[i];
 		for(unsigned int j=0; j<tablesize; j++)
 		{
 			casedata=fiberdata[j];

@@ -182,9 +182,12 @@ bool Applyfiberprocess(CSVClass* CSV,
 	for(unsigned int j=0;j<fibers.size();j++)
 	{
 		DataAdded = false;
-		name_of_fiber = takeoffExtension(fibers[j]);
+// 		name_of_fiber = takeoffExtension(fibers[j]);
+		name_of_fiber=fibers[j];
 		//Add the name of the fiber at the place 0 for the header
-		header = name_of_fiber + ".vtk";
+// 		header = name_of_fiber + ".vtk";
+		header = name_of_fiber;
+		name_of_fiber = takeoffExtension(fibers[j]);
 		col = HeaderExisted(CSV,header);
 		if(col==-1)
 		{
@@ -199,7 +202,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 			namecase = NameOfCase(CSV,row,NameCol,DataCol);
 			outputname = OutputFolder + "/" + outputcasefolder + "/" + namecase + "/" + 
 					namecase + "_" + name_of_fiber + ".vtk";
-			
+			std::cout<<outputname<<" "<<FileExisted(outputname)<<std::endl;
 			nameoffile = namecase + "_" + name_of_fiber + ".vtk";
 			if(FileExisted(outputname))
 			{
@@ -610,6 +613,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 				if(namecase.compare("")!=0)
 				{
 					int fibercol = HeaderExisted(CSV, fibers[j]);
+					std::cout<<fibercol<<" "<<fibers[j]<<std::endl;
 					if(fibercol!=-1)
 					{
 						std::string input_fiber = (*CSV->getData())[row][fibercol];
@@ -624,7 +628,15 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 							}
 						}
 						else
+						{
 							std::cout<<"Fail during dti_tract_stat!"<< std::endl;
+							return false;
+						}
+					}
+					else
+					{
+						std::cout<<"Header not found in csv file"<<std::endl;
+						return false;
 					}
 				}
 				else
@@ -707,8 +719,8 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 			arguments.append(QString("--parameter_list ") + qs);
 		}
 		std::cout<<"Command Line :  "<< (arguments.join(" ")).toStdString() <<std::endl;
-		
 		state = process->execute( pathdti_tract_stat.c_str(), arguments);
+		std::cout<<"End of Dti Tract Stat."<<std::endl;
 	}
 	else
 		std::cout<<"Warning: No input fiber!"<<std::endl;
@@ -1239,7 +1251,6 @@ void  LineInVector(std::string line, vstring& v_string)
 		}
 		else
 		{
-			//if(line.compare(0,2,"  ")!=0)
 			column.push_back(line);
 			it = line.end();
 		}
@@ -1297,31 +1308,8 @@ QVector <double> GetColumn(int column, QVector < QVector <double> > data)
 }
 
 /************************************************************************************
- * getFiberIndex : return the index associated to the name of a fiber. This index
- * 	correspond to index of fibermean vector.
+ * getMean : Calculate mean of a data line
  ************************************************************************************/
-
-int getFiberIndex(std::string filename)
-{
-	std::string fibername;
-// 	if(filename.find_last_of("_")!=std::string::npos)
-	fibername=filename.substr(filename.find_last_of("_")+1,filename.size()-filename.find_last_of("_")+1);
-	fibername=takeoffExtension(fibername);
-	if(fibername=="Genu")
-		return 0;
-	else if(fibername=="ILF-Left")
-		return 1;
-	else if(fibername=="ILF-Right")
-		return 2;
-	else if(fibername=="Splenium")
-		return 3;
-	else if(fibername=="Uncinate-Left")
-		return 4;
-	else if(fibername=="Uncinate-Right")
-		return 5;
-	else
-		return -1;
-}
 
 double getMean(QVector< double > data)
 {
@@ -1332,15 +1320,23 @@ double getMean(QVector< double > data)
 	return mean;
 }
 
-double getStd(QVector <double> data, double mean)
+/************************************************************************************
+ * getStd : Calculate std of a data line with mean value
+ ************************************************************************************/
+
+long double getStd(QVector <double> data, double mean)
 {
-	double std=0;
+	long double std=0;
 	for(int i=0; i<data.size(); i++)
-		std+=pow(data[i]-mean,2);
+		std+=powl(data[i]-mean,2);
 	std/=data.size();
-	std=sqrt(std);
+	std=sqrtl(std);
 	return std;
 }
+
+/************************************************************************************
+ * getStdData : Make the 2D-vector that contains data+factor*std values for a data table
+ ************************************************************************************/
 
 QVector <QVector <double> > getStdData(QVector <QVector <double> > data, int factor)
 {
@@ -1362,6 +1358,11 @@ QVector <QVector <double> > getStdData(QVector <QVector <double> > data, int fac
 	}
 	return stddata;
 }
+
+/************************************************************************************
+ * getCrossMeanData : Make the 2D-vector that contains cross mean data for each case 
+ * 	of a fiber
+ ************************************************************************************/
 
 QVector<QVector<double> > getCrossMeanData(qv3double data)
 {
@@ -1388,6 +1389,11 @@ QVector<QVector<double> > getCrossMeanData(qv3double data)
 	
 	return MeanData;
 }
+
+/************************************************************************************
+ * getCrossStdData : Make the 2D-vector that contains mean+factor*std between each case
+ * 	of a fiber.
+ ************************************************************************************/
 
 QVector<QVector<double> > getCrossStdData(qv3double data, QVector<QVector<double> > crossmean, int factor)
 {
@@ -1418,5 +1424,27 @@ QVector<QVector<double> > getCrossStdData(qv3double data, QVector<QVector<double
 	return StdData;
 }
 
-
+QVector<double> getCorr(QVector<QVector<double> > data1, QVector<QVector<double> > data2)
+{
+	long double std1, std2, mean1, mean2, corrvalue=0;
+	QVector<double> corrvector;
+	if(data1.size()!=data2.size() || data1[0].size()!=data2[0].size())
+		std::cout<<"data sizes need to be equals"<<std::endl;
+	else
+	{
+		for(int i=1; i<data1.size(); i++)
+		{
+			mean1=getMean(data1[i]);
+			mean2=getMean(data2[i]);
+			std1=getStd(data1[i], mean1);
+			std2=getStd(data2[i], mean2);
+			for(int j=0; j<data1[i].size(); j++)
+				corrvalue+=(data1[i][j]-mean1)*(data2[i][j]-mean2);
+			corrvalue/=(std1*std2)*data1[i].size();
+			corrvector.push_back(corrvalue);
+			corrvalue=0;
+		}
+	}
+	return corrvector;
+}
 

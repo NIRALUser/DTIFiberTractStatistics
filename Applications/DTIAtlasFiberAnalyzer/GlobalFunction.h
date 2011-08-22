@@ -103,11 +103,9 @@ QVector <double> GetColumn(int column, QVector < QVector <double> > data);
 
 void ReadDataFilesNameInCaseDirectory(vstring &datafiles, std::string CaseDir);
 
-int getFiberIndex(std::string filename);
-
 double getMean(QVector< double > data);
 
-double getStd(QVector <double> data, double mean);
+long double getStd(QVector <double> data, double mean);
 
 QVector <QVector <double> > getStdData(QVector <QVector <double> > data, int factor);
 
@@ -115,8 +113,7 @@ QVector<QVector<double> > getCrossMeanData(qv3double data);
 
 QVector<QVector<double> > getCrossStdData(qv3double data, QVector<QVector<double> > crossmean, int factor);
 
-
-
+QVector<double> getCorr(QVector<QVector<double> > data1, QVector<QVector<double> > data2);
 
 
 #endif

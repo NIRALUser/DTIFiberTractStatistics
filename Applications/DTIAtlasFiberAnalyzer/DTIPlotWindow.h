@@ -15,6 +15,7 @@
 #include <QPen>
 #include <QSlider>
 #include <QLCDNumber>
+#include <QTextEdit>
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
@@ -22,6 +23,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include "GlobalFunction.h"
 #include "DTIAtlasFiberAnalyzerguiwindow.h"
 
@@ -41,7 +43,7 @@ class PlotWindow : public QWidget
 	Q_OBJECT
 			
 	public:
-		PlotWindow(qv3double casedata[], qv3double atlasdata[], qv3double statdata[], std::string parameters="", DTIAtlasFiberAnalyzerguiwindow* parent=0);
+		PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata, QVector<qv3double> statdata, std::string parameters="", DTIAtlasFiberAnalyzerguiwindow* parent=0);
 		void InitWidget();
 		void CreateCaseStyle();
 		void CreateAtlasStyle();
@@ -57,15 +59,20 @@ class PlotWindow : public QWidget
 		std::vector<int> GetCheckedAtlas();
 		std::vector<int> GetCheckedStat();
 		int GetCheckedFiber();
-		void Plotting(qv3double data[], std::string type);
+		void Plotting(QVector<qv3double> data, std::string type);
 		void CreateInfoLabel();
 		void ChangeInfoLabel(vstring);
 		void setSliderLcd();
+		void ComputeCorr(QVector<qv3double> casedata, QVector<qv3double> statdata);
+		void InitCorrText();
 
 		
 	public slots:
 		void setCurveVisible();
 		void setPenWidth(int);
+		void ColorCorr();
+		void DecolorCorr();
+		
 		
 	private:
 		QHBoxLayout* m_MainLayout;
@@ -79,6 +86,7 @@ class PlotWindow : public QWidget
 		QGridLayout* m_StatLayout;
 		QVBoxLayout* m_FiberLayout;
 		QGridLayout* m_PixelGridLayout;
+		QGridLayout* m_CorrLayout;
 		std::vector <QLabel*> m_InfoLabel;
 		std::vector <QRadioButton*> m_ParameterButtons;
 		std::vector <QRadioButton*> m_FiberButtons;
@@ -100,6 +108,9 @@ class PlotWindow : public QWidget
 		QLCDNumber* m_StatLcd;
 		QSlider* m_StatSlider;
 		QLabel* m_StatPxSize;
+		QPushButton* m_ComputeCorr;
+		QPushButton* m_DecomputeCorr;
+		QTextEdit* m_CorrText;
 		QwtPlot* m_Plot;
 		std::vector <std::vector <std::vector <QwtPlotCurve*> > > m_CaseCurves;
 		std::vector <std::vector <std::vector <QwtPlotCurve*> > > m_AtlasCurves;
@@ -111,6 +122,8 @@ class PlotWindow : public QWidget
 		vstring m_Parameters;
 		vstring m_Cases;
 		vstring m_Fibers;
+		qv3double m_Corr;
+		
 };
 
 #endif

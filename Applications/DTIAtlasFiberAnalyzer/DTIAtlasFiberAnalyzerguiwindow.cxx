@@ -1125,8 +1125,6 @@ void DTIAtlasFiberAnalyzerguiwindow::FillFiberFrame()
 		FiberInAtlasList->addItem(m_Fibername[j].c_str());
 }
 
-
-
 /********************************************************************************* 
  * Add the fiber selected into the list
  ********************************************************************************/
@@ -1399,12 +1397,13 @@ void DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		
 		if(pathdti_tract_stat.compare("")!=0)
 		{
-			//Apply fiberprocess on CSV data
+			//Apply dti tract stat on CSV data
 			if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder,
 				 m_FiberSelectedname, m_FibersplaneSelected,m_parameters, m_DataCol,
 				 m_DeformationCol, m_NameCol, m_transposeColRow, false, this))
 			{
-				std::cout<<"dtitractstat has been cancel"<<std::endl;
+				std::cout<<"dtitractstat has been canceled"<<std::endl;
+				return;
 			}
 			else
 			{
@@ -1415,6 +1414,7 @@ void DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 			
 			//Add the data to the Table
 			FillCSVFileOnQTable();
+			
 		}
 	}
 	/* Restore the mouse */
@@ -1718,6 +1718,43 @@ void DTIAtlasFiberAnalyzerguiwindow::checkBoxProfile(std::string parameters)
 }
 
  /************************************************************************************
+ * setParamFromFile : Read file and find out used parameters to finally put them
+ * 	in m_parameters string and adjust m_NumberOfParameters.
+ ************************************************************************************/
+
+void DTIAtlasFiberAnalyzerguiwindow::setParamFromFile(std::string filepath)
+{
+	std::string parameters="", buffer;
+	std::ifstream file(filepath.c_str(), std::ios::in);
+	std::cout<<filepath<<std::endl;
+	m_NumberOfParameters=0;
+	while(!file.eof())
+	{
+		getline(file,buffer);
+		if(buffer.compare(0, 33, "Parameter chosen for regression: ")==0)
+		{
+			if(buffer.compare(33,3, "fro")==0)
+				parameters+=buffer.substr(33,3);
+			else if(buffer.compare(33,14, "All parameters")==0)
+			{
+				m_NumberOfParameters=8;
+				parameters="fa,md,fro,ad,l2,l3,rd,ga,";
+				break;
+			}
+			else
+				parameters+=buffer.substr(33,2)+",";
+			m_NumberOfParameters++;
+		}
+	}
+	std::cout<<"parameters temp: "<<parameters<<std::endl;
+	//erase last coma
+	parameters=parameters.substr(0,parameters.size()-1);
+	m_parameters=parameters;
+}
+		
+	
+
+ /************************************************************************************
  * setFibers : Fill the m_Fibers string vector with selected fiber's names
  ************************************************************************************/
 
@@ -1730,6 +1767,7 @@ void DTIAtlasFiberAnalyzerguiwindow::setFibers()
 		fiber=takeoffExtension(((FiberSelectedList->item(j))->text()).toStdString());
 		m_Fibers.push_back(fiber);
 	}
+	std::sort(m_Fibers.begin(), m_Fibers.end());
 }
 
  /************************************************************************************
@@ -1768,8 +1806,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ReadDataFilesNameInDirectory(vstring &dataf
 		{
 			filename=directory.GetFile(i);
 			filefiber=takeoffExtension(filename);
-// 			if(filefiber.find_last_of("_")!=std::string::npos)
-			filefiber=filefiber.substr(filefiber.find_last_of("_")+1, filename.size()-filename.find_last_of("_")+1);
+			filefiber=filefiber.substr(filefiber.find_first_of("_")+1, filename.size()-filename.find_first_of("_")+1);
 			extensionoffile = ExtensionofFile(filename);
 			if(extensionoffile.compare("fvp")==0 && filefiber.compare(0, filefiber.size(), fiber)==0)
 				datafiles.push_back(filename);
@@ -1794,12 +1831,6 @@ void DTIAtlasFiberAnalyzerguiwindow::FillDataFilesList()
 		ReadDataFilesNameInDirectory(datafiles, Dir);
 	}
 	
-// 	for(unsigned int i=0; i<m_Fibers.size(); i++)
-// 	{
-// 		Dir=m_OutputFolder + "/Fibers/";
-// 		ReadDataFilesNameInCaseDirectory(datafiles,Dir);
-// 	}
-	
 	//Print the name in the ListWidget
 	for(unsigned int j=0;j<datafiles.size();j++)
 	{
@@ -1807,106 +1838,128 @@ void DTIAtlasFiberAnalyzerguiwindow::FillDataFilesList()
 		if(DataFilesList->findItems(datafiles[j].c_str(), Qt::MatchExactly).size()==0)
 			DataFilesList->addItem(datafiles[j].c_str());
 	}
-	
-	
-	
-// 	if(m_CSV->getRowSize()>1)
-// 	{
-// 		//Read fiber selected at step 2
-// 		for(int j=0; j<FiberSelectedList->count(); j++)
-// 		{
-// 			Item="Mean_";
-// 			Item+=takeoffExtension(((FiberSelectedList->item(j))->text()).toStdString());
-// 			if(DataFilesList->findItems(Item.c_str(), Qt::MatchExactly).size()==0)
-// 				DataFilesList->addItem(Item.c_str());
-// 		}
-// 	}
 }
 
 /************************************************************************************
  * OpenPlotWindow : Get and calculate every data samples and call PlotWindow class
+ * 	Data should be stored in a 4D vector as following :
+ * 		1st dimension correspond to each fiber. It is a fixed size [6]
+ * 		2nd dimension correspond to each data table. For case data, each case have 
+ * 			3 data table in this order: Value, Value+Std, Value-Std. For Atlas data
+ * 			there are 4 tables : Value, Value+Std, Value-Std, Nb of fiber points.
+ * 			For Stat data there are 3 tables: Cross Mean, Cross Mean+Cross Std, 
+ * 			Cross Mean-Cross Std.
+ * 		3rd and 4th dimensions correspond to lines and columns of data samples.
  ************************************************************************************/
 
 void DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	
+	qv3double fiberdata;
 	QVector <QVector <double> > data, temp;
 	std::string filepath, casename, filename; 
 	
-	//Fill m_Parameters, m_Cases, and m_Fibers vector
-	setParam();
+	m_PlotError=false;
+	std::cout<<"test"<<std::endl;
+	
+	//Fill m_parameters, m_Cases, and m_Fibers vector
 	setCases();
 	setFibers();
-	
-	for(int i=0; i<6; i++)
+	filepath=m_OutputFolder + "/Fibers/" + m_Fibers[0] + ".fvp";
+	setParamFromFile(filepath);	
+	if(m_parameters.size()==0)
 	{
-		m_casedata[i].clear();
-		m_atlasdata[i].clear();
-		m_statdata[i].clear();
+		std::cout<<"parameters vector error"<<std::endl;
+		QApplication::restoreOverrideCursor();
+		return;
 	}
+	for(unsigned int i=0; i<m_Cases.size(); i++)
+		std::cout<<m_Cases[i]<<" ";
+	std::cout<<std::endl;
+	for(unsigned int i=0; i<m_Fibers.size(); i++)
+		std::cout<<m_Fibers[i]<<" ";
+	std::cout<<std::endl;
+	std::cout<<"param: "<<m_parameters<<std::endl;
 	
-	for(int j=0; j<DataFilesList->count(); j++)
+	m_casedata.clear();
+	m_atlasdata.clear();
+	m_statdata.clear();	
+	
+	for(unsigned int i=0; i<m_Fibers.size(); i++)
 	{
-		filename=DataFilesList->item(j)->text().toStdString();
+		std::cout<<i<<std::endl;
+		for(unsigned int j=0; j<m_Cases.size(); j++)
+		{
+			std::cout<<j<<std::endl;
+			filename=m_Cases[j]+"_"+m_Fibers[i]+".fvp";
+			filepath=m_OutputFolder+"/Cases/"+m_Cases[j]+"/"+filename;
+			data=getdatatable(filepath);
+			if(m_PlotError)
+			{
+				std::cout<<"Plot function canceled."<<std::endl;
+				QApplication::restoreOverrideCursor();
+				return;
+			}
+			
+			fiberdata.push_back(data);
+			
+			//Filling m_casedata with data samples + std
+			temp=getStdData(data, 1);
+			fiberdata.push_back(temp);
+			//Filling m_casedata with data samples - std
+			temp=getStdData(data, -1);
+			fiberdata.push_back(temp);
+		}
+		m_casedata.push_back(fiberdata);
+		fiberdata.clear();
 		
-		casename=filename.substr(0,filename.find_last_of("_"));
-		filepath=m_OutputFolder+"/Cases/"+casename+"/"+filename;
+		filename=m_Fibers[i];
+		filepath=m_OutputFolder+"/Fibers/" + filename + ".fvp";
 		data=getdatatable(filepath);
 		
-		//Filling m_casedata with data samples
-		m_casedata[getFiberIndex(filename)].push_back(data);
+		if(m_PlotError)
+		{
+			std::cout<<"Plot function canceled."<<std::endl;
+			QApplication::restoreOverrideCursor();
+			return;
+		}
 		
-		//Filling m_casedata with data samples + std
+		fiberdata.push_back(data);
+		
+		//Filling m_atlasdata with data samples + std
 		temp=getStdData(data, 1);
-		m_casedata[getFiberIndex(filename)].push_back(temp);
+		fiberdata.push_back(temp);
 		
-		//Filling m_casedata with data samples - std
+		//Filling m_atlasdata with data samples - std
 		temp=getStdData(data, -1);
-		m_casedata[getFiberIndex(filename)].push_back(temp);
-	}
-	
-	for(unsigned int j=0; j<m_Fibers.size(); j++)
-	{
-		filename=m_Fibers[j];
+		fiberdata.push_back(temp);
 		
-		//filename is an atlas file
-		filepath=m_OutputFolder + "/Fibers/" + filename + ".fvp";
-		data=getdatatable(filepath);
-				
-		m_atlasdata[getFiberIndex(filename)].push_back(data);
+		//Filling m_atlasdata with nb of fiber points
+		data=getfiberpoints(filepath);
+		fiberdata.push_back(data);
 		
-		//Filling m_casedata with data samples + std
-		temp=getStdData(data, 1);
-		m_atlasdata[getFiberIndex(filename)].push_back(temp);
-		
-		//Filling m_casedata with data samples - std
-		temp=getStdData(data, -1);
-		m_atlasdata[getFiberIndex(filename)].push_back(temp);
-		
-		temp=getfiberpoints(filepath);
-		m_atlasdata[getFiberIndex(filename)].push_back(temp);
+		m_atlasdata.push_back(fiberdata);
+		fiberdata.clear();
 		
 		//Filling m_statdata with mean samples
-		data=getCrossMeanData(m_casedata[getFiberIndex(filename)]);
-		m_statdata[getFiberIndex(filename)].push_back(data);
+		data=getCrossMeanData(m_casedata[i]);
+		fiberdata.push_back(data);
 		
 		//Filling m_statdata with mean samples + std
-		temp=getCrossStdData(m_casedata[getFiberIndex(filename)], data, 1);
-		m_statdata[getFiberIndex(filename)].push_back(temp);
+		temp=getCrossStdData(m_casedata[i], data, 1);
+		fiberdata.push_back(temp);
 		
 		//Filling m_statdata with mean samples - std
-		temp=getCrossStdData(m_casedata[getFiberIndex(filename)], data, -1);
-		m_statdata[getFiberIndex(filename)].push_back(temp);
+		temp=getCrossStdData(m_casedata[i], data, -1);
+		fiberdata.push_back(temp);
+		
+		m_statdata.push_back(fiberdata);
+		fiberdata.clear();
 	}
 	
-	
-// 	CompleteWithMeanData();
-// 	CompleteWithCrossStdData();
-	
-	
-	
 	//Open Plot Window
+	std::cout<<"Opening Plot Window..."<<std::endl;
 	m_plotwindow=new PlotWindow(m_casedata, m_atlasdata, m_statdata, m_parameters, this);
 	m_plotwindow->setWindowTitle("Selected curves' plot");
 	m_plotwindow->show();
@@ -1954,8 +2007,16 @@ QVector <QVector <double> > DTIAtlasFiberAnalyzerguiwindow::getdatatable(std::st
 		
 		for(int i=1; i<m_NumberOfParameters; i++)
 		{
-			
-			data=getdata(file, getnb_of_samples(m_parameterslines));
+			//Avoid segmentation fault
+			if(!file.eof())
+				data=getdata(file, getnb_of_samples(m_parameterslines));
+			else
+			{
+				QMessageBox::warning(this, "Warning", "Size of parameter vector and size of data table don't match.\rPlease compute data using DTI Tract Stat again.");
+				PreviousStep();
+				m_PlotError=true;
+				return data;
+			}
 			y_data=GetColumn(2, data);
 			finaldata.push_back(y_data);
 			
@@ -1977,6 +2038,11 @@ QVector <QVector <double> > DTIAtlasFiberAnalyzerguiwindow::getdatatable(std::st
 	}
 	return finaldata;
 }
+
+/************************************************************************************
+ * getfiberpoints : As for getdatatable, read a .fvp file of a fiber and complete
+ * 	a table with the column #_fiber_points each column corresponding to a parameter.
+ ************************************************************************************/
 
 QVector <QVector <double> > DTIAtlasFiberAnalyzerguiwindow::getfiberpoints(std::string filepath)
 {
@@ -2036,80 +2102,6 @@ QVector <QVector <double> > DTIAtlasFiberAnalyzerguiwindow::getfiberpoints(std::
 	}
 	return finaldata;
 }
-
-
-/************************************************************************************
-* CompleteWithMeanData : Complete data vector with mean between each cases for each
-* 	selected fibers.
- ************************************************************************************/
-
-// void DTIAtlasFiberAnalyzerguiwindow::CompleteWithMeanData()
-// {
-// 	QVector<QVector<double> > MeanData;
-// 	QVector<double> MeanLine;
-// 	double MeanValue=0;
-// 	int fiberindex;
-// 	for(unsigned int i=0; i<m_Fibers.size(); i++)
-// 	{
-// 		fiberindex=getFiberIndex(m_Fibers[i].c_str());
-// 		for(int j=0; j<m_casedata[fiberindex][0].size(); j++)
-// 		{
-// 			for(int k=0; k<m_casedata[fiberindex][0][0].size(); k++)
-// 			{
-// 				for(unsigned int l=0; l<m_Cases.size(); l++)
-// 					MeanValue+=(m_casedata[fiberindex])[l][j][k];
-// 				MeanValue/=m_casedata[fiberindex].size();
-// 				MeanLine.push_back(MeanValue);
-// 				MeanValue=0;
-// 			}
-// 			MeanData.push_back(MeanLine);
-// 			MeanLine.clear();
-// 		}
-// 		m_casedata[fiberindex].push_back(MeanData);
-// 		MeanData.clear();
-// 	}
-// }
-
-
-
-/************************************************************************************
-* CompleteWithStdData : Complete data vector with mean+std and mean-std for each
-* 	selected fibers.
- ************************************************************************************/
-
-// void DTIAtlasFiberAnalyzerguiwindow::CompleteWithCrossStdData()
-// {
-// 	QVector<QVector<double> > StdDataPlus, StdDataMinus;
-// 	QVector<double> StdLinePlus, StdLineMinus;
-// 	double StdValue=0;
-// 	int fiberindex;
-// 	for(unsigned int i=0; i<m_Fibers.size(); i++)
-// 	{
-// 		fiberindex=getFiberIndex(m_Fibers[i].c_str());
-// 		for(int j=0; j<m_casedata[fiberindex][0].size(); j++)
-// 		{
-// 			for(int k=0; k<m_casedata[fiberindex][0][0].size(); k++)
-// 			{
-// 				for(unsigned int l=0; l<m_Cases.size(); l++)
-// 					StdValue+=pow((m_casedata[fiberindex][l][j][k]-m_casedata[fiberindex][m_Cases.size()][j][k]),2);
-// 				StdValue/=m_Cases.size();
-// 				StdValue=sqrt(StdValue);
-// 				StdLinePlus.push_back(m_casedata[fiberindex][m_Cases.size()][j][k]+StdValue);
-// 				StdLineMinus.push_back(m_casedata[fiberindex][m_Cases.size()][j][k]-StdValue);
-// 				StdValue=0;
-// 			}
-// 			StdDataPlus.push_back(StdLinePlus);
-// 			StdDataMinus.push_back(StdLineMinus);
-// 			StdLinePlus.clear();
-// 			StdLineMinus.clear();
-// 		}
-// 		m_casedata[fiberindex].push_back(StdDataPlus);
-// 		m_casedata[fiberindex].push_back(StdDataMinus);
-// 		StdDataPlus.clear();
-// 		StdDataMinus.clear();
-// 	}
-// }
-
 
 
 /************************************************************************************

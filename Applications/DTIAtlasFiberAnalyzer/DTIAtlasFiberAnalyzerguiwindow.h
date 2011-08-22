@@ -91,6 +91,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void AutoSaveCSV();
 		void AddDataFromTableToCSV();
 		void checkBoxProfile(std::string parameters);
+		void setParamFromFile(std::string filepath);
 		void setCases();
 		void setFibers();
 		void FillDataFilesList();
@@ -137,10 +138,12 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		int m_transposeColRow; //just for the gathering spreadsheet
 		
 		PlotWindow* m_plotwindow;
-		qv3double m_casedata[6];
-		qv3double m_atlasdata[6];
-		qv3double m_statdata[6];
+		QVector<qv3double> m_casedata;
+		QVector<qv3double> m_atlasdata;
+		QVector<qv3double> m_statdata;
+		
 		vstring m_parameterslines;
+		bool m_PlotError;
 };
 
 #endif
