@@ -44,6 +44,7 @@ class fiberprocessing{
   itk::Point<double, 3> closest_point;
   //all --> contain all the dti info in the order of FA, MD FRO, l2, l3, AD, RD, GA
   std::vector< std::vector<double> > length, all;
+  std::vector< itk::Vector<double, 3> > parametrized_position;
   double closest_d;
   int l_counter;
 

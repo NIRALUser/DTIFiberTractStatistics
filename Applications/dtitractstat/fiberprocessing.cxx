@@ -1,4 +1,3 @@
-
 #include <string>
 #include <cmath>
 #include <memory>
@@ -52,6 +51,7 @@ void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeaut
     }
     cout<<"return from read_plane_file function :"<<plane_defined<<plane_origin<<plane_normal<<endl;
   }
+  std::cout<<"going into arc_length_parametrizatio"<<worldspace<<spacing<<offset<<param<<param_str<<std::endl;
   arc_length_parametrization(group,worldspace, spacing, offset, param, param_str);
 }
 
@@ -78,7 +78,7 @@ void fiberprocessing::find_distance_from_plane(itk::Point<double, 3> pos, int in
 
 std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_fiber(int param)
 {
-  if (param>=1 && param <=8)
+  if (param>=1 && param <8)
   {
     cout<<"Total Number of sample points in the fiber bundle: "<<length.size()<<endl;
     return(length);
@@ -178,6 +178,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       //adding sample points AT the intersection point to avoid gap at origin
       length.push_back(std::vector<double>());
       all.push_back(std::vector<double>());
+      parametrized_position.push_back(itk::Vector<double, 3>());
       length[l_counter].push_back(0.0);
       all[l_counter].push_back(0.0);
       //add x,y,z information to vectors all/length by YUNDI SHI
@@ -199,7 +200,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	//length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
 	//else
       }
-      else if (param>=2 && param <=8)
+      else if (param>=2 && param <8)
       {
 	//DEBUG
 	////std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
@@ -259,6 +260,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	
 	length.push_back(std::vector<double>());
 	all.push_back(std::vector<double>());
+	parametrized_position.push_back(itk::Vector<double, 3>());
 	length[l_counter].push_back(-1 * cumulative_distance_1);
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	if (param ==1)
@@ -267,7 +269,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
-	else if (param>=2 && param <=8)
+	else if (param>=2 && param <8)
 	{
 	  
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
@@ -324,6 +326,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	cumulative_distance_2 += current_length;
 	length.push_back(std::vector<double>());
 	all.push_back(std::vector<double>());
+	parametrized_position.push_back(itk::Vector<double, 3>());
 	length[l_counter].push_back(cumulative_distance_2);
 	all[l_counter].push_back(cumulative_distance_2);
 	if (param ==1)
@@ -332,7 +335,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
-	else  if (param>=2 && param <=8)
+	else  if (param>=2 && param <8)
 	{
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
@@ -350,8 +353,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	//add x,y,z information to vectors all/length by YUNDI SHI
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
-	    length[l_counter].push_back(p1[pt_index]);
-	    all[l_counter].push_back(p1[pt_index]);
+	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
 	
 	l_counter++;
@@ -403,6 +405,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       //adding sample points AT the intersection point to avoid gap at origin
       length.push_back(std::vector<double>());
       all.push_back(std::vector<double>());
+      parametrized_position.push_back(itk::Vector<double, 3>());
       length[l_counter].push_back(0.0);
       all[l_counter].push_back(0.0);
 
@@ -421,7 +424,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	length[l_counter].push_back((*pit).GetField(param_str.c_str()));		
 	//length[l_counter].push_back((*pit).GetField(param_str.c_str()));
       }
-      else if (param>=2 && param <=8)
+      else if (param>=2 && param <8)
       {
 	length[l_counter].push_back((*pit).GetField(param_str.c_str()));
       }
@@ -477,6 +480,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	length.push_back(std::vector<double>());
 	length[l_counter].push_back(-1 * cumulative_distance_1);
 	all.push_back(std::vector<double>());
+	parametrized_position.push_back(itk::Vector<double, 3>());
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	if (param ==1)
 	{
@@ -484,7 +488,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
-	else if (param>=2 && param <=8)
+	else if (param>=2 && param <8)
 	{
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
@@ -502,8 +506,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	//add x,y,z information to vectors all/length by YUNDI SHI
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
-	    length[l_counter].push_back(p1[pt_index]);
-	    all[l_counter].push_back(p1[pt_index]);
+	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
 	
 	pit++;
@@ -544,13 +547,14 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	length.push_back(std::vector<double>());
 	length[l_counter].push_back(cumulative_distance_2);
 	all.push_back(std::vector<double>());
+	parametrized_position.push_back(itk::Vector<double, 3>());
 	all[l_counter].push_back(cumulative_distance_2);
 	if (param ==1)
 	  {
 	    length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	    // length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	  }
-	else if (param>=2 && param <=8)
+	else if (param>=2 && param <8)
 	{
 	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
 	}
@@ -568,8 +572,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	//add x,y,z information to vectors all/length by YUNDI SHI
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
-	    length[l_counter].push_back(p1[pt_index]);
-	    all[l_counter].push_back(p1[pt_index]);
+	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
 	
 	pit--;

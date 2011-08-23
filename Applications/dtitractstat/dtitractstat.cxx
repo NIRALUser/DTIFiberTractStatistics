@@ -206,26 +206,7 @@ int main(int argc, char* argv[])
   REG = new regression;
   int all_flag = -1;
   std::cout<<"there are "<<param<<" parameters"<<std::endl;
-  if (param>=1 && param <8) 	//that is, default is not selected where ALL diffusion parameters are evaluated
-  {
-    for (int a=0; a<=param-1; a++)	
-    {
-      FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, parameter_list[a]);
-      std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(param);
-      if (a == 0){
-	origin = FP->get_plane_origin();
-	normal = FP->get_plane_normal();
-	std::cout<<"origin is "<<origin<<" and normal is "<<normal<<std::endl;
-      }
-      
-      REG->regression_main(output_stats_file,param,parameter_list[a], length_main, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, stat, noisemodelOn, int_noise_model, qpercOn, q_perc, all_flag, windowOn, window, window_file,worldspace);
-      
-      std::cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n"<<std::endl;
-    }
-    
-  }
-  else{				//get all diffusion parameters
-   
+  if (param == 8){
     all_flag=1;
     FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, "All parameters");
     std::vector< std::vector<double> > all_main = FP->get_arc_length_parametrized_fiber(param);
@@ -246,36 +227,53 @@ int main(int argc, char* argv[])
 	
 	REG->regression_main(output_stats_file,param,"All parameters", length_temp, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, 2, noisemodelOn, 2, qpercOn, q_perc, all_flag, windowOn, window, window_file, worldspace);
 	all_flag++;
-      }
-    std::vector< std::vector<double> > all_results_main = REG->get_all_results();
-    int reg_counter = all_results_main.size();
-    //Write parametrized fiber by Yundi Shi
+	std::vector< std::vector<double> > all_results_main = REG->get_all_results();
+	int reg_counter = all_results_main.size();
+	//Write parametrized fiber by Yundi Shi
 
-    //Writing results to the output file	
-    ofstream fp_output_stats_file;
-    fp_output_stats_file.open(output_stats_file.c_str(),ios::app);
-    fp_output_stats_file<<"Number of samples along the bundle: "<<reg_counter<<"\n";
-    fp_output_stats_file<<"Arc_Length , #_fiber_points ,";
-    
-    for (int a=0; a<=param-1; a++)
-      {
-	fp_output_stats_file<<parameter_list[a]<<" , ";
-      }
-    fp_output_stats_file<<"\n";
-    
-    //DEBUG
-    //
-    for (int i=0;i<reg_counter;i++)
-      {
-	fp_output_stats_file<<all_results_main[i][0];
-	for (int j=1;j<11;j++)
+	//Writing results to the output file	
+	ofstream fp_output_stats_file;
+	fp_output_stats_file.open(output_stats_file.c_str(),ios::app);
+	fp_output_stats_file<<"Number of samples along the bundle: "<<reg_counter<<"\n";
+	fp_output_stats_file<<"Arc_Length , #_fiber_points ,";
+	
+	for (int a=0; a<=param-1; a++)
 	  {
-	    fp_output_stats_file<<" , "<<all_results_main[i][j];
+	    fp_output_stats_file<<parameter_list[a]<<" , ";
 	  }
-	fp_output_stats_file<<endl;
+	fp_output_stats_file<<"\n";
+	
+	//DEBUG
+	//
+	for (int i=0;i<reg_counter;i++)
+	  {
+	    fp_output_stats_file<<all_results_main[i][0];
+	    for (int j=1;j<11;j++)
+	      {
+		fp_output_stats_file<<" , "<<all_results_main[i][j];
+	      }
+	    fp_output_stats_file<<endl;
+	  }
+	fp_output_stats_file.close();
+	
       }
-    fp_output_stats_file.close();
-    
-    return 0;
+    std::cout<<"\n***********  Finished General Evaluating of All parameters "<<std::endl;
   }
+  
+  for (int a=0; a<=param-1; a++){
+    FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, parameter_list[a]);
+    std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(param);
+    if (a == 0){
+      origin = FP->get_plane_origin();
+      normal = FP->get_plane_normal();
+      std::cout<<"origin is "<<origin<<" and normal is "<<normal<<std::endl;
+    }
+      
+    REG->regression_main(output_stats_file,param,parameter_list[a], length_main, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, stat, noisemodelOn, int_noise_model, qpercOn, q_perc, -1, windowOn, window, window_file,worldspace);
+      
+    std::cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n"<<std::endl;
+  }
+  return 0;
 }
+ 
+
