@@ -1726,7 +1726,6 @@ void DTIAtlasFiberAnalyzerguiwindow::setParamFromFile(std::string filepath)
 {
 	std::string parameters="", buffer;
 	std::ifstream file(filepath.c_str(), std::ios::in);
-	std::cout<<filepath<<std::endl;
 	m_NumberOfParameters=0;
 	while(!file.eof())
 	{
@@ -1746,7 +1745,6 @@ void DTIAtlasFiberAnalyzerguiwindow::setParamFromFile(std::string filepath)
 			m_NumberOfParameters++;
 		}
 	}
-	std::cout<<"parameters temp: "<<parameters<<std::endl;
 	//erase last coma
 	parameters=parameters.substr(0,parameters.size()-1);
 	m_parameters=parameters;
@@ -1788,11 +1786,12 @@ void DTIAtlasFiberAnalyzerguiwindow::setCases()
  
  /************************************************************************************
  * ReadDataFilesNameInCaseDirectory : Fill the datafiles vector with every file name
- * 	in the Case directory.
+ * 	in the Case directory for relevant fibers.
  ************************************************************************************/
  
 void DTIAtlasFiberAnalyzerguiwindow::ReadDataFilesNameInDirectory(vstring &datafiles, std::string Dir)
 {
+	std::string nameofcase=Dir.substr(Dir.find_last_of("/")+1, Dir.size()-Dir.find_last_of("/")+1);
 	itksys::Directory directory;
 	directory.Load(Dir.c_str());
 	unsigned long NumberOfFiles = directory.GetNumberOfFilesInDirectory(Dir.c_str());
@@ -1806,10 +1805,13 @@ void DTIAtlasFiberAnalyzerguiwindow::ReadDataFilesNameInDirectory(vstring &dataf
 		{
 			filename=directory.GetFile(i);
 			filefiber=takeoffExtension(filename);
-			filefiber=filefiber.substr(filefiber.find_first_of("_")+1, filename.size()-filename.find_first_of("_")+1);
-			extensionoffile = ExtensionofFile(filename);
-			if(extensionoffile.compare("fvp")==0 && filefiber.compare(0, filefiber.size(), fiber)==0)
-				datafiles.push_back(filename);
+			if(filefiber.size()!=0)
+			{
+				filefiber=filefiber.substr(nameofcase.size()+1, filefiber.size()-nameofcase.size()+1);
+				extensionoffile = ExtensionofFile(filename);
+				if(extensionoffile.compare("fvp")==0 && filefiber.compare(0, filefiber.size(), fiber)==0)
+					datafiles.push_back(filename);
+			}
 		}
 	}
 }
@@ -1827,7 +1829,7 @@ void DTIAtlasFiberAnalyzerguiwindow::FillDataFilesList()
 	for(unsigned int row=1; row<m_CSV->getRowSize(); row++)
 	{
 		casename=NameOfCase(m_CSV, row, m_NameCol, m_DataCol);
-		Dir=m_OutputFolder + "/Cases/" + casename + "/";
+		Dir=m_OutputFolder + "/Cases/" + casename;
 		ReadDataFilesNameInDirectory(datafiles, Dir);
 	}
 	
@@ -1861,7 +1863,10 @@ void DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 	std::string filepath, casename, filename; 
 	
 	m_PlotError=false;
-	std::cout<<"test"<<std::endl;
+	
+	m_parameters.clear();
+	m_Cases.clear();
+	m_Fibers.clear();
 	
 	//Fill m_parameters, m_Cases, and m_Fibers vector
 	setCases();
@@ -1873,25 +1878,15 @@ void DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 		std::cout<<"parameters vector error"<<std::endl;
 		QApplication::restoreOverrideCursor();
 		return;
-	}
-	for(unsigned int i=0; i<m_Cases.size(); i++)
-		std::cout<<m_Cases[i]<<" ";
-	std::cout<<std::endl;
-	for(unsigned int i=0; i<m_Fibers.size(); i++)
-		std::cout<<m_Fibers[i]<<" ";
-	std::cout<<std::endl;
-	std::cout<<"param: "<<m_parameters<<std::endl;
-	
+	}	
 	m_casedata.clear();
 	m_atlasdata.clear();
 	m_statdata.clear();	
 	
 	for(unsigned int i=0; i<m_Fibers.size(); i++)
 	{
-		std::cout<<i<<std::endl;
 		for(unsigned int j=0; j<m_Cases.size(); j++)
 		{
-			std::cout<<j<<std::endl;
 			filename=m_Cases[j]+"_"+m_Fibers[i]+".fvp";
 			filepath=m_OutputFolder+"/Cases/"+m_Cases[j]+"/"+filename;
 			data=getdatatable(filepath);

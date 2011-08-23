@@ -202,7 +202,6 @@ bool Applyfiberprocess(CSVClass* CSV,
 			namecase = NameOfCase(CSV,row,NameCol,DataCol);
 			outputname = OutputFolder + "/" + outputcasefolder + "/" + namecase + "/" + 
 					namecase + "_" + name_of_fiber + ".vtk";
-			std::cout<<outputname<<" "<<FileExisted(outputname)<<std::endl;
 			nameoffile = namecase + "_" + name_of_fiber + ".vtk";
 			if(FileExisted(outputname))
 			{
@@ -613,7 +612,6 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 				if(namecase.compare("")!=0)
 				{
 					int fibercol = HeaderExisted(CSV, fibers[j]);
-					std::cout<<fibercol<<" "<<fibers[j]<<std::endl;
 					if(fibercol!=-1)
 					{
 						std::string input_fiber = (*CSV->getData())[row][fibercol];
