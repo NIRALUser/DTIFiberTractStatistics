@@ -30,7 +30,7 @@ fiberprocessing::fiberprocessing()
 fiberprocessing::~fiberprocessing()
 {}
 
-void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeautoOn, std::string plane_str, bool worldspace, int param, std::string param_str)
+void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeautoOn, std::string plane_str, bool worldspace)
 {
   GroupType::Pointer group = readFiberFile(input_file);
   itk::Vector<double,3> spacing = group->GetSpacing();
@@ -51,7 +51,7 @@ void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeaut
     }
     cout<<"return from read_plane_file function :"<<plane_defined<<plane_origin<<plane_normal<<endl;
   }
-  arc_length_parametrization(group,worldspace, spacing, offset, param, param_str);
+  arc_length_parametrization(group,worldspace, spacing, offset);
 }
 
 void fiberprocessing::find_distance_from_plane(itk::Point<double, 3> pos, int index)
@@ -97,7 +97,7 @@ std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_
   }
 }
 
-void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool worldspace, itk::Vector<double,3> spacing, itk::Vector<double,3> offset, int param, std::string param_str)
+void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool worldspace, itk::Vector<double,3> spacing, itk::Vector<double,3> offset)
 {
   ChildrenListType* children = group->GetChildren(0);
   ChildrenListType::iterator it;
@@ -181,12 +181,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       }
 
       //adding sample points AT the intersection point to avoid gap at origin
-      length.push_back(std::vector<double>());
       all.push_back(std::vector<double>());
       parametrized_position.push_back(itk::Vector<double, 3>());
-      length[l_counter].push_back(0.0);
       all[l_counter].push_back(0.0);
-      //add x,y,z information to vectors all/length by YUNDI SHI
+      //add x,y,z information to vectors all by YUNDI SHI
       itk::Point<double, 3> p1;
       p1=(*pit).GetPosition();
       if (worldspace)
@@ -195,40 +193,22 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  p1[1] = (p1[1] * spacing[1]) + offset[1];
 	  p1[2] = (p1[2] * spacing[2]) + offset[2];
 	}
+      //add x,y,z information to vectors all by YUNDI SHI
       for (int pt_index = 0;pt_index<3;++pt_index)
 	{
 	  parametrized_position[l_counter][pt_index] = p1[pt_index];
 	}
 	
-      if (param ==1)
-      {
-	//DEBUG
-	//std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
-	length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	//if (param_str.c_str() == "FA"):
-	//length[l_counter].push_back((*pit).GetField(DTIPointType::FA));
-	//else
-      }
-      else if (param>=2 && param <8)
-      {
-	//DEBUG
-	
-	length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-      }
-      else 
-	{
-	  //DEBUG
-	  //std::cout<<"getting length for "<<param_str<<std::endl;
-	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
-	  all[l_counter].push_back((*pit).GetField("MD"));
-	  all[l_counter].push_back((*pit).GetField("FRO"));
-	  all[l_counter].push_back((*pit).GetField("l2"));
-	  all[l_counter].push_back((*pit).GetField("l3"));
-	  all[l_counter].push_back(all[l_counter][4]);				//AD
-	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
-	  all[l_counter].push_back((*pit).GetField("GA"));
-      }
-      //add x,y,z information to vectors all/length by YUNDI SHI
+      
+      all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
+      all[l_counter].push_back((*pit).GetField("MD"));
+      all[l_counter].push_back((*pit).GetField("FRO"));
+      all[l_counter].push_back((*pit).GetField("l2"));
+      all[l_counter].push_back((*pit).GetField("l3"));
+      all[l_counter].push_back(all[l_counter][4]);				//AD
+      all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+      all[l_counter].push_back((*pit).GetField("GA"));
+     
       
       l_counter++;
 
@@ -262,34 +242,19 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	
 	//multiplying by -1 to make arc length on 1 side of plane as negative
 	
-	length.push_back(std::vector<double>());
 	all.push_back(std::vector<double>());
 	parametrized_position.push_back(itk::Vector<double, 3>());
-	length[l_counter].push_back(-1 * cumulative_distance_1);
 	all[l_counter].push_back(-1 * cumulative_distance_1);
-	if (param ==1)
-	{
-	  ////std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
-	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	}
-	else if (param>=2 && param <8)
-	{
-	  
-	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	}
-	else
-	{
-	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
-	  all[l_counter].push_back((*pit).GetField("MD"));
-	  all[l_counter].push_back((*pit).GetField("FRO"));
-	  all[l_counter].push_back((*pit).GetField("l2"));
-	  all[l_counter].push_back((*pit).GetField("l3"));
-	  all[l_counter].push_back(all[l_counter][4]);				//AD
-	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
-	  all[l_counter].push_back((*pit).GetField("GA"));
-	}
-	//add x,y,z information to vectors all/length by YUNDI SHI
+	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
+	all[l_counter].push_back((*pit).GetField("MD"));
+	all[l_counter].push_back((*pit).GetField("FRO"));
+	all[l_counter].push_back((*pit).GetField("l2"));
+	all[l_counter].push_back((*pit).GetField("l3"));
+	all[l_counter].push_back(all[l_counter][4]);				//AD
+	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	all[l_counter].push_back((*pit).GetField("GA"));
+
+	//add x,y,z information to vectors all by YUNDI SHI
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
@@ -327,33 +292,20 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	current_length = sqrt(((p1[0]-p2[0])*(p1[0]-p2[0]))+((p1[1]-p2[1])*(p1[1]-p2[1]))+((p1[2]-p2[2])*(p1[2]-p2[2])));
 	
 	cumulative_distance_2 += current_length;
-	length.push_back(std::vector<double>());
 	all.push_back(std::vector<double>());
 	parametrized_position.push_back(itk::Vector<double, 3>());
-	length[l_counter].push_back(cumulative_distance_2);
 	all[l_counter].push_back(cumulative_distance_2);
-	if (param ==1)
-	{
-	  ////std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
-	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	}
-	else  if (param>=2 && param <8)
-	{
-	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	}
-	else
-	{
-	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
-	  all[l_counter].push_back((*pit).GetField("MD"));
-	  all[l_counter].push_back((*pit).GetField("FRO"));
-	  all[l_counter].push_back((*pit).GetField("l2"));
-	  all[l_counter].push_back((*pit).GetField("l3"));
-	  all[l_counter].push_back(all[l_counter][4]);				//AD
-	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
-	  all[l_counter].push_back((*pit).GetField("GA"));
-	}
-	//add x,y,z information to vectors all/length by YUNDI SHI
+
+	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
+	all[l_counter].push_back((*pit).GetField("MD"));
+	all[l_counter].push_back((*pit).GetField("FRO"));
+	all[l_counter].push_back((*pit).GetField("l2"));
+	all[l_counter].push_back((*pit).GetField("l3"));
+	all[l_counter].push_back(all[l_counter][4]);				//AD
+	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	all[l_counter].push_back((*pit).GetField("GA"));
+	
+	//add x,y,z information to vectors all by YUNDI SHI
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
@@ -406,10 +358,8 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       }
       
       //adding sample points AT the intersection point to avoid gap at origin
-      length.push_back(std::vector<double>());
       all.push_back(std::vector<double>());
       parametrized_position.push_back(itk::Vector<double, 3>());
-      length[l_counter].push_back(0.0);
       all[l_counter].push_back(0.0);
 
       itk::Point<double, 3> p_inter;
@@ -422,28 +372,17 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  p_inter[2] = (p_inter[2] * spacing[2]) + offset[2];
 	}
 
-      if (param ==1)
-      {
-	//std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
-	length[l_counter].push_back((*pit).GetField(param_str.c_str()));		
-	//length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-      }
-      else if (param>=2 && param <8)
-      {
-	length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-      }
-      else
-      {
-	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
-	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("FRO"));
-	all[l_counter].push_back((*pit).GetField("l2"));
-	all[l_counter].push_back((*pit).GetField("l3"));
-	all[l_counter].push_back(all[l_counter][4]);				//AD
-	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
-	all[l_counter].push_back((*pit).GetField("GA"));
-      }
-      //add x,y,z information to vectors all/length by YUNDI SHI
+      
+      all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
+      all[l_counter].push_back((*pit).GetField("MD"));
+      all[l_counter].push_back((*pit).GetField("FRO"));
+      all[l_counter].push_back((*pit).GetField("l2"));
+      all[l_counter].push_back((*pit).GetField("l3"));
+      all[l_counter].push_back(all[l_counter][4]);				//AD
+      all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+      all[l_counter].push_back((*pit).GetField("GA"));
+      
+      //add x,y,z information to vectors all by YUNDI SHI
       for (int pt_index = 0;pt_index<3;++pt_index)
 	{
 	  parametrized_position[l_counter][pt_index] = p_inter[pt_index];
@@ -480,33 +419,20 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	current_length = sqrt((p1[0]-p2[0])*(p1[0]-p2[0])+(p1[1]-p2[1])*(p1[1]-p2[1])+(p1[2]-p2[2])*(p1[2]-p2[2]));
 	cumulative_distance_1 += current_length;
 	//multiplying by -1 to make arc length on 1 side of plane as negative
-	length.push_back(std::vector<double>());
-	length[l_counter].push_back(-1 * cumulative_distance_1);
 	all.push_back(std::vector<double>());
 	parametrized_position.push_back(itk::Vector<double, 3>());
 	all[l_counter].push_back(-1 * cumulative_distance_1);
-	if (param ==1)
-	{
-	  //std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
-	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	  //length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	}
-	else if (param>=2 && param <8)
-	{
-	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	}
-	else
-	{
-	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
-	  all[l_counter].push_back((*pit).GetField("MD"));
-	  all[l_counter].push_back((*pit).GetField("FRO"));
-	  all[l_counter].push_back((*pit).GetField("l2"));
-	  all[l_counter].push_back((*pit).GetField("l3"));
-	  all[l_counter].push_back(all[l_counter][4]);				//AD
-	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
-	  all[l_counter].push_back((*pit).GetField("GA"));
-	}
-	//add x,y,z information to vectors all/length by YUNDI SHI
+	
+	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
+	all[l_counter].push_back((*pit).GetField("MD"));
+	all[l_counter].push_back((*pit).GetField("FRO"));
+	all[l_counter].push_back((*pit).GetField("l2"));
+	all[l_counter].push_back((*pit).GetField("l3"));
+	all[l_counter].push_back(all[l_counter][4]);				//AD
+	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	all[l_counter].push_back((*pit).GetField("GA"));
+      
+	//add x,y,z information to vectors all by YUNDI SHI
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
@@ -547,32 +473,21 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	current_length = sqrt(((p1[0]-p2[0])*(p1[0]-p2[0]))+((p1[1]-p2[1])*(p1[1]-p2[1]))+((p1[2]-p2[2])*(p1[2]-p2[2])));
 	cumulative_distance_2 += current_length;
 	
-	length.push_back(std::vector<double>());
-	length[l_counter].push_back(cumulative_distance_2);
+
 	all.push_back(std::vector<double>());
 	parametrized_position.push_back(itk::Vector<double, 3>());
 	all[l_counter].push_back(cumulative_distance_2);
-	if (param ==1)
-	  {
-	    length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	    // length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	  }
-	else if (param>=2 && param <8)
-	{
-	  length[l_counter].push_back((*pit).GetField(param_str.c_str()));
-	}
-	else
-	{
-	  all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
-	  all[l_counter].push_back((*pit).GetField("MD"));
-	  all[l_counter].push_back((*pit).GetField("FRO"));
-	  all[l_counter].push_back((*pit).GetField("l2"));
-	  all[l_counter].push_back((*pit).GetField("l3"));
-	  all[l_counter].push_back(all[l_counter][4]);				//AD
-	  all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
-	  all[l_counter].push_back((*pit).GetField("GA"));
-	}
-	//add x,y,z information to vectors all/length by YUNDI SHI
+
+	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
+	all[l_counter].push_back((*pit).GetField("MD"));
+	all[l_counter].push_back((*pit).GetField("FRO"));
+	all[l_counter].push_back((*pit).GetField("l2"));
+	all[l_counter].push_back((*pit).GetField("l3"));
+	all[l_counter].push_back(all[l_counter][4]);				//AD
+	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	all[l_counter].push_back((*pit).GetField("GA"));
+	
+	//add x,y,z information to vectors all by YUNDI SHI
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
