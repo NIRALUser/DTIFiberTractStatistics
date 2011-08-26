@@ -206,63 +206,59 @@ int main(int argc, char* argv[])
   REG = new regression;
   int all_flag = -1;
   std::cout<<"there are "<<param<<" parameters"<<std::endl;
+
+  FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, "All parameters");
+
   if (param == 8){
-    all_flag=1;
-    FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, "All parameters");
+    all_flag=1; 
     std::vector< std::vector<double> > all_main = FP->get_arc_length_parametrized_fiber(param);
     origin = FP->get_plane_origin();
     normal = FP->get_plane_normal();
-    int l_counter=all_main.size();
-    
     for (int a=0; a<=param-1; a++)	
-      {
-	//copying current paramter to length array
-	std::vector< std::vector<double> > length_temp;
-	for (int i =0; i<l_counter; i++)
-	  {
-	    length_temp.push_back(std::vector<double>());
-	    length_temp[i].push_back(all_main[i][0]);
-	    length_temp[i].push_back(all_main[i][a+1]);
-	  }
-	
+    {
+
+	std::vector< std::vector<double> > length_temp = FP->get_arc_length_parametrized_fiber(a);	
 	REG->regression_main(output_stats_file,param,"All parameters", length_temp, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, 2, noisemodelOn, 2, qpercOn, q_perc, all_flag, windowOn, window, window_file, worldspace);
 	all_flag++;
-	std::vector< std::vector<double> > all_results_main = REG->get_all_results();
-	int reg_counter = all_results_main.size();
-	//Write parametrized fiber by Yundi Shi
+    }
 
-	//Writing results to the output file	
-	ofstream fp_output_stats_file;
-	fp_output_stats_file.open(output_stats_file.c_str(),ios::app);
-	fp_output_stats_file<<"Number of samples along the bundle: "<<reg_counter<<"\n";
-	fp_output_stats_file<<"Arc_Length , #_fiber_points ,";
-	
-	for (int a=0; a<=param-1; a++)
-	  {
-	    fp_output_stats_file<<parameter_list[a]<<" , ";
-	  }
-	fp_output_stats_file<<"\n";
-	
-	//DEBUG
-	//
-	for (int i=0;i<reg_counter;i++)
-	  {
-	    fp_output_stats_file<<all_results_main[i][0];
-	    for (int j=1;j<11;j++)
-	      {
-		fp_output_stats_file<<" , "<<all_results_main[i][j];
-	      }
-	    fp_output_stats_file<<endl;
-	  }
-	fp_output_stats_file.close();
-	
+    
+    std::vector< std::vector<double> > all_results_main = REG->get_all_results();
+    int reg_counter = all_results_main.size();
+    //Write parametrized fiber by Yundi Shi
+
+    //Writing results to the output file	
+    ofstream fp_output_stats_file;
+    fp_output_stats_file.open(output_stats_file.c_str(),ios::app);
+    fp_output_stats_file<<"Number of samples along the bundle: "<<reg_counter<<"\n";
+    fp_output_stats_file<<"Arc_Length , #_fiber_points ,";
+    
+    for (int a=0; a<=param-1; a++)
+      {
+	fp_output_stats_file<<parameter_list[a]<<" , ";
       }
-    std::cout<<"\n***********  Finished General Evaluating of All parameters "<<std::endl;
+    fp_output_stats_file<<"\n";
+    
+    //DEBUG
+    //
+    for (int i=0;i<reg_counter;i++)
+      {
+	fp_output_stats_file<<all_results_main[i][0];
+	for (int j=1;j<10;j++)
+	  {
+	    fp_output_stats_file<<" , "<<all_results_main[i][j];
+	  }
+	fp_output_stats_file<<endl;
+      }
+    fp_output_stats_file.close();
+    
   }
-  
+  std::cout<<"\n***********  Finished General Evaluating of All parameters "<<std::endl;
+
+  all_flag = -1;
   for (int a=0; a<=param-1; a++){
-    FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, param, parameter_list[a]);
-    std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(param);
+
+    std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(a);
     if (a == 0){
       origin = FP->get_plane_origin();
       normal = FP->get_plane_normal();

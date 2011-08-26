@@ -35,7 +35,7 @@ void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeaut
   GroupType::Pointer group = readFiberFile(input_file);
   itk::Vector<double,3> spacing = group->GetSpacing();
   itk::Vector<double,3> offset = group->GetObjectToParentTransform()->GetOffset();
-
+  
   if (planeautoOn)
   {
     cout<<"Finding the plane origin and normal automatically\n\n";
@@ -51,7 +51,6 @@ void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeaut
     }
     cout<<"return from read_plane_file function :"<<plane_defined<<plane_origin<<plane_normal<<endl;
   }
-  std::cout<<"going into arc_length_parametrizatio"<<worldspace<<spacing<<offset<<param<<param_str<<std::endl;
   arc_length_parametrization(group,worldspace, spacing, offset, param, param_str);
 }
 
@@ -78,25 +77,31 @@ void fiberprocessing::find_distance_from_plane(itk::Point<double, 3> pos, int in
 
 std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_fiber(int param)
 {
-  if (param>=1 && param <8)
+  if (param==8)
   {
-    cout<<"Total Number of sample points in the fiber bundle: "<<length.size()<<endl;
-    return(length);
+    cout<<"Total Number of sample points in the fiber bundle: "<<all.size()<<"...getting all parameters..."<<endl;
+    return(all);
+    
   }
   else
   {
-    cout<<"Total Number of sample points in the fiber bundle: "<<all.size()<<endl;
-    return(all);
+    std::vector< std::vector<double> > length_temp;
+    for (int i =0; i<l_counter; i++)
+      {
+	length_temp.push_back(std::vector<double>());
+	length_temp[i].push_back(all[i][0]);
+	length_temp[i].push_back(all[i][param+1]);
+      }	
+    cout<<"Total Number of sample points in the fiber bundle: "<<length_temp.size()<<"...geting the #"<<param<<" parameter"<<endl;
+    return(length_temp);
   }
-  return all;
 }
 
 void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool worldspace, itk::Vector<double,3> spacing, itk::Vector<double,3> offset, int param, std::string param_str)
 {
   ChildrenListType* children = group->GetChildren(0);
   ChildrenListType::iterator it;
-
-  //**********************************************************************************************************
+ //**********************************************************************************************************
   // For each fiber
   int count_opposite = 0;
   for(it = (children->begin()); it != children->end() ; it++)
@@ -190,7 +195,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  p1[1] = (p1[1] * spacing[1]) + offset[1];
 	  p1[2] = (p1[2] * spacing[2]) + offset[2];
 	}
-
+      for (int pt_index = 0;pt_index<3;++pt_index)
+	{
+	  parametrized_position[l_counter][pt_index] = p1[pt_index];
+	}
+	
       if (param ==1)
       {
 	//DEBUG
@@ -203,7 +212,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       else if (param>=2 && param <8)
       {
 	//DEBUG
-	////std::cout<<"getting length for "<<param_str.c_str()<<std::endl;
+	
 	length[l_counter].push_back((*pit).GetField(param_str.c_str()));
       }
       else 
@@ -220,12 +229,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  all[l_counter].push_back((*pit).GetField("GA"));
       }
       //add x,y,z information to vectors all/length by YUNDI SHI
-      for (int pt_index = 0;pt_index<3;++pt_index)
-	{
-	  length[l_counter].push_back(p1[pt_index]);
-	  all[l_counter].push_back(p1[pt_index]);
-	}
-	
+      
       l_counter++;
 
       //to find the total distance from origin to the current sample
@@ -288,8 +292,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	//add x,y,z information to vectors all/length by YUNDI SHI
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
-	    length[l_counter].push_back(p1[pt_index]);
-	    all[l_counter].push_back(p1[pt_index]);
+	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
 	
 	l_counter++;
@@ -411,6 +414,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 
       itk::Point<double, 3> p_inter;
       p_inter=(*pit).GetPosition();
+
       if (worldspace)
 	{
 	  p_inter[0] = (p_inter[0] * spacing[0]) + offset[0];
@@ -442,8 +446,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       //add x,y,z information to vectors all/length by YUNDI SHI
       for (int pt_index = 0;pt_index<3;++pt_index)
 	{
-	  length[l_counter].push_back(p_inter[pt_index]);
-	  all[l_counter].push_back(p_inter[pt_index]);
+	  parametrized_position[l_counter][pt_index] = p_inter[pt_index];
 	}
 	
       l_counter++;
