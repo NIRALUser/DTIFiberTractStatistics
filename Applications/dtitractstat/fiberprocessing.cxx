@@ -202,10 +202,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       
       all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
       all[l_counter].push_back((*pit).GetField("MD"));
-      all[l_counter].push_back((*pit).GetField("FRO"));
+      all[l_counter].push_back((*pit).GetField("l1"));
       all[l_counter].push_back((*pit).GetField("l2"));
       all[l_counter].push_back((*pit).GetField("l3"));
-      all[l_counter].push_back(all[l_counter][4]);				//AD
+      all[l_counter].push_back((*pit).GetField("FRO"));				
       all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
       all[l_counter].push_back((*pit).GetField("GA"));
      
@@ -247,10 +247,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
 	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("FRO"));
+	all[l_counter].push_back((*pit).GetField("l1"));
 	all[l_counter].push_back((*pit).GetField("l2"));
 	all[l_counter].push_back((*pit).GetField("l3"));
-	all[l_counter].push_back(all[l_counter][4]);				//AD
+	all[l_counter].push_back((*pit).GetField("FRO"));			//AD
 	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 
@@ -298,10 +298,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
 	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("FRO"));
+	all[l_counter].push_back((*pit).GetField("l1"));
 	all[l_counter].push_back((*pit).GetField("l2"));
 	all[l_counter].push_back((*pit).GetField("l3"));
-	all[l_counter].push_back(all[l_counter][4]);				//AD
+	all[l_counter].push_back((*pit).GetField("FRO"));				//AD
 	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 	
@@ -375,10 +375,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       
       all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
       all[l_counter].push_back((*pit).GetField("MD"));
-      all[l_counter].push_back((*pit).GetField("FRO"));
+      all[l_counter].push_back((*pit).GetField("l1"));
       all[l_counter].push_back((*pit).GetField("l2"));
       all[l_counter].push_back((*pit).GetField("l3"));
-      all[l_counter].push_back(all[l_counter][4]);				//AD
+      all[l_counter].push_back((*pit).GetField("FRO"));
       all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
       all[l_counter].push_back((*pit).GetField("GA"));
       
@@ -425,10 +425,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
 	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("FRO"));
+	all[l_counter].push_back((*pit).GetField("l1"));
 	all[l_counter].push_back((*pit).GetField("l2"));
 	all[l_counter].push_back((*pit).GetField("l3"));
-	all[l_counter].push_back(all[l_counter][4]);				//AD
+	all[l_counter].push_back((*pit).GetField("FRO"));
 	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
       
@@ -480,10 +480,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
 	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("FRO"));
+	all[l_counter].push_back((*pit).GetField("l1"));
 	all[l_counter].push_back((*pit).GetField("l2"));
 	all[l_counter].push_back((*pit).GetField("l3"));
-	all[l_counter].push_back(all[l_counter][4]);				//AD
+	all[l_counter].push_back((*pit).GetField("FRO"));
 	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 	
