@@ -32,9 +32,10 @@ class fiberprocessing{
   //Helper functions
   void find_distance_from_plane(itk::Point<double, 3> pos, int index);
   void find_plane(GroupType::Pointer group);
+  bool Siequals(std::string a, std::string b);
   itk::Vector<double, 3> get_plane_origin();
   itk::Vector<double, 3> get_plane_normal();
-  std::vector< std::vector<double> > get_arc_length_parametrized_fiber(int param);
+  std::vector< std::vector<double> > get_arc_length_parametrized_fiber(std::string param_name);
 
  private:
   double SQ2(double x) {return x*x;};

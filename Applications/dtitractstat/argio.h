@@ -28,8 +28,9 @@ inline float fatof(const char *str) {
   return (float) atof(str);
 }
 
-// command line parsing
 
+
+// command line parsing
 template <class T>
 inline T ipGetArgument(char **argv, const char *keystr, 
            T (*convert) (const char *str), const T defval) {
@@ -264,6 +265,8 @@ int ipExtractSpaceSepTokens(T *tokenval, const char *tokenstr, const int n,
 
   return i;
 }
+
+//compare strings
 
 
 inline int ipExtractIntTokens(int *tokenval, const char *tokenstr, const int n) {

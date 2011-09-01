@@ -89,8 +89,8 @@
       <name>parameter_list</name>
       <longflag>--parameter_list</longflag>
       <label>scalar diffusion properties that are calculated</label>
-      <description>the list of scalar diffusion properties that are calculated. It can be one or multiple of the following: fa,md,fro,ad,rd,l2,l3,ga</description>
-      <default>"fa","md","fro","ad","rd","l2","l3","ga"</default>
+      <description>the list of scalar diffusion properties that are calculated. It can be one or multiple of the following: fa,md,ad,l2,l3,fro,rd,ga</description>
+      <default>"fa","md","ad","l2","l3","fro","rd","ga"</default>
     </string-vector>
     <string-enumeration>
       <name>noise_model</name>

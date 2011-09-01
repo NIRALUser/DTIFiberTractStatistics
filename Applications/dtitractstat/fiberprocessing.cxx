@@ -20,7 +20,6 @@
 #include <vtkFloatArray.h>
 
 #include "fiberprocessing.h"
-
 fiberprocessing::fiberprocessing()
 {
   l_counter=0;
@@ -74,27 +73,46 @@ void fiberprocessing::find_distance_from_plane(itk::Point<double, 3> pos, int in
   }
 }
 
-
-std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_fiber(int param)
+bool fiberprocessing::Siequals(std::string a, std::string b)
 {
-  if (param==8)
-  {
-    cout<<"Total Number of sample points in the fiber bundle: "<<all.size()<<"...getting all parameters..."<<endl;
-    return(all);
-    
-  }
+    unsigned int sz = a.size();
+    if (b.size() != sz)
+        return false;
+    for (unsigned int i = 0; i < sz; ++i)
+        if (tolower(a[i]) != tolower(b[i]))
+            return false;
+    return true;
+}
+
+std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_fiber(std::string param_name)
+{
+  const char* parameter_std_list[] = {"fa", "md", "ad", "l2" , "l3", "fro" , "rd" ,"ga"};
+  int parameter_index = 0; //which parameter was called
+  if (param_name == "all")
+    {
+      cout<<"Total Number of sample points in the fiber bundle: "<<all.size()<<"...getting all parameters..."<<endl;
+      return(all);
+      
+    }
   else
-  {
-    std::vector< std::vector<double> > length_temp;
-    for (int i =0; i<l_counter; i++)
-      {
-	length_temp.push_back(std::vector<double>());
-	length_temp[i].push_back(all[i][0]);
-	length_temp[i].push_back(all[i][param+1]);
-      }	
-    cout<<"Total Number of sample points in the fiber bundle: "<<length_temp.size()<<"...geting the #"<<param<<" parameter"<<endl;
-    return(length_temp);
-  }
+    {
+      for (int a =0;a<8;a++){
+	if (Siequals(parameter_std_list[a],param_name))
+	  {
+	    parameter_index = a;
+	    break;
+	  }
+      }
+      std::vector< std::vector<double> > length_temp;
+      for (int i =0; i<l_counter; i++)
+	{
+	  length_temp.push_back(std::vector<double>());
+	  length_temp[i].push_back(all[i][0]);
+	  length_temp[i].push_back(all[i][parameter_index+1]);
+	}	
+      cout<<"Total Number of sample points in the fiber bundle: "<<length_temp.size()<<"...geting parameter "<<parameter_std_list[parameter_index]<<endl;
+      return(length_temp);
+    }
 }
 
 void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool worldspace, itk::Vector<double,3> spacing, itk::Vector<double,3> offset)
@@ -202,11 +220,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       
       all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
       all[l_counter].push_back((*pit).GetField("MD"));
-      all[l_counter].push_back((*pit).GetField("l1"));
+      all[l_counter].push_back((*pit).GetField("AD"));
       all[l_counter].push_back((*pit).GetField("l2"));
       all[l_counter].push_back((*pit).GetField("l3"));
       all[l_counter].push_back((*pit).GetField("FRO"));				
-      all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+      all[l_counter].push_back((*pit).GetField("RD"));	//RD
       all[l_counter].push_back((*pit).GetField("GA"));
      
       
@@ -247,11 +265,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
 	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("l1"));
+	all[l_counter].push_back((*pit).GetField("AD"));
 	all[l_counter].push_back((*pit).GetField("l2"));
 	all[l_counter].push_back((*pit).GetField("l3"));
-	all[l_counter].push_back((*pit).GetField("FRO"));			//AD
-	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	all[l_counter].push_back((*pit).GetField("FRO"));//FRO
+	all[l_counter].push_back((*pit).GetField("RD")); //RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 
 	//add x,y,z information to vectors all by YUNDI SHI
@@ -298,11 +316,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
 	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("l1"));
+	all[l_counter].push_back((*pit).GetField("AD"));
 	all[l_counter].push_back((*pit).GetField("l2"));
 	all[l_counter].push_back((*pit).GetField("l3"));
 	all[l_counter].push_back((*pit).GetField("FRO"));				//AD
-	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	all[l_counter].push_back((*pit).GetField("RD"));	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 	
 	//add x,y,z information to vectors all by YUNDI SHI
@@ -375,11 +393,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       
       all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
       all[l_counter].push_back((*pit).GetField("MD"));
-      all[l_counter].push_back((*pit).GetField("l1"));
+      all[l_counter].push_back((*pit).GetField("AD"));
       all[l_counter].push_back((*pit).GetField("l2"));
       all[l_counter].push_back((*pit).GetField("l3"));
       all[l_counter].push_back((*pit).GetField("FRO"));
-      all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+      all[l_counter].push_back((*pit).GetField("RD"));	//RD
       all[l_counter].push_back((*pit).GetField("GA"));
       
       //add x,y,z information to vectors all by YUNDI SHI
@@ -425,11 +443,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
 	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("l1"));
+	all[l_counter].push_back((*pit).GetField("AD"));
 	all[l_counter].push_back((*pit).GetField("l2"));
 	all[l_counter].push_back((*pit).GetField("l3"));
 	all[l_counter].push_back((*pit).GetField("FRO"));
-	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	all[l_counter].push_back((*pit).GetField("RD"));	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
       
 	//add x,y,z information to vectors all by YUNDI SHI
@@ -480,11 +498,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
 	all[l_counter].push_back((*pit).GetField("MD"));
-	all[l_counter].push_back((*pit).GetField("l1"));
+	all[l_counter].push_back((*pit).GetField("AD"));
 	all[l_counter].push_back((*pit).GetField("l2"));
 	all[l_counter].push_back((*pit).GetField("l3"));
 	all[l_counter].push_back((*pit).GetField("FRO"));
-	all[l_counter].push_back((all[l_counter][5] + all[l_counter][6]) /2);	//RD
+	all[l_counter].push_back((*pit).GetField("RD"));	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 	
 	//add x,y,z information to vectors all by YUNDI SHI

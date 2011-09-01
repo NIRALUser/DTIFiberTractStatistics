@@ -211,15 +211,15 @@ int main(int argc, char* argv[])
 
   if (param == 8){
     all_flag=1; 
-    std::vector< std::vector<double> > all_main = FP->get_arc_length_parametrized_fiber(param);
+    std::vector< std::vector<double> > all_main = FP->get_arc_length_parametrized_fiber("all");
     origin = FP->get_plane_origin();
     normal = FP->get_plane_normal();
     for (int a=0; a<=param-1; a++)	
-    {
-
-	std::vector< std::vector<double> > length_temp = FP->get_arc_length_parametrized_fiber(a);	
+      {
+	all_flag = -1;
+	std::vector< std::vector<double> > length_temp = FP->get_arc_length_parametrized_fiber(parameter_list[a]);	
 	REG->regression_main(output_stats_file,param,"All parameters", length_temp, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, 2, noisemodelOn, 2, qpercOn, q_perc, all_flag, windowOn, window, window_file, worldspace);
-	all_flag++;
+
     }
 
     
@@ -252,22 +252,25 @@ int main(int argc, char* argv[])
       }
     fp_output_stats_file.close();
     
+  
+    std::cout<<"\n***********  Finished General Evaluating of All parameters "<<std::endl;
   }
-  std::cout<<"\n***********  Finished General Evaluating of All parameters "<<std::endl;
+  else{
 
-  all_flag = -1;
-  for (int a=0; a<=param-1; a++){
-
-    std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(a);
-    if (a == 0){
-      origin = FP->get_plane_origin();
-      normal = FP->get_plane_normal();
-      std::cout<<"origin is "<<origin<<" and normal is "<<normal<<std::endl;
+    all_flag = -1;
+    for (int a=0; a<=param-1; a++){
+      
+      std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(parameter_list[a]);
+      if (a == 0){
+	origin = FP->get_plane_origin();
+	normal = FP->get_plane_normal();
+	std::cout<<"origin is "<<origin<<" and normal is "<<normal<<std::endl;
+      }
+      
+      REG->regression_main(output_stats_file,param,parameter_list[a], length_main, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, stat, noisemodelOn, int_noise_model, qpercOn, q_perc, -1, windowOn, window, window_file,worldspace);
+      
+      std::cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n"<<std::endl;
     }
-      
-    REG->regression_main(output_stats_file,param,parameter_list[a], length_main, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, stat, noisemodelOn, int_noise_model, qpercOn, q_perc, -1, windowOn, window, window_file,worldspace);
-      
-    std::cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n"<<std::endl;
   }
   return 0;
 }
