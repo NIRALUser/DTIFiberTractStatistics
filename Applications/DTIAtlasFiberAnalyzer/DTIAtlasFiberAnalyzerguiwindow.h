@@ -35,16 +35,14 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		DTIAtlasFiberAnalyzerguiwindow(bool debug=false, QWidget * parent = 0, Qt::WFlags f = 0 );
 		vstring getCases(){return m_Cases;}
 		vstring getFibers(){return m_Fibers;}
-		vstring getparameterslines(std::string fiber);
+		vstring getFiberInformations(std::string fiber);
 		
 		
 	private slots:
 		void NextStep();
 		void PreviousStep();
 		void BrowserCSVFilename();
-		void EnteronCSVFilename();
 		void applyNewCSV();
-		void DeleteCSV();
 		void BrotherSaveCSV();
 		void AddC();
 		void DeleteC();
@@ -67,12 +65,19 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void RemoveAllFiber();
 		void BrowserOutputFolder();
 		void EnterOutputFolder();
-		void Computefiberprocess();
-		void Computedti_tract_stat();
-		void OpenPlotWindow();
-		void saveparamaction();
-		void openparam();
-		void disableTab4();
+		void AutoCompute();
+		bool Computefiberprocess();
+		bool Computedti_tract_stat();
+		bool OpenPlotWindow();
+		void OpenDataFile();
+		void OpenAnalysisFile();
+		void SaveDataAction();
+		void SaveAnalysisAction();
+		void ClearDataInformation();
+		void CheckNextStep();
+		void EnterCsvFileName();
+		void ApplySlot();
+		void TabChanged(int);
 		
 	protected:
 		QWidget* stepwidget(int numberstep);
@@ -100,7 +105,9 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		QVector <QVector <double> > getfiberpoints(std::string filepath);
 		void CompleteWithMeanData();
 		void CompleteWithCrossStdData();
-		vstring getparameterslines(std::ifstream& fvpfile);
+		QVector< QVector<double> > TableConversion(v2string table);
+		void LoadAnalysisFile(std::string filename);
+		
 
 		
 	private:
@@ -118,8 +125,10 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		vstring m_FibersplaneSelected;
 		vstring m_Fibers;
 		vstring m_Cases;
+		std::vector<std::vector<v2string> > m_FiberProfile;
 		std::string m_csvfilename;
 		std::string m_OutputFolder;
+		std::string m_ParameterFile;
 		std::string m_AtlasFiberDir;
 		std::string m_parameters;
 		int m_DataCol;

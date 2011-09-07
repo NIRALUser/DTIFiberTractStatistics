@@ -55,36 +55,34 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 			 int DataCol, int DefCol, int NameCol, bool transposeColRow,bool nogui, QWidget *parent=NULL);
 
 /* Call dti_tract_stat */
-int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirectory, std::string Input_fiber_file,
-		       std::string Output_fiber_file, std::string plane, std::string parameter);
+int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirectory, std::string Input_fiber_file, std::string Output_fiber_file, std::string plane, std::string parameter);
 
 /* Gather the fiber profile in different output file */
-void GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int NumberOfParameters, int DataCol, int NameCol, 
-			   bool transposeColRow);
-
+std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int DataCol, int NameCol, bool transposeColRow, vstring fibers, bool& success);
 
 /* Read the fiber profile information from .fvp file */
-bool ReadProfileInformation(std::string fibername, std::string filename, v2string &Profiles);
+bool ReadProfileInformation(std::string filepath, v2string& finaldata, int nbofparameters);
+
+bool ReadFiberPtInformation(std::string filepath, v2string& fiberptdata, int nbofparameters);
 
 /* Write Profile information in an csv file */
-void WriteProfile(CSVClass* CSV, std::string filename,std::vector< v2string > FiberProfiles,int DataCol,int NameCol,
-		  int ParamCol, bool transposeColRow);
+void WriteProfile(CSVClass* CSV, std::string filename,std::vector< v2string > FiberProfiles,int DataCol,int NameCol,int ParamCol, bool transposeColRow);
 
-/* Write the parameters in a file */
-void saveparam(std::string filename,std::string CSVFilename, int DataCol, int DefCol, int NameCol,
-	       std::string OutputFolder, std::string AtlasFiberFolder, vstring FiberSelectedname, 
-	       std::string parameters, bool transposeColRow);
+std::string CreateDefaultAnalysisFile();
+
+void SaveData(std::string filename,std::string CSVFilename, int DataCol, int DefCol, int NameCol, std::string OutputFolder);
+
+void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, std::string parameters, bool transposeColRow);
 
 /* Read the parameters from a file */
-bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std::string &AtlasFiberDir,
-			    std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol,
-			    int &NameCol, vstring &SelectedFibers, bool &transposeColRow);
+bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, int &NameCol, vstring &SelectedFibers, bool &transposeColRow);
 
 /* Calcul the number of profiles parameters : FA,MD ... */
 int CalculNumberOfProfileParam(std::string parameters);
 
 /* look for a plane associated to fiber */
-int PlaneAssociatedToFiber(std::string fibername,int type, vstring fibersplane, vstring Selectedfibersplane);
+// int PlaneAssociatedToFiber(std::string fibername,int type, vstring fibersplane, vstring Selectedfibersplane);
+int PlaneAssociatedToFiber(std::string fibername, vstring fibersplane);
 
 void convert(QVector <std::string> line, QVector < QVector <double> >& data);
 
@@ -93,13 +91,16 @@ void LineInVector(std::string line, QVector < QVector <double> >& data);
 void LineInVector(std::string line, std::vector <std::string>& v_string);
 
 std::vector <std::string> getparameterslines(std::ifstream& fvpfile);
-std::vector <std::string> getparameterslines(std::string fiber);
 
 int getnb_of_samples(std::vector <std::string> parameterslines);
 
 QVector < QVector <double> > getdata(std::ifstream& fvpfile, int nb_of_samples);
 
+v2string getdata2(std::ifstream& fvpfile, int nb_of_samples);
+
 QVector <double> GetColumn(int column, QVector < QVector <double> > data);
+
+vstring GetColumn(int column, v2string data);
 
 void ReadDataFilesNameInCaseDirectory(vstring &datafiles, std::string CaseDir);
 
@@ -114,6 +115,10 @@ QVector<QVector<double> > getCrossMeanData(qv3double data);
 QVector<QVector<double> > getCrossStdData(qv3double data, QVector<QVector<double> > crossmean, int factor);
 
 QVector<double> getCorr(QVector<QVector<double> > data1, QVector<QVector<double> > data2);
+
+vstring getparameterslines(std::ifstream& fvpfile);
+
+std::string getParamFromFile(std::string filepath);
 
 
 #endif

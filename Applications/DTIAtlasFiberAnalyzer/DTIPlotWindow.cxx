@@ -6,7 +6,7 @@
 
 PlotWindow::PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata, QVector<qv3double> statdata, std::string parameters, DTIAtlasFiberAnalyzerguiwindow* parent) : QWidget(0)
 {	
-	
+	m_Error=false;
 	m_parent=parent;
 	m_SpecialCurves=4;
 	
@@ -15,6 +15,12 @@ PlotWindow::PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata
 	m_Cases=m_parent->getCases();
 	m_Fibers=m_parent->getFibers();
 	ComputeCorr(casedata, statdata);
+	if(m_Corr.size()==0)
+	{
+		close();
+		m_Error=true;
+		return;
+	}
 	
 	//Fill style vectors vector
 	CreateCaseStyle();
@@ -30,6 +36,7 @@ PlotWindow::PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata
 	m_Plot->setAxisTitle(QwtPlot::xBottom,"Arc_Lengh");
 	m_Plot->setAxisTitle(QwtPlot::yRight,"Nb_of_fiber_points");
 	m_Plot->setAxisTitle(QwtPlot::yLeft,"fa");
+	show();
 }
 
 /********************************************************************************
@@ -67,6 +74,9 @@ void PlotWindow::InitWidget()
 	m_DecomputeCorr=new QPushButton("Decolor correlation", this);
 	m_DecomputeCorr->setMinimumSize(150, 30);
 	m_DecomputeCorr->setVisible(false);
+	m_ThSlider=new QSlider(Qt::Horizontal, this);
+	m_ThLcd=new QLCDNumber(this);
+	m_ThLabel=new QLabel("Threshold", this);
 	m_CorrText=new QTextEdit("", this);
 	InitCorrText();
 	QGroupBox* DetailledInfo=new QGroupBox("Detailled Information");
@@ -94,7 +104,7 @@ void PlotWindow::InitWidget()
 	m_PixelGridLayout->setVerticalSpacing(15);
 	GroupPxSize->setAlignment(Qt::AlignLeft);
 	
-	
+	 
 	//Fill each Layout
 	GroupParameters->setLayout(m_ParameterLayout);
 	GroupCases->setLayout(m_CaseLayout);
@@ -122,10 +132,13 @@ void PlotWindow::InitWidget()
 	m_PixelGridLayout->setHorizontalSpacing(1);
 	m_PixelGridLayout->setColumnStretch(3,1);
 	GroupPxSize->setLayout(m_PixelGridLayout);
-	m_CorrLayout->addWidget(m_ComputeCorr,0,0);
-	m_CorrLayout->addWidget(m_DecomputeCorr,0,0);
+	m_CorrLayout->addWidget(m_ComputeCorr,0,3);
+	m_CorrLayout->addWidget(m_DecomputeCorr,0,3);
+	m_CorrLayout->addWidget(m_ThLcd,0,0);
+	m_CorrLayout->addWidget(m_ThSlider,0,1);
+	m_CorrLayout->addWidget(m_ThLabel,0,2);
 	m_CorrLayout->addWidget(m_CorrText,1,0);
-	m_CorrLayout->setColumnStretch(1,1);
+	m_CorrLayout->setColumnStretch(4,1);
 	GroupCorr->setLayout(m_CorrLayout);
 	m_VLayout->addWidget(DetailledInfo);
 	m_VLayout->addWidget(CurveDisplay);
@@ -150,6 +163,7 @@ void PlotWindow::InitWidget()
 	connect(m_StatSlider, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth(int)));
 	connect(m_ComputeCorr, SIGNAL(clicked()), this, SLOT(ColorCorr()));
 	connect(m_DecomputeCorr, SIGNAL(clicked()), this, SLOT(DecolorCorr()));
+	connect(m_ThSlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyTh(int)));
 	
 }
 
@@ -165,6 +179,8 @@ void PlotWindow::setSliderLcd()
 	m_AtlasLcd->display(1);
 	m_StatLcd->setSegmentStyle(QLCDNumber::Flat);
 	m_StatLcd->display(1);
+	m_ThLcd->setSegmentStyle(QLCDNumber::Flat);
+	m_ThLcd->display(0.8);
 	
 	m_CaseSlider->setRange(1,10);
 	m_CaseSlider->setMinimumSize(200,20);
@@ -172,6 +188,9 @@ void PlotWindow::setSliderLcd()
 	m_AtlasSlider->setMinimumSize(200,20);
 	m_StatSlider->setRange(1,10);
 	m_StatSlider->setMinimumSize(200,20);
+	m_ThSlider->setRange(0,100);
+	m_ThSlider->setValue(80);
+	m_ThSlider->setMinimumSize(200,20);
 }
 
 void PlotWindow::InitCorrText()
@@ -211,9 +230,9 @@ void PlotWindow::CreateCaseStyle()
 				coef=i/((m_Cases.size()-1)*3);
 			//Generate random RGB color based on red
 			if(coef*242<=116)
-				color.setRgb(139+coef*242, 0, 0);
+				color.setRgb((int)(139+coef*242), 0, 0);
 			else
-				color.setRgb(255, coef*242-116, coef*242-116);
+				color.setRgb(255, (int)(coef*242-116), (int)(coef*242-116));
 			pen.setStyle(Qt::SolidLine);
 		}
 		else
@@ -332,12 +351,12 @@ void PlotWindow::setCurveVisible()
 	statindex=GetCheckedStat();
 
 	
-	for(int i=0; i<m_CaseCurves.size(); i++)
+	for(int i=0; i<(int)m_CaseCurves.size(); i++)
 	{
-		for(int k=0; k<m_CaseCurves[0][0].size(); k++)
+		for(int k=0; k<(int)m_CaseCurves[0][0].size(); k++)
 		{
 			boxindex=-1;
-			for(int j=0; j<m_CaseCurves[0].size(); j++)
+			for(int j=0; j<(int)m_CaseCurves[0].size(); j++)
 			{
 				if(j%3!=2)
 					boxindex++;
@@ -347,7 +366,7 @@ void PlotWindow::setCurveVisible()
 					m_CaseCurves[i][j][k]->setVisible(false);
 			}
 			boxindex=-1;
-			for(int j=0; j<m_AtlasCurves[0].size(); j++)
+			for(int j=0; j<(int)m_AtlasCurves[0].size(); j++)
 			{
 				if(j%3!=2)
 					boxindex++;
@@ -365,7 +384,7 @@ void PlotWindow::setCurveVisible()
 				}
 			}
 			boxindex=-1;
-			for(int j=0; j<m_StatCurves[0].size(); j++)
+			for(int j=0; j<(int)m_StatCurves[0].size(); j++)
 			{
 				if(j%3!=2)
 					boxindex++;
@@ -380,7 +399,7 @@ void PlotWindow::setCurveVisible()
 		//Change the information label for informations of selected fiber
 		if(i==fiberindex)
 		{
-			parameterslines=m_parent->getparameterslines(m_Fibers[i].c_str());
+			parameterslines=m_parent->getFiberInformations(m_Fibers[i].c_str());
 			ChangeInfoLabel(parameterslines);
 		}
 	}
@@ -398,6 +417,11 @@ void PlotWindow::setCurveVisible()
 		
 }		
 
+
+/**********************************************************************************************
+ *Color & Decolor : Use color (or not) using correlation to display case's curves
+ **********************************************************************************************/
+
 void PlotWindow::ColorCorr()
 {
 	QPen pen;
@@ -408,7 +432,7 @@ void PlotWindow::ColorCorr()
 		{
 			for(unsigned int k=0; k<m_Parameters.size(); k++)
 			{
-				color.setRgb(215*fabs(m_Corr[i][j][k]),215*fabs(m_Corr[i][j][k]),215*fabs(m_Corr[i][j][k]));
+				color.setRgb((int)(215*fabs(m_Corr[i][j][k])),(int)(215*fabs(m_Corr[i][j][k])),(int)(215*fabs(m_Corr[i][j][k])));
 				pen.setColor(color);
 				pen.setWidth(m_CaseLcd->intValue());
 				m_CaseCurves[i][j*3][k]->setPen(pen);
@@ -439,14 +463,65 @@ void PlotWindow::DecolorCorr()
 	m_CorrText->setVisible(false);
 }
 
+/**********************************************************************************************
+ *ApplyTh : Color each curves below threshold in red
+ **********************************************************************************************/
+ 
+void PlotWindow::ApplyTh(int value)
+{
+	double thvalue=((double)value)/100.0;
+	QPen pen;
+	QColor color;
+	m_ThLcd->display(thvalue);
+	for(unsigned int i=0; i<m_Fibers.size(); i++)
+	{
+		for(unsigned int j=0; j<m_Cases.size(); j++)
+		{
+			for(unsigned int k=0; k<m_Parameters.size(); k++)
+			{
+				if(m_Corr[i][j][k]<thvalue)
+					pen.setColor(Qt::red);
+				else
+				{
+					if(m_ComputeCorr->isVisible())
+						pen=m_CaseStyle[j*3];
+					else
+					{
+						color.setRgb((int)(215*fabs(m_Corr[i][j][k])),(int)(215*fabs(m_Corr[i][j][k])),(int)(215*fabs(m_Corr[i][j][k])));
+						pen.setColor(color);
+					}
+				}
+				m_CaseCurves[i][j*3][k]->setPen(pen);
+			}
+		}
+	}
+	m_Plot->replot();
+}
+
+
+/**********************************************************************************************
+ *ComputeCorr : Calculate correlation factor for each case's curves
+ **********************************************************************************************/
+
 void PlotWindow::ComputeCorr(QVector<qv3double> casedata, QVector<qv3double> statdata)
 {
+	QVector<double> corrpt;
 	QVector<QVector<double> > corr;
 	m_Corr.clear();
 	for(unsigned int i=0; i<m_Fibers.size(); i++)
 	{
 		for(unsigned int j=0; j<m_Cases.size(); j++)
-			corr.push_back(getCorr(casedata[i][j*3], statdata[i][0]));
+		{
+			corrpt=getCorr(casedata[i][j*3], statdata[i][0]);
+			if(corrpt.size()!=0)
+				corr.push_back(corrpt);
+			else
+			{
+				QMessageBox::warning(this, "Warning", "Error during calculation of correlation between cases.\nYou should recomputes data using dtitractstat.");
+				return;
+			}
+		}
+			
 		m_Corr.push_back(corr);
 		corr.clear();
 	}
@@ -626,8 +701,8 @@ void PlotWindow::CreateFiberButtons()
 
 void PlotWindow::CreateCurves()
 {
-	std::vector <std::vector <QwtPlotCurve*> > checkcasecurves, checkatlascurves, checkstatcurves;
-	std::vector <QwtPlotCurve*> parametercasecurves, parameteratlascurves, parameterstatcurves;
+	std::vector <std::vector <QwtPlotCurve*> > checkcurves;
+	std::vector <QwtPlotCurve*> parametercurves;
 	
 	m_CaseCurves.clear();
 	m_AtlasCurves.clear();
@@ -640,39 +715,42 @@ void PlotWindow::CreateCurves()
 		{
 			for(unsigned int k=0; k<m_Parameters.size(); k++)
 			{
-					parametercasecurves.push_back(new QwtPlotCurve);
+					parametercurves.push_back(new QwtPlotCurve);
 					if(i!=0 || j!=0 || k!=0)
-						parametercasecurves[k]->setVisible(false);
-					parametercasecurves[k]->setPen(m_CaseStyle[j]);
-					
-					if(j<4)
-					{
-						parameteratlascurves.push_back(new QwtPlotCurve);
-						parameteratlascurves[k]->setVisible(false);
-						parameteratlascurves[k]->setPen(m_AtlasStyle[j]);
-					}
-					if(j<3)
-					{
-						parameterstatcurves.push_back(new QwtPlotCurve);
-						parameterstatcurves[k]->setVisible(false);
-						parameterstatcurves[k]->setPen(m_StatStyle[j]);
-					}
+						parametercurves[k]->setVisible(false);
+					parametercurves[k]->setPen(m_CaseStyle[j]);
 			}
-			checkcasecurves.push_back(parametercasecurves);
-			if(j<4)
-				checkatlascurves.push_back(parameteratlascurves);
-			if(j<3)
-				checkstatcurves.push_back(parameterstatcurves);
-			parametercasecurves.clear();
-			parameteratlascurves.clear();
-			parameterstatcurves.clear();
+			checkcurves.push_back(parametercurves);
+			parametercurves.clear();
 		}
-		m_CaseCurves.push_back(checkcasecurves);
-		m_AtlasCurves.push_back(checkatlascurves);
-		m_StatCurves.push_back(checkstatcurves);
-		checkcasecurves.clear();
-		checkatlascurves.clear();
-		checkstatcurves.clear();
+		m_CaseCurves.push_back(checkcurves);
+		checkcurves.clear();
+		for(unsigned int j=0; j<4; j++)
+		{
+			for(unsigned int k=0; k<m_Parameters.size(); k++)
+			{
+				parametercurves.push_back(new QwtPlotCurve);
+				parametercurves[k]->setVisible(false);
+				parametercurves[k]->setPen(m_AtlasStyle[j]);
+			}
+			checkcurves.push_back(parametercurves);
+			parametercurves.clear();
+		}
+		m_AtlasCurves.push_back(checkcurves);
+		checkcurves.clear();
+		for(unsigned int j=0; j<3; j++)
+		{
+			for(unsigned int k=0; k<m_Parameters.size(); k++)
+			{
+				parametercurves.push_back(new QwtPlotCurve);
+				parametercurves[k]->setVisible(false);
+				parametercurves[k]->setPen(m_StatStyle[j]);
+			}
+			checkcurves.push_back(parametercurves);
+			parametercurves.clear();
+		}
+		m_StatCurves.push_back(checkcurves);
+		checkcurves.clear();
 	}
 }
 
@@ -684,7 +762,7 @@ void PlotWindow::CreateInfoLabel()
 {
 	vstring info;
 	int labelindex=-1;	
-	info=m_parent->getparameterslines(m_Fibers[0].c_str());
+	info=m_parent->getFiberInformations(m_Fibers[0].c_str());
 	for(unsigned int i=0; i<info.size(); i++)
 	{
 		if(i!=4)
@@ -762,7 +840,7 @@ void PlotWindow::Plotting(QVector<qv3double> data, std::string type)
 	for(unsigned int i=0; i<m_Fibers.size(); i++)
 	{
 		fiberdata=data[i];
-		for(unsigned int j=0; j<tablesize; j++)
+		for(int j=0; j<tablesize; j++)
 		{
 			casedata=fiberdata[j];
 			x_data=casedata[0];

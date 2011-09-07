@@ -27,6 +27,19 @@
      <item row="1" column="0">
       <layout class="QHBoxLayout" name="steplayout">
        <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="previousstep">
          <property name="enabled">
           <bool>false</bool>
@@ -49,6 +62,22 @@
         </widget>
        </item>
        <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>150</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="nextstep">
          <property name="minimumSize">
           <size>
@@ -66,6 +95,57 @@
           <string>Next Step</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Apply">
+         <property name="minimumSize">
+          <size>
+           <width>88</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>88</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="AutomatedComputation">
+         <property name="minimumSize">
+          <size>
+           <width>95</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>95</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Computes All</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
@@ -138,7 +218,7 @@
         <string notr="true"/>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>2</number>
        </property>
        <property name="usesScrollButtons">
         <bool>true</bool>
@@ -746,7 +826,7 @@
            <x>530</x>
            <y>200</y>
            <width>341</width>
-           <height>91</height>
+           <height>111</height>
           </rect>
          </property>
          <property name="styleSheet">
@@ -762,7 +842,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>10</y>
+            <y>20</y>
             <width>291</width>
             <height>17</height>
            </rect>
@@ -774,8 +854,8 @@
          <widget class="QFrame" name="outputframe">
           <property name="geometry">
            <rect>
-            <x>10</x>
-            <y>40</y>
+            <x>20</x>
+            <y>50</y>
             <width>291</width>
             <height>41</height>
            </rect>
@@ -900,19 +980,6 @@
             <string>...</string>
            </property>
           </widget>
-         </widget>
-         <widget class="QPushButton" name="fiberprocessapply">
-          <property name="geometry">
-           <rect>
-            <x>60</x>
-            <y>110</y>
-            <width>191</width>
-            <height>27</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Computation</string>
-          </property>
          </widget>
          <widget class="QLabel" name="fiberinAtlastitle">
           <property name="geometry">
@@ -1255,19 +1322,6 @@
           <string>Attributed fibers :</string>
          </property>
         </widget>
-        <widget class="QPushButton" name="ApplyDTI_tract_stat">
-         <property name="geometry">
-          <rect>
-           <x>720</x>
-           <y>300</y>
-           <width>181</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Computation</string>
-         </property>
-        </widget>
         <widget class="QListWidget" name="FiberSelected2List">
          <property name="geometry">
           <rect>
@@ -1383,20 +1437,33 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen_parameters"/>
-    <addaction name="actionSave_parameters"/>
+    <addaction name="actionOpen_data_file"/>
+    <addaction name="actionSave_data_file"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_analysis_file"/>
+    <addaction name="actionSave_analysis_file"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionOpen_parameters">
+  <action name="actionOpen_data_file">
    <property name="text">
-    <string>open parameters</string>
+    <string>Open data file</string>
    </property>
   </action>
-  <action name="actionSave_parameters">
+  <action name="actionSave_data_file">
    <property name="text">
-    <string>save parameters</string>
+    <string>Save data file</string>
+   </property>
+  </action>
+  <action name="actionOpen_analysis_file">
+   <property name="text">
+    <string>Open analysis file</string>
+   </property>
+  </action>
+  <action name="actionSave_analysis_file">
+   <property name="text">
+    <string>Save analysis file</string>
    </property>
   </action>
  </widget>

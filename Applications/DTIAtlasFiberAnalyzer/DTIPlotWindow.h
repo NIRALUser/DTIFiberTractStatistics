@@ -65,6 +65,7 @@ class PlotWindow : public QWidget
 		void setSliderLcd();
 		void ComputeCorr(QVector<qv3double> casedata, QVector<qv3double> statdata);
 		void InitCorrText();
+		bool getError(){return m_Error;}
 
 		
 	public slots:
@@ -72,6 +73,7 @@ class PlotWindow : public QWidget
 		void setPenWidth(int);
 		void ColorCorr();
 		void DecolorCorr();
+		void ApplyTh(int);
 		
 		
 	private:
@@ -110,6 +112,9 @@ class PlotWindow : public QWidget
 		QLabel* m_StatPxSize;
 		QPushButton* m_ComputeCorr;
 		QPushButton* m_DecomputeCorr;
+		QSlider* m_ThSlider;
+		QLCDNumber* m_ThLcd;
+		QLabel* m_ThLabel;
 		QTextEdit* m_CorrText;
 		QwtPlot* m_Plot;
 		std::vector <std::vector <std::vector <QwtPlotCurve*> > > m_CaseCurves;
@@ -123,6 +128,7 @@ class PlotWindow : public QWidget
 		vstring m_Cases;
 		vstring m_Fibers;
 		qv3double m_Corr;
+		bool m_Error;
 		
 };
 

@@ -15,7 +15,7 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 	DataCol = -1;
 	DefCol = -1;
 	NameCol = -1;
-	bool transposeColRow;
+	bool transposeColRow, success=false;
 	
 	//read the parameters from the file
 	if(!ReadParametersFromFile(parametersfile,csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol,
@@ -63,8 +63,7 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 	for(unsigned int i=0;i<SelectedFibers.size();i++)
 	{
 		/* Check the plane and add/erase it */
-		plane = PlaneAssociatedToFiber(SelectedFibers[i],1,fibersplane,Selectedfibersplane);
-							
+		plane = PlaneAssociatedToFiber(SelectedFibers[i], fibersplane);
 		if(plane!=-1)
 			Selectedfibersplane.push_back(fibersplane[plane]);
 	}
@@ -127,7 +126,11 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 	//calcul the number of parameters
 	NumberOfParameters = CalculNumberOfProfileParam(parameters);
 	//Gather fibers profile information 
-	GatheringFiberProfile(CSVFile, OutputFolder, NumberOfParameters, DataCol, NameCol,transposeColRow);
+	GatheringFiberProfile(CSVFile, OutputFolder, DataCol, NameCol,transposeColRow, SelectedFibers, success);
+	if(success)
+		std::cout<<"CSV files were written successfully"<<std::endl;
+	else
+		std::cout<<"Error gathering fiber profiles : CSV files were not written."<<std::endl;
 	
 	return true;
 }
@@ -277,12 +280,6 @@ bool Applyfiberprocess(CSVClass* CSV,
 	filename = takeoffExtension(filename);
 	filename = OutputFolder+ "/" + filename + "_computed.csv";
 	CSV->SaveFile(filename);
-	
-	/* save the parameters by default */
-	filename = OutputFolder + "/" + takeoffExtension(takeoffPath(CSV->getFilename()))
-			+"_parameters.txt";
-	saveparam(filename, CSV->getFilename(), DataCol, DefCol, NameCol, OutputFolder,AtlasFiberDir, fibers,
-				 parameters, transposeColRow);
 	
 	return true;
 }
@@ -563,6 +560,8 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 	std::string outputname, name_of_fiber, header, namecase, nameoffile;
 	CreateDirectoryForData(OutputFolder,"Fibers");
 	
+	
+	
 	/* Loop for all the fibers */
 	for(unsigned int j=0;j<fibers.size();j++)
 	{
@@ -667,12 +666,6 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 	filename = OutputFolder+ "/" + filename + "_computed.csv";
 	CSV->SaveFile(filename);
 	
-	/* save the parameters */
-	filename = OutputFolder + "/" + takeoffExtension(takeoffPath(CSV->getFilename()))
-			+"_parameters.txt";
-	saveparam(filename, CSV->getFilename(), DataCol, DefCol, NameCol, OutputFolder, AtlasDirectory, fibers,
-				 parameters, transposeColRow);
-	
 	return true;
 }
 
@@ -692,7 +685,6 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 	QStringList arguments;
 	
 	std::cout<<"Compute dti_tract_stat..."<< std::endl;
-	
 	if(Input_fiber_file.compare("no fiber")!=0 && Input_fiber_file.compare("no")!=0)
 	{
 		//Input fiber file
@@ -702,8 +694,7 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 		qs =  Output_fiber_file.c_str();
 		arguments.append(QString("--ouput_stats_file ") + qs);
 		//Plane
-		if((plane.substr(plane.find_last_of("_")+1,plane.size()-plane.find_last_of("_")+1))
-				  .compare("auto")!=0)
+		if((plane.substr(plane.find_last_of("_")+1,plane.size()-plane.find_last_of("_")+1)).compare("auto")!=0)
 		{
 			qs = AtlasDirectory.c_str();
 			qs.append("/");
@@ -731,209 +722,247 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
  * Gather the fiber profile information from .fvp file :
  * It stocks the data in an vector(case) of vector(line) of vstring (data)
  ********************************************************************************/
-void GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int NumberOfParameters, int DataCol, int NameCol,
-									bool transposeColRow)
+
+std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int DataCol, int NameCol, bool transposeColRow, vstring fibers, bool& success)
 {
 	// variables
-	std::string fibername,filename,outputprofilefolder;
-	std::vector<v2string> FiberProfiles;
+	std::string fibername, filename, outputprofilefolder, fiberpath;
+	std::vector<std::vector<v2string> > FiberProfiles;
+	std::vector< v2string > v3profiles;
+	vstring parameters;
 	v2string profiles;
 	
 	/* create the output folder where there will be all of the gathering data */
 	outputprofilefolder = "FiberProfiles";
 	CreateDirectoryForData(OutputFolder,outputprofilefolder);
+	fiberpath=OutputFolder + "/Fibers/" + takeoffExtension(fibers[0]) + ".fvp";
+	LineInVector(getParamFromFile(fiberpath),parameters);
 	
-	OutputFolder = OutputFolder + "/" + outputprofilefolder;
+	outputprofilefolder = OutputFolder + "/" + outputprofilefolder;
 	
 	/* look for the header .fvp and create the folder for each fiber.fvp with the name of the fiber */
 	for(unsigned int col=0;col<CSV->getColSize(0);col++)
 	{
-		FiberProfiles.clear();
 		if(ExtensionofFile((*CSV->getData())[0][col]).compare("fvp")==0)
 		{
 			fibername = takeoffExtension((*CSV->getData())[0][col]);
-			if(CreateDirectoryForData(OutputFolder,fibername))
+			if(CreateDirectoryForData(outputprofilefolder,fibername))
 			{
 				/* read the data of every case and put it in the vector */
 				for(unsigned int row=1;row<CSV->getRowSize();row++)
 				{
+					//read the profile information from the file and put it for the fiber and data
+					if(ReadProfileInformation((*CSV->getData())[row][col],profiles, parameters.size()))
+						v3profiles.push_back(profiles);
 					profiles.clear();
-					if(ReadProfileInformation(fibername,(*CSV->getData())[row][col],profiles))
-					{
-						//read the profile information from the file 
-						//and put it for the fiber and data
-						FiberProfiles.push_back(profiles);
-					}
 				}
-				
-				if(!FiberProfiles.empty())
+				fiberpath=OutputFolder+"/Fibers/"+(*CSV->getData())[0][col];
+				if(ReadProfileInformation(fiberpath,profiles,parameters.size()))
 				{
-					/* write the information in a file for each parameters */
-					for(int i=0;i<NumberOfParameters;i++)
+					v3profiles.push_back(profiles);
+					profiles.clear();
+					if(v3profiles.size()!=0)
+						std::cout<<"Informations of "<<fibername<<" read successfully"<<std::endl;
+					else
 					{
-						if(FiberProfiles[0][0].size()> static_cast<unsigned int>(i+2))
-						{
-							//the two first columns are Arclenght and fiberpoints
-							filename = OutputFolder + "/" + fibername + "/" 
-									+ FiberProfiles[0][0][i+2]
-									+ "_" + fibername + ".csv";
-							WriteProfile(CSV, filename,FiberProfiles,DataCol,
-											 NameCol,i+2,transposeColRow);
-						}
+						std::cout<<"Nothing was read."<<std::endl;
+						success=false;
+						return FiberProfiles;
 					}
 				}
 				else
-					std::cout<<"Read information from the fvp files failed for"<<
-							" the fiber "<<fibername<<"!"<<std::endl;
+				{
+					std::cout<<"Read information from the fvp files failed for the fiber "<<fibername<<"!"<<std::endl;
+					success=false;
+					return FiberProfiles;
+				}
 			}
+			FiberProfiles.push_back(v3profiles);
+			for(unsigned int i=0; i<parameters.size(); i++)
+			{
+				filename=outputprofilefolder+"/"+fibername+"/"+parameters[i]+"_"+fibername+".csv";
+				WriteProfile(CSV, filename, v3profiles, DataCol, NameCol, i+1, transposeColRow);
+			}
+			if(ReadFiberPtInformation(fiberpath,profiles,parameters.size()))
+				FiberProfiles[FiberProfiles.size()-1].push_back(profiles);
+			profiles.clear();
+			v3profiles.clear();
 		}
 	}
+	success=true;
+	return FiberProfiles;
 }
-
-
 /********************************************************************************* 
  * Read profile information from .fvp file
  ********************************************************************************/
-bool ReadProfileInformation(std::string fibername,std::string filename, v2string &Profiles)
+
+bool ReadProfileInformation(std::string filepath, v2string& finaldata, int nbofparameters)
 {
-	bool firstword;
-	std::ifstream file(filename.c_str(), std::ios::in); //open the file in reading
-	
+	std::string buffer;
+	vstring parameterslines, parameters, line;
+	v2string data;
+	std::ifstream file(filepath.c_str(), std::ios::in); //open the file in reading
+	LineInVector(getParamFromFile(filepath.c_str()),parameters);
 	if(file)
 	{
-		std::string line;
-		//read the data only at the seventh line
-		for(int i=0;i<6;i++)
+		parameterslines=getparameterslines(file);
+		getline(file,buffer);
+		if(!file.eof())
 		{
-			getline(file, line);
-		}
-		
-		while(getline(file, line))
-		{
-			firstword =true;
-			//create vstring
-			vstring column;
-			//Iterator on the string line
-			std::string::iterator it;
-			std::string word;
-			it = line.begin();
-			//add each word or number between two "," in the vector
-			while(it != line.end())
+			data=getdata2(file, getnb_of_samples(parameterslines));
+			line=GetColumn(0,data);
+			finaldata.push_back(line);
+			
+			if(nbofparameters<8)
 			{
-				//if the line is at the last word, set the iterator at the end of the string
-				if(line.find_first_of(",")!=std::string::npos)
-				{
-					word = line.substr(0, line.find_first_of(","));
-					column.push_back(word);
-					it = line.begin();
-					//erase the first word in the line
-					line = line.substr(line.find_first_of(",")+1,
-											 line.size()-line.find_first_of(",")+1);
-				}
+				line=GetColumn(2,data);
+				finaldata.push_back(line);
+			}	
+			
+			//Skip irrelevant text
+			getparameterslines(file);
+			getline(file,buffer);
+			
+			for(int i=1-(int)(nbofparameters/8); i<nbofparameters; i++)
+			{
+				//Avoid segmentation fault
+				if(!file.eof())
+					data=getdata2(file, getnb_of_samples(parameterslines));
 				else
 				{
-					column.push_back(line);
-					it = line.end();
+					std::cout<<"Size of parameter vector and size of data table don't match.\rPlease compute data using DTI Tract Stat again."<<std::endl;
+					return false;
 				}
+				line=GetColumn(2, data);
+				finaldata.push_back(line);
+			
+				//Skip irrelevant text
+				getparameterslines(file);
+				getline(file,buffer);
 			}
-			Profiles.push_back(column);
+			file.close();
+			return true;
+		}
+		else
+		{
+			std::cout<<"Error reading file: "<<filepath<<" is empty."<<std::endl;
+			return false;
+		}
+	}
+	else
+	{
+		std::cout<<"Error opening the file : "<<filepath<<"!"<<std::endl;
+		return false;
+	}
+}
+
+bool ReadFiberPtInformation(std::string filepath, v2string& fiberptdata, int nbofparameters)
+{
+	std::string buffer;
+	vstring parameterslines, parameters, line;
+	v2string data;
+	std::ifstream file(filepath.c_str(), std::ios::in); //open the file in reading
+	LineInVector(getParamFromFile(filepath.c_str()),parameters);
+	if(file)
+	{
+		parameterslines=getparameterslines(file);
+		getline(file,buffer);
+		data=getdata2(file, getnb_of_samples(parameterslines));
+		line=GetColumn(0,data);
+		fiberptdata.push_back(line);
+		
+		if(nbofparameters<8)
+		{
+			line=GetColumn(1,data);
+			fiberptdata.push_back(line);
+		}	
+		
+		//Skip irrelevant text
+		getparameterslines(file);
+		getline(file,buffer);
+		
+		for(int i=1-(int)(nbofparameters/8); i<nbofparameters; i++)
+		{
+			//Avoid segmentation fault
+			if(!file.eof())
+				data=getdata2(file, getnb_of_samples(parameterslines));
+			else
+			{
+				std::cout<<"Size of parameter vector and size of data table don't match.\rPlease compute data using DTI Tract Stat again."<<std::endl;
+				return false;
+			}
+			line=GetColumn(1, data);
+			fiberptdata.push_back(line);
+		
+			//Skip irrelevant text
+			getparameterslines(file);
+			getline(file,buffer);
 		}
 		file.close();
-		
 		return true;
 	}
 	else
-		std::cout<<"Error opening the file from fiber : "<<fibername<<" "<<filename<<"!"<<std::endl;
-	
-	return false;
+	{
+		std::cout<<"Error opening the file : "<<filepath<<"!"<<std::endl;
+		return false;
+	}
 }
 
 /********************************************************************************* 
  * Write profile information
  ********************************************************************************/
-void WriteProfile(CSVClass* CSV, std::string filename, std::vector<v2string> FiberProfiles, int DataCol, int NameCol, 
-						int ParamCol,bool transposeColRow)
+
+void WriteProfile(CSVClass* CSV, std::string filename, std::vector<v2string> FiberProfiles, int DataCol, int NameCol, int ParamCol, bool transposeColRow)
 {
 	/* Open a file in writing */
 	std::ofstream bfile(filename.c_str(), std::ios::out);
 	
 	if(bfile)
 	{
-		if(!transposeColRow)
+		if(transposeColRow)
 		{
-			//first line header : arc lenght
-			bfile << "Data vs Arc_Length,";
-			for(unsigned int i=1;i<FiberProfiles[0].size();i++)
+			bfile<<"Data vs Arc_length,";
+			for(unsigned int i=0; i<FiberProfiles[0][0].size(); i++)
 			{
-				if(i!=(FiberProfiles[0].size()-1))
-					bfile << FiberProfiles[0][i][0] << "," ;
+				if(i<(FiberProfiles[0][0].size()-1))
+					bfile << FiberProfiles[0][0][i] << "," ;
 				else
-					bfile << FiberProfiles[0][i][0];
+					bfile << FiberProfiles[0][0][i];
 			}
-			bfile << std::endl;
-			
-			//Take the fibers profiles information (FA for example) for each data; one data = one line 
-			//in the csv
-			for(unsigned int data=0;data<FiberProfiles.size();data++)
+			bfile<<std::endl;
+			for(unsigned int i=0; i<FiberProfiles.size(); i++)
 			{
-				//give the name of the case
-				if(NameCol == -1)
-					bfile<<takeoffPath(takeoffExtension((*CSV->getData())[data+1][DataCol]))<<",";
-				else if((*CSV->getData())[data+1][NameCol].compare("no name")==0)
-					bfile<<takeoffPath(takeoffExtension((*CSV->getData())[data+1][DataCol]))<<",";
+				if(i<FiberProfiles.size()-1)
+					bfile<<NameOfCase(CSV, i+1, NameCol, DataCol)<<",";
 				else
-					bfile << (*CSV->getData())[data+1][NameCol]<< "," ;
-					
-				for(unsigned int line=1;line<FiberProfiles[data].size();line++)
+					bfile<<"Atlas,";
+				for(unsigned int j=0; j<FiberProfiles[0][0].size(); j++)
 				{
-					/* Write line per line from the fiberprofiles vector */
-					if((unsigned int)ParamCol<FiberProfiles[data][line].size())
-					{
-						if(line!=(FiberProfiles[data].size()-1))
-						{
-							bfile << FiberProfiles[data][line][ParamCol] << "," ;
-						}
-						else
-						{
-							bfile << FiberProfiles[data][line][ParamCol];
-						}
-					}
+					if(j<(FiberProfiles[0][0].size()-1))
+						bfile << FiberProfiles[i][ParamCol][j] << "," ;
+					else
+						bfile << FiberProfiles[i][ParamCol][j];
 				}
-				bfile << std::endl;
+				bfile<<std::endl;
 			}
 		}
 		else
 		{
-			//first line header : case name
-			bfile << "Arc_Length vs Data,";
-			for(unsigned int i=0;i<FiberProfiles.size();i++)
+			bfile<<"Arc_length vs Data,";
+			for(unsigned int i=1; i<FiberProfiles.size(); i++)
+				bfile<<NameOfCase(CSV, i, NameCol, DataCol)<<",";
+			bfile<<"Atlas"<<std::endl;
+			for(unsigned int j=0; j<FiberProfiles[0][0].size(); j++)
 			{
-				//give the name of the case
-				if(NameCol == -1)
-					bfile<<takeoffPath(takeoffExtension((*CSV->getData())[i+1][DataCol]))<<",";
-				else if((*CSV->getData())[i+1][NameCol].compare("no name")==0)
-					bfile<<takeoffPath(takeoffExtension((*CSV->getData())[i+1][DataCol]))<<",";
-				else
-					bfile << (*CSV->getData())[i+1][NameCol]<< "," ;
-			}
-			bfile << std::endl;
-			
-			//Take the fibers profiles information (FA for example) for each data; one arc lenght
-			//value = one line in the csv
-			for(unsigned int line=1;line<FiberProfiles[0].size();line++)
-			{
-				//valeur de l'arc lenght
-				bfile << FiberProfiles[0][line][0]<< "," ;
-				
-				for(unsigned int data=0;data<FiberProfiles.size();data++)
+				bfile<<FiberProfiles[0][0][j]<<",";
+				for(unsigned int i=0; i<FiberProfiles.size(); i++)
 				{
-					/* Write line per line from the fiberprofiles vector */
-					if(data!=(FiberProfiles.size()-1))
-						bfile << FiberProfiles[data][line][ParamCol] << "," ;
+					if(i<(FiberProfiles.size()-1))
+						bfile << FiberProfiles[i][ParamCol][j] << "," ;
 					else
-						bfile << FiberProfiles[data][line][ParamCol];
+						bfile << FiberProfiles[i][ParamCol][j];
 				}
-				bfile << std::endl;
+				bfile<<std::endl;
 			}
 		}
 		bfile.close();
@@ -945,16 +974,12 @@ void WriteProfile(CSVClass* CSV, std::string filename, std::vector<v2string> Fib
 /********************************************************************************* 
  * save the parameters for DTIAtlasFiberAnalyzer in a file
  ********************************************************************************/
-void saveparam(std::string filename,std::string CSVFilename, int DataCol, int DefCol, int NameCol,
-					std::string OutputFolder, std::string AtlasFiberFolder, vstring FiberSelectedname, 
-					std::string parameters, bool transposeColRow)
+void SaveData(std::string filename,std::string CSVFilename, int DataCol, int DefCol, int NameCol, std::string OutputFolder)
 {
-	std::string ListOfFiber = "";
-	
 	std::ofstream savefile(filename.c_str(), std::ios::out);
 	if(savefile)
 	{
-		savefile << "Parameters for DTIAtlasFiberAnalyzer : " <<std::endl;
+		savefile << "Data parameters for DTIAtlasFiberAnalyzer : " <<std::endl;
 		
 		savefile << "CSVFile : " << CSVFilename <<std::endl;
 		savefile << "#Data/Case/Deformation Column --> index starts at 1" <<std::endl;
@@ -964,6 +989,35 @@ void saveparam(std::string filename,std::string CSVFilename, int DataCol, int De
 		if(NameCol!=-1)
 			savefile << "Case Column : " << NameCol +1 <<std::endl;
 		savefile << "Output Folder : " << OutputFolder <<std::endl;
+		
+		savefile.close();
+	}
+	else
+		std::cout<<"ERROR: Problem to open the file for saving parameters"<<std::endl;
+}
+
+std::string CreateDefaultAnalysisFile()
+{
+	std::string filename, AtlasFiberFolder, parameters;
+	vstring FiberSelectedname;
+	bool transposeColRow=false;
+	filename="./Default_Analysis_Parameters.txt";
+	AtlasFiberFolder="/home/jaberger/Desktop/nitrc_files/Atlas";
+	FiberSelectedname.push_back("Genu.vtk");
+	parameters="fa,md,fro,ad,l2,l3,rd,ga";
+	if(!FileExisted(filename))
+		SaveAnalysis(filename, AtlasFiberFolder, FiberSelectedname, parameters, transposeColRow); 
+	return filename;
+}
+
+void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, std::string parameters, bool transposeColRow)
+{
+	std::string ListOfFiber = "";
+	std::ofstream savefile(filename.c_str(), std::ios::out);
+	if(savefile)
+	{
+		savefile << "Analysis parameters for DTIAtlasFiberAnalyzer : " <<std::endl;
+		
 		savefile << "Atlas Fiber Folder : " << AtlasFiberFolder <<std::endl;
 		for(unsigned int i=0;i<FiberSelectedname.size();i++)
 		{
@@ -976,7 +1030,7 @@ void saveparam(std::string filename,std::string CSVFilename, int DataCol, int De
 		savefile << "Selected Fibers : " << ListOfFiber <<std::endl;
 		if(parameters.compare("")!=0)
 		{
-			savefile << "#Profile parameter --> choice between fa,md,fro,ad,rd,l2,l3,ga "<<std::endl;
+			savefile << "#Profile parameter --> choice between fa,md,fro,ad,l2,l3,ga,rd "<<std::endl;
 			savefile << "Profile parameter : " << parameters <<std::endl;
 		}
 		if(transposeColRow)
@@ -995,13 +1049,10 @@ void saveparam(std::string filename,std::string CSVFilename, int DataCol, int De
 	else
 		std::cout<<"ERROR: Problem to open the file for saving parameters"<<std::endl;
 }
-
 /********************************************************************************* 
  * Read the parameters for DTIAtlasFiberAnalyzer from a file
  ********************************************************************************/
-bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std::string &AtlasFiberDir,
-									 std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol,
-									 int &NameCol, vstring &SelectedFibers, bool &transposeColRow)
+bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, int &NameCol, vstring &SelectedFibers, bool &transposeColRow)
 {
 	//variables
 	vstring fibers;
@@ -1147,81 +1198,42 @@ int CalculNumberOfProfileParam(std::string parameters)
  * return the iterator; type = 1, search in fibersplane, type = 2  search in 
  * fibersplaneSelected
  ********************************************************************************/
-int PlaneAssociatedToFiber(std::string fibername,int type, vstring fibersplane, vstring Selectedfibersplane)
+// int PlaneAssociatedToFiber(std::string fibername,int type, vstring fibersplane, vstring Selectedfibersplane)
+// {
+// 	if(type ==1)
+// 	{
+// 		for(unsigned int j=0;j<fibersplane.size();j++)
+// 		{
+// 			if(fibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 ||
+// 						fibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0)
+// 				return j;
+// 			if(fibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
+// 				return j;
+// 		}
+// 	}
+// 	else
+// 	{
+// 		for(unsigned int j=0;j<Selectedfibersplane.size();j++)
+// 		{
+// 			if(Selectedfibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 ||
+// 						Selectedfibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0)
+// 				return j;
+// 			if(Selectedfibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
+// 				return j;
+// 		}
+// 	}
+// 	return -1;
+// }
+
+int PlaneAssociatedToFiber(std::string fibername, vstring fibersplane)
 {
-	if(type ==1)
+	for(unsigned int j=0;j<fibersplane.size();j++)
 	{
-		for(unsigned int j=0;j<fibersplane.size();j++)
-		{
-			if(fibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 ||
-						fibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0)
-				return j;
-			if(fibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
-				return j;
-		}
-	}
-	else
-	{
-		for(unsigned int j=0;j<Selectedfibersplane.size();j++)
-		{
-			if(Selectedfibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 ||
-						Selectedfibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0)
-				return j;
-			if(Selectedfibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
-				return j;
-		}
+		if(fibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 || fibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0 || fibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
+			return j;
 	}
 	return -1;
 }
-
- /************************************************************************************
- * convert: conversion of each line of read file into 2D double QVector.
- ************************************************************************************/
- 
- void convert(QVector <std::string> line, QVector < QVector <double> >& data)
-{
-	QVector <double> buffer;
-	int i=0;
-	for(i=0; line[i]!=line[line.size()-1]; i++)
-	{
-		buffer.append(atof(line[i].c_str()));
-	}
-	buffer.append(atof(line[i].c_str()));
-	data.append(buffer);
-}
-
- /************************************************************************************
- * LineInVector : Like previous definition of LineInVector, take line with data 
- * 	separated by ',' and put it in a 2D double vector.
- ************************************************************************************/
-void LineInVector(std::string line, QVector < QVector <double> >& data)
-{
-	QVector <std::string> column;
-	//Iterator on the string line
-	std::string::iterator it;
-	std::string word;
-	it = line.begin();
-	//add each word or number between two "," in the vector
-	while(it != line.end())
-	{
-		//if the line is at the last word, set the iterator at the end of the string
-		if(line.find_first_of(",")!=std::string::npos)
-		{
-			word = line.substr(0, line.find_first_of(","));
-			column.append(word);
-			it = line.begin();
-			//erase the first word in the line
-			line = line.substr(line.find_first_of(",")+1,line.size()-line.find_first_of(",")+1);
-		}
-		else
-		{
-			column.append(line);
-			it = line.end();
-		}
-	}
-	convert(column, data);
-}
-
 
  /************************************************************************************
  * LineInVector : Like previous definition of LineInVector, take line with data 
@@ -1275,34 +1287,31 @@ int getnb_of_samples(vstring parameterslines)
 }
 
 /************************************************************************************
- * getdata : put every data lines read from the file in a 2D double vector
+ * getdata : put every data lines read from the file in a 2D vstring vector
  ************************************************************************************/
 
-QVector < QVector <double> > getdata(std::ifstream& fvpfile, int nb_of_samples)
+v2string getdata2(std::ifstream& fvpfile, int nb_of_samples)
 {
 	std::string buffer;
-	QVector < QVector <double> > data;
+	vstring line;
+	v2string data;
 	for(int i=0; i<nb_of_samples; i++)
 	{
 		getline(fvpfile, buffer);
-		LineInVector(buffer, data);
+		LineInVector(buffer, line);
+		data.push_back(line);
 	}
 	return data;	
 }
 
-/************************************************************************************
- * GetColumn : As the data is stored by line, this function allow users to get a
- * 	column of data for plot.
- ************************************************************************************/
-
-QVector <double> GetColumn(int column, QVector < QVector <double> > data)
+vstring GetColumn(int column, v2string data)
 {
-	QVector <double> QV_column;
-	for(int i=0; i<data.size(); i++)
+	vstring line;
+	for(unsigned int i=0; i<data.size(); i++)
 	{
-		QV_column.append(data[i][column]);
+		line.push_back(data[i][column]);
 	}
-	return QV_column;
+	return line;
 }
 
 /************************************************************************************
@@ -1372,7 +1381,7 @@ QVector<QVector<double> > getCrossMeanData(qv3double data)
 	{
 		for(int k=0; k<data[0][0].size(); k++)
 		{
-			for(unsigned int l=0; l<data.size(); l++)
+			for(int l=0; l<data.size(); l++)
 			{
 				if(l%3==0)
 					MeanValue+=data[l][j][k];
@@ -1403,7 +1412,7 @@ QVector<QVector<double> > getCrossStdData(qv3double data, QVector<QVector<double
 	{
 		for(int k=0; k<data[0][0].size(); k++)
 		{
-			for(unsigned int l=0; l<data.size(); l++)
+			for(int l=0; l<data.size(); l++)
 			{
 				if(l%3==0)
 				{
@@ -1427,7 +1436,10 @@ QVector<double> getCorr(QVector<QVector<double> > data1, QVector<QVector<double>
 	long double std1, std2, mean1, mean2, corrvalue=0;
 	QVector<double> corrvector;
 	if(data1.size()!=data2.size() || data1[0].size()!=data2[0].size())
-		std::cout<<"data sizes need to be equals"<<std::endl;
+	{
+		std::cout<<"Data sizes between cases need to be equals"<<std::endl;
+		return corrvector;
+	}
 	else
 	{
 		for(int i=1; i<data1.size(); i++)
@@ -1446,3 +1458,56 @@ QVector<double> getCorr(QVector<QVector<double> > data1, QVector<QVector<double>
 	return corrvector;
 }
 
+/************************************************************************************
+* getparameterslines : read the 6 informations lines of a .fvpfile and put it in a 
+* 	string vector (one line = one string). The reference allow to continue along the input
+* 	stream.
+ ************************************************************************************/
+
+vstring getparameterslines(std::ifstream& fvpfile)
+{
+	vstring parameterslines;
+	std::string buffer;
+
+//Put first line in buffer
+	getline(fvpfile, buffer);
+
+//Stop at last line of information or if it's the end of file
+	while(buffer.compare(0,35,"Number of samples along the bundle:")!=0 && !fvpfile.eof())
+	{
+		parameterslines.push_back(buffer);
+		getline(fvpfile,buffer);
+	}
+	parameterslines.push_back(buffer);
+	return parameterslines;
+}
+
+std::string getParamFromFile(std::string filepath)
+{
+	std::string parameters="", buffer;
+	std::ifstream file(filepath.c_str(), std::ios::in);
+	if(file)
+	{
+		while(!file.eof())
+		{
+			getline(file,buffer);
+			if(buffer.compare(0, 33, "Parameter chosen for regression: ")==0)
+			{
+				if(buffer.compare(33,3, "fro")==0)
+					parameters+=buffer.substr(33,3)+",";
+				else if(buffer.compare(33,14, "All parameters")==0)
+				{
+					parameters="fa,md,fro,ad,l2,l3,rd,ga,";
+					break;
+				}
+				else
+					parameters+=buffer.substr(33,2)+",";
+			}
+		}
+		//erase last coma
+		parameters=parameters.substr(0,parameters.size()-1);
+	}
+	else
+		std::cout<<"Error Opening file to read parameters"<<std::endl;
+	return parameters;
+}
