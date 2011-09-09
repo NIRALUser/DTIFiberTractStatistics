@@ -47,6 +47,14 @@
       <channel>input</channel>
       <default></default>
       </file>
+		<string>
+			<name>auto_plane_origin</name>
+			<longflag>--auto_plane_origin</longflag>
+			<label>Way to calculate auto plane origin</label>
+			<description>Way to calculate auto plane origin by default origin is calculated with the center of gravity. "median" will calculate the median point on the fiber</description>
+			<channel>input</channel>
+			<default>cog</default>
+	 	</string>
     <file>
       <name>window_file</name>
       <longflag>--window_file</longflag>

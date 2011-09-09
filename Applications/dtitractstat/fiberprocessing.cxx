@@ -20,6 +20,7 @@
 #include <vtkFloatArray.h>
 
 #include "fiberprocessing.h"
+
 fiberprocessing::fiberprocessing()
 {
   l_counter=0;
@@ -29,7 +30,7 @@ fiberprocessing::fiberprocessing()
 fiberprocessing::~fiberprocessing()
 {}
 
-void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeautoOn, std::string plane_str, bool worldspace)
+void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeautoOn, std::string plane_str, bool worldspace, std::string auto_plane_origin)
 {
   GroupType::Pointer group = readFiberFile(input_file);
   itk::Vector<double,3> spacing = group->GetSpacing();
@@ -38,7 +39,7 @@ void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeaut
   if (planeautoOn)
   {
     cout<<"Finding the plane origin and normal automatically\n\n";
-    find_plane(group);
+	 find_plane(group , auto_plane_origin);
   }
   else 
   {
@@ -46,7 +47,7 @@ void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeaut
     if (!plane_defined)
     {
       cout<<"Could not read plane file::finding the plane origin and normal automatically\n\n";
-      find_plane(group);
+		find_plane(group, auto_plane_origin);
     }
     cout<<"return from read_plane_file function :"<<plane_defined<<plane_origin<<plane_normal<<endl;
   }
@@ -530,7 +531,7 @@ itk::Vector<double, 3> fiberprocessing::get_plane_normal()
 }
 
 
-void fiberprocessing::find_plane(GroupType::Pointer group)
+void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plane_origin)
 {
   ChildrenListType* pchildren = group->GetChildren(0);
   ChildrenListType::iterator it, it_closest;
@@ -539,19 +540,35 @@ void fiberprocessing::find_plane(GroupType::Pointer group)
   double sum_x=0,sum_y=0,sum_z=0;
   int num_points=0;
   
-  //Finding Plane origin as the average x,y,z coordinate of the whole fiber bundle
-
-  for(it = (pchildren->begin()); it != pchildren->end() ; it++)
-    {
-      pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
-      for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
-	{
-	  itk::Point<double, 3> position = (*pit).GetPosition();	
-	  num_points++;
-	  sum_x=sum_x+position[0]; sum_y=sum_y+position[1]; sum_z=sum_z+position[2];
-	}
-    }
-	
+  if(auto_plane_origin=="cog")
+  {
+		//Finding Plane origin as the average x,y,z coordinate of the whole fiber bundle
+	  for(it = (pchildren->begin()); it != pchildren->end() ; it++)
+	  {
+		  pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+		  for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
+		  {
+			  itk::Point<double, 3> position = (*pit).GetPosition();
+			  num_points++;
+			  sum_x=sum_x+position[0]; sum_y=sum_y+position[1]; sum_z=sum_z+position[2];
+		  }
+	  }
+  }
+  else if(auto_plane_origin=="median")
+  {
+	  //Finding Plane origin as the average x,y,z of middle points for each fibers
+	  int median=0;
+	  for(it=pchildren->begin(); it!=pchildren->end(); it++)
+	  {
+		  pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+		  median=ceil((double)pointlist.size()/2.0);
+		  pit=pointlist.begin();
+		  pit+=median;
+		  itk::Point<double,3> position=(*pit).GetPosition();
+		  num_points++;
+		  sum_x+=position[0]; sum_y+=position[1]; sum_z+=position[2];
+	  }
+  }
   plane_origin[0]=sum_x/num_points;
   plane_origin[1]=sum_y/num_points;
   plane_origin[2]=sum_z/num_points;

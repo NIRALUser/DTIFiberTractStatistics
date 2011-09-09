@@ -21,7 +21,7 @@ class fiberprocessing{
   ~fiberprocessing();
 
   //Main functions
-  void fiberprocessing_main(std::string input_file,bool planeautoOn, std::string plane_file, bool worldspace);
+  void fiberprocessing_main(std::string input_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin);
   void arc_length_parametrization(GroupType::Pointer group, bool worldspace, itk::Vector<double,3> spacing, itk::Vector<double,3> offset);
 
   //IO functions
@@ -31,7 +31,7 @@ class fiberprocessing{
 
   //Helper functions
   void find_distance_from_plane(itk::Point<double, 3> pos, int index);
-  void find_plane(GroupType::Pointer group);
+  void find_plane(GroupType::Pointer group, std::string auto_plane_origin);
   bool Siequals(std::string a, std::string b);
   itk::Vector<double, 3> get_plane_origin();
   itk::Vector<double, 3> get_plane_normal();

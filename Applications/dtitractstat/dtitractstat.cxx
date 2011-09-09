@@ -64,11 +64,11 @@ int main(int argc, char* argv[])
     }
 
   //Cut Plane definition
-  bool planeautoOn = true;
+  bool planeautoOn = false;
   if(plane_file == "")
     {
       std::cout<<"No plane file is specified. A plane will be selected automatically"<<std::endl;
-      planeautoOn=false;
+      planeautoOn=true;
     }
   
 
@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
   int all_flag = -1;
   std::cout<<"there are "<<param<<" parameters"<<std::endl;
 
-  FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace);
+  FP->fiberprocessing_main(input_fiber_file, planeautoOn, plane_file, worldspace, auto_plane_origin);
 
   if (param == 8){
     all_flag=1; 
