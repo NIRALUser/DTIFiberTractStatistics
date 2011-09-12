@@ -36,6 +36,7 @@ PlotWindow::PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata
 	m_Plot->setAxisTitle(QwtPlot::xBottom,"Arc_Lengh");
 	m_Plot->setAxisTitle(QwtPlot::yRight,"Nb_of_fiber_points");
 	m_Plot->setAxisTitle(QwtPlot::yLeft,"fa");
+	InitAxisInterval();
 	show();
 }
 
@@ -52,13 +53,14 @@ void PlotWindow::InitWidget()
 	m_OptionLayout=new QHBoxLayout;
 	m_ParameterLayout=new QVBoxLayout;
 	m_CheckBoxLayout=new QVBoxLayout;
-
 	m_CaseLayout=new QGridLayout;
 	m_AtlasLayout=new QGridLayout;
 	m_StatLayout=new QGridLayout;
 	m_FiberLayout=new QVBoxLayout;
 	m_PixelGridLayout=new QGridLayout;
 	m_CorrLayout=new QGridLayout;
+	m_AxesLayout=new QGridLayout;
+	
 	m_CaseLcd=new QLCDNumber(this);
 	m_CaseSlider=new QSlider(Qt::Horizontal, this);
 	m_AtlasLcd=new QLCDNumber(this);
@@ -78,6 +80,15 @@ void PlotWindow::InitWidget()
 	m_ThLcd=new QLCDNumber(this);
 	m_ThLabel=new QLabel("Threshold", this);
 	m_CorrText=new QTextEdit("", this);
+	m_Min=new QLabel("Min", this);
+	m_Max=new QLabel("Max", this);
+	m_X=new QLabel("X", this);
+	m_Y=new QLabel("Y", this);
+	m_XMin=new QLineEdit;
+	m_XMax=new QLineEdit;
+	m_YMin=new QLineEdit;
+	m_YMax=new QLineEdit;
+	m_AutoScale=new QPushButton("Auto Scale", this);
 	InitCorrText();
 	QGroupBox* DetailledInfo=new QGroupBox("Detailled Information");
 	QGroupBox* CurveDisplay=new QGroupBox("Choose Curve to diplay");
@@ -88,6 +99,7 @@ void PlotWindow::InitWidget()
 	QGroupBox* GroupFibers=new QGroupBox("Fibers");
 	QGroupBox* GroupPxSize=new QGroupBox("Pixels size");
 	QGroupBox* GroupCorr=new QGroupBox("Correlation");
+	QGroupBox* GroupAxes=new QGroupBox("Axes Configuration");
 	
 	setSliderLcd();
 	
@@ -140,9 +152,21 @@ void PlotWindow::InitWidget()
 	m_CorrLayout->addWidget(m_CorrText,1,0);
 	m_CorrLayout->setColumnStretch(4,1);
 	GroupCorr->setLayout(m_CorrLayout);
+	m_AxesLayout->addWidget(m_Min,0,1);
+	m_AxesLayout->addWidget(m_Max,0,2);
+	m_AxesLayout->addWidget(m_X,1,0);
+	m_AxesLayout->addWidget(m_XMin,1,1);
+	m_AxesLayout->addWidget(m_XMax,1,2);
+	m_AxesLayout->addWidget(m_Y,2,0);
+	m_AxesLayout->addWidget(m_YMin,2,1);
+	m_AxesLayout->addWidget(m_YMax,2,2);
+	m_AxesLayout->addWidget(m_AutoScale,3,0);
+	m_AxesLayout->setColumnStretch(3,1);
+	GroupAxes->setLayout(m_AxesLayout);
 	m_VLayout->addWidget(DetailledInfo);
 	m_VLayout->addWidget(CurveDisplay);
 	m_VLayout->addWidget(GroupPxSize);
+	m_VLayout->addWidget(GroupAxes);
 	m_VLayout->addWidget(GroupCorr);
 	m_VLayout->addWidget(m_CorrText);
 	m_MainLayout->addWidget(m_Plot);
@@ -164,6 +188,11 @@ void PlotWindow::InitWidget()
 	connect(m_ComputeCorr, SIGNAL(clicked()), this, SLOT(ColorCorr()));
 	connect(m_DecomputeCorr, SIGNAL(clicked()), this, SLOT(DecolorCorr()));
 	connect(m_ThSlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyTh(int)));
+	connect(m_XMin, SIGNAL(editingFinished()), this, SLOT(UpdateAxis()));
+	connect(m_XMax, SIGNAL(editingFinished()), this, SLOT(UpdateAxis()));
+	connect(m_YMin, SIGNAL(editingFinished()), this, SLOT(UpdateAxis()));
+	connect(m_YMax, SIGNAL(editingFinished()), this, SLOT(UpdateAxis()));
+	connect(m_AutoScale, SIGNAL(clicked()), this, SLOT(AutoScale()));
 	
 }
 
@@ -207,6 +236,44 @@ void PlotWindow::InitCorrText()
 	m_CorrText->setText(corrtext.str().c_str());
 }
 
+void PlotWindow::UpdateAxis()
+{
+	m_Plot->setAxisAutoScale(QwtPlot::xBottom, false);
+	m_Plot->setAxisAutoScale(QwtPlot::yLeft, false);
+	m_Plot->setAxisScale(QwtPlot::xBottom, atof(m_XMin->text().toStdString().c_str()), atof(m_XMax->text().toStdString().c_str()));
+	m_Plot->setAxisScale(QwtPlot::yLeft, atof(m_YMin->text().toStdString().c_str()), atof(m_YMax->text().toStdString().c_str()));
+	m_Plot->replot();
+}
+
+void PlotWindow::AutoScale()
+{
+	m_Plot->setAxisAutoScale(QwtPlot::xBottom, true);
+	m_Plot->setAxisAutoScale(QwtPlot::yLeft, true);
+	m_Plot->replot();
+	InitAxisInterval();
+}
+
+void PlotWindow::InitAxisInterval()
+{
+	QwtInterval Interval;
+	std::ostringstream text;
+	Interval=m_Plot->axisInterval(QwtPlot::xBottom);
+	text<<Interval.minValue();
+	m_XMin->setText(text.str().c_str());
+	text.str("");
+	text<<Interval.maxValue();
+	m_XMax->setText(text.str().c_str());
+	text.str("");
+	
+	Interval=m_Plot->axisInterval(QwtPlot::yLeft);
+	text<<Interval.minValue();
+	m_YMin->setText(text.str().c_str());
+	text.str("");
+	text<<Interval.maxValue();
+	m_YMax->setText(text.str().c_str());
+	text.str("");
+}
+
 /**********************************************************************************************
  *CreateStyle : Fill the style vector of each type of curves with different pens.
  **********************************************************************************************/
@@ -227,7 +294,7 @@ void PlotWindow::CreateCaseStyle()
 			if(m_Cases.size()==1)
 				coef=0;
 			else
-				coef=i/((m_Cases.size()-1)*3);
+				coef=i/(double)((m_Cases.size()-1)*3);
 			//Generate random RGB color based on red
 			if(coef*242<=116)
 				color.setRgb((int)(139+coef*242), 0, 0);
@@ -624,12 +691,12 @@ void PlotWindow::CreateCaseBoxes()
 		box="<font color="+m_CaseStyle[styleindex].color().name().toStdString()+">"+box+"</font>";
 		m_CaseBoxes.push_back(new QCheckBox("", this));
 		m_CaseLabel.push_back(new QLabel(box.c_str(),this));
-		m_CaseLayout->addWidget(m_CaseBoxes[i],i%14,(int)(i/14));
-		m_CaseLayout->addWidget(m_CaseLabel[i],i%14,(int)(1+i/14));
+		m_CaseLayout->addWidget(m_CaseBoxes[i],i%8,((int)(i/8))*2);
+		m_CaseLayout->addWidget(m_CaseLabel[i],i%8,((int)(1+i/8))*2-1);
 		
 		connect(this->m_CaseBoxes[i], SIGNAL(stateChanged(int)), this, SLOT(setCurveVisible()));
 	}
-	m_CaseLayout->setColumnStretch((int)(2+m_Cases.size()/7),1);
+	m_CaseLayout->setColumnStretch((int)(3+m_Cases.size()/4),1);
 	m_CaseBoxes[0]->setChecked(true);
 }
 

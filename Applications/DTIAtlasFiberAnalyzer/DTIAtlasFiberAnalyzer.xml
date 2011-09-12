@@ -28,11 +28,19 @@
 		</description>
 		
 		<string>
-			<name>parametersfile</name>
-			<longflag>parametersfile</longflag>
-			<flag>P</flag>
-			<description>File containing the parameters for DTIAtlasFiberAnalyzer</description>
-			<label>parametersfile</label>
+			<name>datafile</name>
+			<longflag>datafile</longflag>
+			<flag>D</flag>
+			<description>File containing the Data parameters for DTIAtlasFiberAnalyzer</description>
+			<label>datafile</label>
+		</string>
+		
+		<string>
+			<name>analysisfile</name>
+			<longflag>analysisfile</longflag>
+			<flag>A</flag>
+			<description>File containing the Analysis parameters for DTIAtlasFiberAnalyzer</description>
+			<label>analysisfile</label>
 		</string>
 		
 		<string>

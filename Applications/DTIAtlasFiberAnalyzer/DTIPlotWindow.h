@@ -66,6 +66,7 @@ class PlotWindow : public QWidget
 		void ComputeCorr(QVector<qv3double> casedata, QVector<qv3double> statdata);
 		void InitCorrText();
 		bool getError(){return m_Error;}
+		void InitAxisInterval();
 
 		
 	public slots:
@@ -74,6 +75,8 @@ class PlotWindow : public QWidget
 		void ColorCorr();
 		void DecolorCorr();
 		void ApplyTh(int);
+		void UpdateAxis();
+		void AutoScale();
 		
 		
 	private:
@@ -89,6 +92,7 @@ class PlotWindow : public QWidget
 		QVBoxLayout* m_FiberLayout;
 		QGridLayout* m_PixelGridLayout;
 		QGridLayout* m_CorrLayout;
+		QGridLayout* m_AxesLayout;
 		std::vector <QLabel*> m_InfoLabel;
 		std::vector <QRadioButton*> m_ParameterButtons;
 		std::vector <QRadioButton*> m_FiberButtons;
@@ -116,6 +120,15 @@ class PlotWindow : public QWidget
 		QLCDNumber* m_ThLcd;
 		QLabel* m_ThLabel;
 		QTextEdit* m_CorrText;
+		QLabel* m_Min;
+		QLabel* m_Max;
+		QLabel* m_X;
+		QLabel* m_Y;
+		QLineEdit* m_XMin;
+		QLineEdit* m_XMax;
+		QLineEdit* m_YMin;
+		QLineEdit* m_YMax;
+		QPushButton* m_AutoScale;
 		QwtPlot* m_Plot;
 		std::vector <std::vector <std::vector <QwtPlotCurve*> > > m_CaseCurves;
 		std::vector <std::vector <std::vector <QwtPlotCurve*> > > m_AtlasCurves;

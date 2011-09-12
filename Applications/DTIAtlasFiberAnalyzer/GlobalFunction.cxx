@@ -6,20 +6,19 @@
 /********************************************************************************* 
  * Command Line function
  ********************************************************************************/
-bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug)
+bool CommandLine(std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug)
 {
 	//variables
 	std::string pathFiberProcess, pathdti_tract_stat, OutputFolder, AtlasFiberDir, parameters, csvfile;
-	vstring fibers, SelectedFibers, fibersplane, Selectedfibersplane;
+	vstring fibers, SelectedFibers, SelectedPlanes, fibersplane, Selectedfibersplane;
 	int DataCol, DefCol, NameCol,NumberOfParameters;
 	DataCol = -1;
 	DefCol = -1;
 	NameCol = -1;
-	bool transposeColRow, success=false;
+	bool transposeColRow, success=false, CoG=false;
 	
 	//read the parameters from the file
-	if(!ReadParametersFromFile(parametersfile,csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol,
-		 NameCol,SelectedFibers, transposeColRow))
+	if(!ReadParametersFromFiles(datafile, analysisfile, csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol, NameCol,SelectedFibers, SelectedPlanes, transposeColRow, CoG))
 		return false;
 	
 	if(debug)
@@ -35,7 +34,11 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 		std::cout<<"Selected Fibers :"<<std::endl;
 		for(unsigned int i=0;i<SelectedFibers.size();i++)
 			std::cout<<SelectedFibers[i]<<std::endl;
+		std::cout<<"Selected Planes :"<<std::endl;
+		for(unsigned int i=0; i<SelectedPlanes.size(); i++)
+			std::cout<<SelectedPlanes[i]<<std::endl;
 		std::cout<<"Transpose col and row :"<<transposeColRow<<std::endl;
+		std::cout<<"Auto Plane Option :"<<CoG<<std::endl;
 	}
 	
 	//create the CSV file
@@ -63,9 +66,11 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 	for(unsigned int i=0;i<SelectedFibers.size();i++)
 	{
 		/* Check the plane and add/erase it */
-		plane = PlaneAssociatedToFiber(SelectedFibers[i], fibersplane);
+		plane = PlaneAssociatedToFiber(SelectedFibers[i], SelectedPlanes);
 		if(plane!=-1)
-			Selectedfibersplane.push_back(fibersplane[plane]);
+			Selectedfibersplane.push_back(SelectedPlanes[plane]);
+		else
+			Selectedfibersplane.push_back("");
 	}
 	
 	//if in the parameter file there is a selected fibers, compute with it, else compute with all the fibers
@@ -92,9 +97,7 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 			std::cin>>pathdti_tract_stat;
 		}
 		//Call dti_tract_stat
-		Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, SelectedFibers,
-								  Selectedfibersplane,parameters, DataCol, DefCol, NameCol, transposeColRow,
-								  true);
+		Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, SelectedFibers, Selectedfibersplane,parameters, DataCol, DefCol, NameCol, transposeColRow, true, CoG);
 	}
 	else
 	{
@@ -119,8 +122,7 @@ bool CommandLine(std::string CSVFilename, std::string parametersfile, bool debug
 			std::cin>>pathdti_tract_stat;
 		}
 		//Call dti_tract_stat
-		Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, fibers,
-								  fibersplane,parameters, DataCol, DefCol, NameCol,transposeColRow,true);
+		Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, fibers, fibersplane,parameters, DataCol, DefCol, NameCol,transposeColRow,true, CoG);
 	}
 	
 	//calcul the number of parameters
@@ -283,6 +285,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 	
 	return true;
 }
+
 /* Return the column with the header name or -1 if there is no column*/
 int HeaderExisted(CSVClass* CSV, std::string header)
 {
@@ -297,6 +300,7 @@ int HeaderExisted(CSVClass* CSV, std::string header)
 	
 	return -1;
 }
+
 /* Return true if there is a data in the colomn with the fiber name at the row given */
 bool DataExistedInFiberColumn(CSVClass* CSV, int row, int column,std::string outputname)
 {
@@ -309,6 +313,7 @@ bool DataExistedInFiberColumn(CSVClass* CSV, int row, int column,std::string out
 	
 	return false;
 }
+
 /* Return true if there filename exists */
 bool FileExisted(std::string Filename)
 {
@@ -322,6 +327,7 @@ bool FileExisted(std::string Filename)
 	
 	return false;
 }
+
 /* Return the namecase from the input or the namecol*/
 std::string NameOfCase(CSVClass* CSV, int row, int NameCol, int DataCol)
 {
@@ -346,6 +352,7 @@ std::string NameOfCase(CSVClass* CSV, int row, int NameCol, int DataCol)
 	
 	return namecase;
 }
+
 /* return the value of skip and alldata*/
 std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget*parent)
 {
@@ -491,16 +498,15 @@ void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::s
 				if(planename.compare(fibername)==0)
 				{
 					extensionfiberplane = ExtensionofFile(AtlasDirectory.GetFile(j));
-					if(extensionfiberplane.compare("fvb")==0 ||
-									 extensionfiberplane.compare("fvp")==0)
+					if(/*extensionfiberplane.compare("fvb")==0||*/extensionfiberplane.compare("fvp")==0)
 					{
 						fibersplane.push_back(AtlasDirectory.GetFile(j));
 						noplane = true;
 					}
 				}
 			}
-			if(!noplane)
-				fibersplane.push_back(fibername + "_auto");
+// 			if(!noplane)
+// 				fibersplane.push_back(fibername + "_auto");
 		}
 	}
 }
@@ -550,7 +556,7 @@ std::string ExtensionofFile(std::string filename)
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
 								 std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
-								 int DataCol, int DefCol, int NameCol, bool transposeColRow, bool nogui, QWidget *parent)
+								 int DataCol, int DefCol, int NameCol, bool transposeColRow, bool nogui, bool CoG, QWidget *parent)
 {
 	int col=-1;
 	bool ExistedFile,DataAdded;
@@ -617,7 +623,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 						/* If dti_tract_stat worked */
 						if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
 							input_fiber, outputname, fibersplane[j],
-							parameters)==0)
+							parameters, CoG)==0)
 						{
 							if(FileExisted(outputname))
 							{
@@ -653,7 +659,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 			return false;
 		else if(!skipdata[0] || !ExistedFile)
 		{
-			if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory, inputname, outputname, fibersplane[j], parameters)!=0)
+			if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory, inputname, outputname, fibersplane[j], parameters, CoG)!=0)
 				std::cout<<"Fail during dti_tract_stat!"<<std::endl;
 		}
 		
@@ -678,7 +684,8 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 							  std::string Input_fiber_file,
 							  std::string Output_fiber_file,
 							  std::string plane,
-							  std::string parameter)
+							  std::string parameter,
+							  bool CoG)
 {
 	int state=0;
 	QProcess *process= new QProcess();
@@ -694,12 +701,20 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 		qs =  Output_fiber_file.c_str();
 		arguments.append(QString("--ouput_stats_file ") + qs);
 		//Plane
-		if((plane.substr(plane.find_last_of("_")+1,plane.size()-plane.find_last_of("_")+1)).compare("auto")!=0)
+		if(/*(plane.substr(plane.find_last_of("_")+1,plane.size()-plane.find_last_of("_")+1)).compare("auto")!=0*/plane!="")
 		{
 			qs = AtlasDirectory.c_str();
 			qs.append("/");
 			qs.append(plane.c_str());
 			arguments.append(QString("--plane_file ") + qs);
+		}
+		else
+		{
+			if(!CoG)
+			{
+				qs="median";
+				arguments.append(QString("--auto_plane_origin ")+qs);
+			}
 		}
 		//parameter
 		if(parameter.compare("")!=0)
@@ -792,6 +807,7 @@ std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::st
 	success=true;
 	return FiberProfiles;
 }
+
 /********************************************************************************* 
  * Read profile information from .fvp file
  ********************************************************************************/
@@ -830,7 +846,7 @@ bool ReadProfileInformation(std::string filepath, v2string& finaldata, int nbofp
 					data=getdata2(file, getnb_of_samples(parameterslines));
 				else
 				{
-					std::cout<<"Size of parameter vector and size of data table don't match.\rPlease compute data using DTI Tract Stat again."<<std::endl;
+					std::cout<<"Size of parameter vector and size of data table don't match. Please compute data using DTI Tract Stat again."<<std::endl;
 					return false;
 				}
 				line=GetColumn(2, data);
@@ -1049,113 +1065,145 @@ void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring Fi
 	else
 		std::cout<<"ERROR: Problem to open the file for saving parameters"<<std::endl;
 }
+
 /********************************************************************************* 
  * Read the parameters for DTIAtlasFiberAnalyzer from a file
  ********************************************************************************/
-bool ReadParametersFromFile(std::string filename, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, int &NameCol, vstring &SelectedFibers, bool &transposeColRow)
+bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, int &NameCol, vstring &SelectedFiber, vstring &SelectedPlanes, bool &transposeColRow, bool &CoG)
 {
 	//variables
 	vstring fibers;
-	std::string ListOfFiber;
+	std::string ListOfFiber, ListOfPlane;
 	
-	if(filename.compare("")!=0)
+	if(datafile.compare("")!=0)
 	{
-		std::ifstream file(filename.c_str() , std::ios::in);  // open in reading
-		std::string str,buf1,buf2;
+		std::ifstream file(datafile.c_str() , std::ios::in);  // open in reading
+		std::string str,buf1;
 			
 		if(file)  // if open
 		{
 				//the first line
 			getline(file, buf1);
-			if(buf1.compare(0,39,"Parameters for DTIAtlasFiberAnalyzer : ")==0)
+			if(buf1.compare(0,44,"Data parameters for DTIAtlasFiberAnalyzer : ")==0)
 			{
 				/* Loop for reading the file and setting the parameters values */
 				while(!file.eof())
 				{
 					getline(file, buf1);
-					if(buf1.compare(0,10,"CSVFile : ")==0)
-						CSVfilename = buf1.substr(10,buf1.size()-10);
-					
-					else if(buf1.compare(0,14,"Data Column : ")==0)
+					if(buf1.compare(0,1,"#")!=0)
 					{
-						str = buf1.substr(14,buf1.size()-14);
-						DataCol = atoi(str.c_str())-1;
-					}
-						
-					else if(buf1.compare(0,26,"Defomation Field Column : ")==0)
-					{
-						str = buf1.substr(26,buf1.size()-26);
-						DefCol = atoi(str.c_str())-1;
-					}
-						
-					else if(buf1.compare(0,14,"Case Column : ")==0)
-					{
-						str = buf1.substr(14,buf1.size()-14);
-						NameCol = atoi(str.c_str())-1;
-					}
-						
-					else if(buf1.compare(0,16,"Output Folder : ")==0)
-						OutputFolder = buf1.substr(16,buf1.size()-16);
-						
-					else if(buf1.compare(0,21,"Atlas Fiber Folder : ")==0)
-						AtlasFiberDir = buf1.substr(21,buf1.size()-21);
-						
-					else if(buf1.compare(0,18,"Selected Fibers : ")==0)
-					{
-						ListOfFiber = buf1.substr(18,buf1.size()-18);
-							// take the name of each fiber
-						std::string::iterator it;
-						std::string word;
-						it = ListOfFiber.begin();
-						while(it != ListOfFiber.end())
+						if(buf1.compare(0,10,"CSVFile : ")==0)
 						{
-							if(ListOfFiber.find_first_of(",")!=std::string::npos)
-							{
-								word = ListOfFiber.substr(0,
-										ListOfFiber.find_first_of(","));
-								SelectedFibers.push_back(word);
-								it = ListOfFiber.begin();
-								ListOfFiber = ListOfFiber.substr(
-										ListOfFiber.find_first_of(",")+1,
-								ListOfFiber.size() -
-										ListOfFiber.find_first_of(",")+1);
-							}
-							else
-							{
-								SelectedFibers.push_back(ListOfFiber);
-								it = ListOfFiber.end();
-							}
+							CSVfilename = buf1.substr(10,buf1.size()-10);
+						}
+						else if(buf1.compare(0,14,"Data Column : ")==0)
+						{
+							str = buf1.substr(14,buf1.size()-14);
+							DataCol = atoi(str.c_str())-1;
+						}
+						else if(buf1.compare(0,26,"Defomation Field Column : ")==0)
+						{
+							str = buf1.substr(26,buf1.size()-26);
+							DefCol = atoi(str.c_str())-1;
+						}
+						else if(buf1.compare(0,14,"Case Column : ")==0)
+						{
+							str = buf1.substr(14,buf1.size()-14);
+							NameCol = atoi(str.c_str())-1;
+						}
+						else if(buf1.compare(0,16,"Output Folder : ")==0)
+							OutputFolder = buf1.substr(16,buf1.size()-16);
+						else if(buf1.size()!=0)
+						{
+							std::cout<<"Syntax error in data file"<<std::endl;
+							return false;
 						}
 					}
-					
-					else if(buf1.compare(0,20,"Profile parameter : ")==0)
-						parameters = buf1.substr(20,buf1.size()-20);
-					
-					else if(buf1.compare(0,14,"Col and Row : ")==0)
-					{
-						if(buf1.substr(14,buf1.size()-14).compare("Case in column")==0 ||
-											buf1.substr(14,buf1.size()-14).compare("Case in col")==0 ||
-											buf1.substr(14,buf1.size()-14).compare("Arc lenght in row")==0)
-							transposeColRow = true;
-						else
-							transposeColRow = false;
-					}
 				}
-				
 				std::cout<<std::endl;
-				std::cout<<"Parameters file loaded : New Data"<<std::endl;
+				std::cout<<"Data file loaded : New Data"<<std::endl;
 			}
 			else
 			{
-				std::cout<<"ERROR: Wrong file for parameters"<<std::endl;
+				std::cout<<"ERROR: Wrong file for data parameters"<<std::endl;
 				return false;
 			}
-			
 			file.close();
 		}
 		else 
 		{
-			std::cout << "ERROR: No parameters file found" << std::endl;
+			std::cout << "ERROR: No data parameters file found" << std::endl;
+			return false;
+		}
+	}
+	
+	if(analysisfile.compare("")!=0)
+	{
+		std::ifstream file(analysisfile.c_str() , std::ios::in);  // open in reading
+		std::string str,buf1;
+			
+		if(file)  // if open
+		{
+				//the first line
+			getline(file, buf1);
+			if(buf1.compare(0,48,"Analysis parameters for DTIAtlasFiberAnalyzer : ")==0)
+			{
+				/* Loop for reading the file and setting the parameters values */
+				while(!file.eof())
+				{
+					getline(file, buf1);
+					if(buf1.compare(0,1,"#")!=0)
+					{
+						if(buf1.compare(0,21,"Atlas Fiber Folder : ")==0)
+						{
+							AtlasFiberDir = buf1.substr(21,buf1.size()-21);
+						}
+						else if(buf1.compare(0,18,"Selected Fibers : ")==0)
+						{
+							ListOfFiber = buf1.substr(18,buf1.size()-18);
+							LineInVector(ListOfFiber,SelectedFiber);
+						}
+						else if(buf1.compare(0,18,"Selected Planes : ")==0)
+						{
+							ListOfPlane=buf1.substr(18,buf1.size()-18);
+							LineInVector(ListOfPlane, SelectedPlanes);
+						}
+						else if(buf1.compare(0,20,"Profile parameter : ")==0)
+							parameters = buf1.substr(20,buf1.size()-20);
+						else if(buf1.compare(0,14,"Col and Row : ")==0)
+						{
+							if(buf1.substr(14,buf1.size()-14).compare("Case in column")==0 ||buf1.substr(14,buf1.size()-14).compare("Case in col")==0 ||buf1.substr(14,buf1.size()-14).compare("Arc lenght in row")==0)
+								transposeColRow = true;
+							else
+								transposeColRow = false;
+						}
+						else if(buf1.compare(0,20,"Auto Plane Origin : ")==0)
+						{
+							if(buf1.compare(20, 6, "median")==0)
+								CoG=false;
+							else if(buf1.compare(20,3,"cog")==0)
+								CoG=true;
+						}
+						else if(buf1.size()!=0)
+						{
+							std::cout<<"Syntax error in analysis file"<<std::endl;
+							return false;
+						}
+					}
+				}
+				std::cout<<std::endl;
+				std::cout<<"Analysis file loaded"<<std::endl;
+			}
+			else
+			{
+				std::cout<<"ERROR: Wrong file for analysis parameters"<<std::endl;
+				return false;
+			}
+			file.close();
+		}
+		else 
+		{
+			std::cout << "ERROR: No Analysis parameters file found" << std::endl;
 			return false;
 		}
 	}
@@ -1198,38 +1246,12 @@ int CalculNumberOfProfileParam(std::string parameters)
  * return the iterator; type = 1, search in fibersplane, type = 2  search in 
  * fibersplaneSelected
  ********************************************************************************/
-// int PlaneAssociatedToFiber(std::string fibername,int type, vstring fibersplane, vstring Selectedfibersplane)
-// {
-// 	if(type ==1)
-// 	{
-// 		for(unsigned int j=0;j<fibersplane.size();j++)
-// 		{
-// 			if(fibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 ||
-// 						fibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0)
-// 				return j;
-// 			if(fibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
-// 				return j;
-// 		}
-// 	}
-// 	else
-// 	{
-// 		for(unsigned int j=0;j<Selectedfibersplane.size();j++)
-// 		{
-// 			if(Selectedfibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 ||
-// 						Selectedfibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0)
-// 				return j;
-// 			if(Selectedfibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
-// 				return j;
-// 		}
-// 	}
-// 	return -1;
-// }
 
 int PlaneAssociatedToFiber(std::string fibername, vstring fibersplane)
 {
 	for(unsigned int j=0;j<fibersplane.size();j++)
 	{
-		if(fibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 || fibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0 || fibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
+		if(fibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 /*|| fibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0*/ || fibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
 			return j;
 	}
 	return -1;

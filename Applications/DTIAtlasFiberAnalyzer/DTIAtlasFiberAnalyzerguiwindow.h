@@ -43,7 +43,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void PreviousStep();
 		void BrowserCSVFilename();
 		void applyNewCSV();
-		void BrotherSaveCSV();
+		void BrowserSaveCSV();
 		void AddC();
 		void DeleteC();
 		void AddR();
@@ -107,6 +107,8 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void CompleteWithCrossStdData();
 		QVector< QVector<double> > TableConversion(v2string table);
 		void LoadAnalysisFile(std::string filename);
+		void FillSelectedPlane();
+		bool GetAutoPlaneOption();
 		
 
 		
@@ -122,7 +124,8 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		vstring m_Fibername;
 		vstring m_Fibersplane;
 		vstring m_FiberSelectedname;
-		vstring m_FibersplaneSelected;
+		vstring m_RelevantPlane;
+		vstring m_SelectedPlane;
 		vstring m_Fibers;
 		vstring m_Cases;
 		std::vector<std::vector<v2string> > m_FiberProfile;

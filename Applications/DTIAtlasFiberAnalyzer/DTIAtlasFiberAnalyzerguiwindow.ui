@@ -1308,6 +1308,12 @@
            <height>221</height>
           </rect>
          </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::MultiSelection</enum>
+         </property>
+         <property name="sortingEnabled">
+          <bool>false</bool>
+         </property>
         </widget>
         <widget class="QLabel" name="FiberSelected2title">
          <property name="geometry">
@@ -1374,6 +1380,51 @@
           </property>
           <property name="text">
            <string>Case : row / Arc lenght : column</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QGroupBox" name="invertionBox_2">
+         <property name="geometry">
+          <rect>
+           <x>670</x>
+           <y>300</y>
+           <width>291</width>
+           <height>61</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="title">
+          <string>Auto Plane Origin Options</string>
+         </property>
+         <widget class="QRadioButton" name="APCenterOfGravity">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>371</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Center of Gravity</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="APMedianOnFiber">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>311</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Median point on Fiber</string>
           </property>
          </widget>
         </widget>

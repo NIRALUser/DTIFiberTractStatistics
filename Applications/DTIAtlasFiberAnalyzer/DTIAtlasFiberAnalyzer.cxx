@@ -1,7 +1,7 @@
 /**
   DTI Atlas Fiber Analyser
 
-  Command Line : ./DTIAtlasFiberAnalyser --nogui --parametersfile /biomed-resimg/home/yvernaul/DTI/Data/Output/Database_0_parameters.txt
+  Command Line : ./DTIAtlasFiberAnalyser --nogui --datafile "datafilename" --analysisfile "analysisfilename"
 
 
   Gui window : ./DTIAtlasFiberAnalyser
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 		if(debug)
 			std::cout<<"DTI Atlas Fiber Analyser WITHOUT GUI"<<std::endl;
 		
-		if(!CommandLine(loadCSV, parametersfile, debug))
+		if(!CommandLine(loadCSV, datafile, analysisfile, debug))
 			std::cout<<"Stop DTIAtlasFiberAnalyzer ..."<<std::endl;
 		
 		return 0;
