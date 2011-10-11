@@ -123,6 +123,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
  //**********************************************************************************************************
   // For each fiber
   int count_opposite = 0;
+  int fiber_counter = 0; //counter of the fiber
   for(it = (children->begin()); it != children->end() ; it++)
   {
     closest_d = 1000.0;		
@@ -201,7 +202,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 
       //adding sample points AT the intersection point to avoid gap at origin
       all.push_back(std::vector<double>());
-      parametrized_position.push_back(itk::Vector<double, 3>());
+      parametrized_position.push_back(itk::Vector<double, 4>());
       all[l_counter].push_back(0.0);
       //add x,y,z information to vectors all by YUNDI SHI
       itk::Point<double, 3> p1;
@@ -217,7 +218,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	{
 	  parametrized_position[l_counter][pt_index] = p1[pt_index];
 	}
-	
+      parametrized_position[l_counter][4] = fiber_counter;
       
       all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
       all[l_counter].push_back((*pit).GetField("MD"));
@@ -262,7 +263,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	//multiplying by -1 to make arc length on 1 side of plane as negative
 	
 	all.push_back(std::vector<double>());
-	parametrized_position.push_back(itk::Vector<double, 3>());
+	parametrized_position.push_back(itk::Vector<double, 4>());
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
 	all[l_counter].push_back((*pit).GetField("MD"));
@@ -278,7 +279,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
-	
+	parametrized_position[l_counter][4] = fiber_counter;
 	l_counter++;
 	count++;
       }
@@ -312,7 +313,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	
 	cumulative_distance_2 += current_length;
 	all.push_back(std::vector<double>());
-	parametrized_position.push_back(itk::Vector<double, 3>());
+	parametrized_position.push_back(itk::Vector<double, 4>());
 	all[l_counter].push_back(cumulative_distance_2);
 
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
@@ -329,10 +330,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
-	
+	parametrized_position[l_counter][4] = fiber_counter;
 	l_counter++;
 	count++;
       }
+      fiber_counter++;
     }
     
     //dealing with opposite oriented fibers
@@ -378,7 +380,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       
       //adding sample points AT the intersection point to avoid gap at origin
       all.push_back(std::vector<double>());
-      parametrized_position.push_back(itk::Vector<double, 3>());
+      parametrized_position.push_back(itk::Vector<double, 4>());
       all[l_counter].push_back(0.0);
 
       itk::Point<double, 3> p_inter;
@@ -406,6 +408,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	{
 	  parametrized_position[l_counter][pt_index] = p_inter[pt_index];
 	}
+      parametrized_position[l_counter][4] = fiber_counter;
 	
       l_counter++;
       
@@ -439,7 +442,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	cumulative_distance_1 += current_length;
 	//multiplying by -1 to make arc length on 1 side of plane as negative
 	all.push_back(std::vector<double>());
-	parametrized_position.push_back(itk::Vector<double, 3>());
+	parametrized_position.push_back(itk::Vector<double, 4>());
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
@@ -456,7 +459,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
-	
+	parametrized_position[l_counter][4] = fiber_counter;
 	pit++;
 	l_counter++;
 	count++;
@@ -494,7 +497,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	
 
 	all.push_back(std::vector<double>());
-	parametrized_position.push_back(itk::Vector<double, 3>());
+	parametrized_position.push_back(itk::Vector<double, 4>());
 	all[l_counter].push_back(cumulative_distance_2);
 
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
@@ -511,7 +514,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
-	
+	parametrized_position[l_counter][4] = fiber_counter;
 	pit--;
 	l_counter++;
 	count++;

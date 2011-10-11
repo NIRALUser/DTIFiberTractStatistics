@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
     std::vector< std::vector<double> > all_results_main = REG->get_all_results();
     int reg_counter = all_results_main.size();
     //Write parametrized fiber by Yundi Shi
-
+    Write_paramatrized_fiber(output_stats_file,stepsizeOn, step_size)
     //Writing results to the output file	
     ofstream fp_output_stats_file;
     fp_output_stats_file.open(output_stats_file.c_str(),ios::app);

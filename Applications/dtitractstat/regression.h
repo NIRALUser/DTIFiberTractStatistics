@@ -25,11 +25,14 @@ public:
   void Regression_Quantile(std::string output_file, std::vector< std::vector<double> > length, double step_size, double bandwidth, double q_perc, int all_flag);
 
   //Helper functions
-  std::vector< std::vector<double> >  sort_list(std::vector< std::vector<double> >  length, int l_counter);
+  std::vector< std::vector<double> >  sort_length(std::vector< std::vector<double> >  length,  int l_counter);
+  std::vector< std::vector<double> >  sort_position(std::vector< std::vector<double> >  length, std::vector< itk::Vector<double, 4> > parametrized_position, int l_counter);
   double find_min(std::vector< std::vector<double> > length, int l_counter);
   double find_max(std::vector< std::vector<double> > length, int l_counter);
   std::vector< std::vector<double> > get_all_results();
-
+  
+  //write parametrized fiber
+  void Write_paramatrized_fiber(std::string output_parametrized_fiber_file,bool stepsizeOn, double step_size);
 private:
   std::vector< std::vector<double> > all_results;
 
