@@ -77,6 +77,7 @@ void fiberprocessing::find_distance_from_plane(itk::Point<double, 3> pos, int in
 bool fiberprocessing::Siequals(std::string a, std::string b)
 {
     unsigned int sz = a.size();
+    std::cout<<"a size is "<<a.size()<<"b size is "<<b.size()<<std::endl;
     if (b.size() != sz)
         return false;
     for (unsigned int i = 0; i < sz; ++i)
@@ -97,23 +98,28 @@ std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_
     }
   else
     {
-      for (int a =0;a<8;a++){
-	if (Siequals(parameter_std_list[a],param_name))
-	  {
-	    parameter_index = a;
-	    break;
-	  }
-      }
-      std::vector< std::vector<double> > length_temp;
-      for (int i =0; i<l_counter; i++)
+      for (int a =0;a<8;a++)
 	{
-	  length_temp.push_back(std::vector<double>());
-	  length_temp[i].push_back(all[i][0]);
-	  length_temp[i].push_back(all[i][parameter_index+1]);
-	}	
-      cout<<"Total Number of sample points in the fiber bundle: "<<length_temp.size()<<"...geting parameter "<<parameter_std_list[parameter_index]<<endl;
-      return(length_temp);
+	  std::string tmp_parameter(parameter_std_list[a]);
+	  std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
+	  if (Siequals(tmp_parameter, param_name))
+	    {
+	      std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<parameter_std_list[a]<<"a is"<<a<<std::endl;
+	      parameter_index = a;
+	      break;
+	    }
+	}
     }
+  std::vector< std::vector<double> > length_temp;
+  for (int i =0; i<l_counter; i++)
+    {
+      length_temp.push_back(std::vector<double>());
+      length_temp[i].push_back(all[i][0]);
+      length_temp[i].push_back(all[i][parameter_index+1]);
+    }	
+  cout<<"Total Number of sample points in the fiber bundle: "<<length_temp.size()<<"...getting parameter "<<parameter_std_list[parameter_index]<<endl;
+  return(length_temp);
+
 }
 
 void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool worldspace, itk::Vector<double,3> spacing, itk::Vector<double,3> offset)
@@ -123,7 +129,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
  //**********************************************************************************************************
   // For each fiber
   int count_opposite = 0;
-  int fiber_counter = 0; //counter of the fiber
+  int fiber_counter = 0;
   for(it = (children->begin()); it != children->end() ; it++)
   {
     closest_d = 1000.0;		
@@ -334,7 +340,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	l_counter++;
 	count++;
       }
-      fiber_counter++;
+      
     }
     
     //dealing with opposite oriented fibers
@@ -519,8 +525,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	l_counter++;
 	count++;
       }
+      
     }
-  }
+    fiber_counter++;
+  }  
   cout<<"Total # of opposite oriented fibers:"<<count_opposite<<endl;
 }
 
@@ -935,4 +943,104 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
   {
     throw itk::ExceptionObject("Unknown fiber file");
   }
+}
+
+void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::string output_parametrized_fiber_file, double step_size)
+{
+
+  std::cout<<"Reading Fiber"<<std::endl;
+  GroupType::Pointer group = readFiberFile(input_file);
+  ChildrenListType* children = group->GetChildren(0);
+  ChildrenListType::iterator it;
+
+  
+  int l_length = all.size();
+  std::cout<<"size of length is "<<l_length;
+  
+  double min_length = find_min_dist(); 
+  double max_length=find_max_dist();	//since length[][] is sorted 
+  int reg_counter = ceil((max_length - min_length +1)/step_size);	//note: min_length is negative
+
+  //Variables
+  double fiber_distance[reg_counter]; //distance along the fiber
+  //initializing 
+  for (int k=0;k<reg_counter;k++)
+  {
+    fiber_distance[k] = min_length+k*step_size;
+  }
+ 
+  // writing the fibers
+  vtkSmartPointer<vtkPolyData> polydata(vtkPolyData::New());
+  vtkSmartPointer<vtkIdList> ids(vtkIdList::New());
+  vtkSmartPointer<vtkPoints> pts(vtkPoints::New());
+  vtkSmartPointer<vtkIntArray> fiberindex(vtkIntArray::New());
+  
+  fiberindex->SetName("fiberindex");
+  fiberindex->SetNumberOfTuples(0);
+  ids->SetNumberOfIds(0);
+  pts->SetNumberOfPoints(0);
+  polydata->Allocate();
+  
+  //loop through all the fibers
+  int fiber_counter = 0; //counter of the fiber
+  int l_counter = 0;
+  
+  for(it = (children->begin()); it != children->end() ; it++)
+  {
+    int fiber_loc_index = 0; //index of fiber location 
+    vtkIdType currentId = ids->GetNumberOfIds();
+    while (parametrized_position[l_counter][4] == fiber_counter)
+    {
+      for (int i=0; i<reg_counter; i++)
+	{
+	  vtkIdType id;
+	  double range_min = min_length + i * step_size;
+	  double range_max = min_length + (i + 1) * step_size;
+	  if (fiber_distance[i] <= range_max && fiber_distance[i] >= range_min)
+	    {
+	      fiberindex->InsertNextTuple1(fiber_loc_index);
+	      id = pts->InsertNextPoint(parametrized_position[l_counter][0],
+					parametrized_position[l_counter][1],
+					parametrized_position[l_counter][2]);
+	  
+	      ids->InsertNextId(id);
+	      l_counter++;
+	    }
+	}
+      fiber_loc_index ++ ;
+      }
+    polydata->InsertNextCell(VTK_POLY_LINE, reg_counter, ids->GetPointer(currentId));
+      
+  }
+  polydata->GetPointData()->SetScalars(fiberindex);
+  vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
+  fiberwriter->SetFileTypeToASCII();
+  fiberwriter->SetFileName(output_parametrized_fiber_file.c_str());
+  fiberwriter->SetInput(polydata);
+  fiberwriter->Update();
+}
+
+double fiberprocessing::find_min_dist()
+{
+  l_counter = all.size();
+  double min=100000;
+  for (int i=0; i<l_counter; i++)
+    {
+      if (all[i][0]<min)
+	min=all[i][0];
+    }
+
+  return(min);
+}
+
+double fiberprocessing::find_max_dist()
+{
+  l_counter = all.size();
+  double max=-100000;
+  for (int i=0; i<l_counter; i++)
+    {
+      if (all[i][0]>max)
+	max=all[i][0];
+    }
+  return(max);
 }

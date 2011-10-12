@@ -40,7 +40,6 @@
       <default></default>
     </file>
     <file>
-    <file>
       <name>output_parametrized_fiber_file</name>
       <flag>f</flag>
       <longflag>--output_parametrized_fiber_file</longflag>
@@ -49,21 +48,22 @@
       <channel>output</channel>
       <default></default>
     </file>
+    <file>
       <name>plane_file</name>
       <longflag>--plane_file</longflag>
       <label>File that specifies the plane</label>
       <description>File that specifies the plane</description>
       <channel>input</channel>
       <default></default>
-      </file>
-		<string>
-			<name>auto_plane_origin</name>
-			<longflag>--auto_plane_origin</longflag>
-			<label>Way to calculate auto plane origin</label>
-			<description>Way to calculate auto plane origin by default origin is calculated with the center of gravity. "median" will calculate the median point on the fiber</description>
-			<channel>input</channel>
-			<default>cog</default>
-	 	</string>
+    </file>
+    <string>
+	<name>auto_plane_origin</name>
+	<longflag>--auto_plane_origin</longflag>
+	<label>Way to calculate auto plane origin</label>
+	<description>Way to calculate auto plane origin by default origin is calculated with the center of gravity. "median" will calculate the median point on the fiber</description>
+	<channel>input</channel>
+	<default>cog</default>
+    </string>
     <file>
       <name>window_file</name>
       <longflag>--window_file</longflag>
@@ -107,7 +107,7 @@
       <longflag>--parameter_list</longflag>
       <label>scalar diffusion properties that are calculated</label>
       <description>the list of scalar diffusion properties that are calculated. It can be one or multiple of the following: fa,md,ad,l2,l3,fro,rd,ga</description>
-      <default>"fa","md","ad","l2","l3","fro","rd","ga"</default>
+      <default>fa,md,ad,l2,l3,fro,rd,ga</default>
     </string-vector>
     <string-enumeration>
       <name>noise_model</name>

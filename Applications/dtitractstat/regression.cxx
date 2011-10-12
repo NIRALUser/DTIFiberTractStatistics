@@ -103,7 +103,6 @@ void regression::regression_main(std::string output_file,int param,std::string p
   {
     Regression_Beta_Gaussian(output_file, length_sorted, step_size, bandwidth, 2, 2, all_flag, windowOn, window, output_viz_file);	
     cout<<"REGRESSION FUNCTION CALLED WITH GAUSSIAN NOISE MODEL, Stat: Mean, for Param # : "<<all_flag<<endl;
-    Write_Parametrized_Fiber(output_parametrized_fiber_file,length_sorted,)
   }
 }
 
@@ -121,38 +120,12 @@ std::vector< std::vector<double> > regression::sort_length(std::vector< std::vec
 	length[j][1] = length[j+1][1];
 	length[j+1][0] = tmp_length;
 	length[j+1][1] = tmp_param;
-	for (int pt_index = 0; pt_index<4;pt_index++)
-	  {
-	    double tmp = parametrized_position[j][pt_index];         /* swap a[j] and a[j+1]      */
-	    parametrized_position[j][pt_index] = parametrized_position[j+1][pt_index];
-	    parametrized_position[j+1][pt_index] = tmp;
-	  }
-
       }
     }
   }
   return (length);
 }
-std::vector< std::vector<double> > regression::sort_position(std::vector< std::vector<double> > length, std::vector< itk::Vector<double, 4> > parametrized_position, int l_counter)
-{
-  for (int i=0; i<l_counter-1; i++) 
-  {
-    for (int j=0; j<l_counter-1-i; j++)
-    {
-      if (length[j+1][0] < length[j][0]) 
-      {  /* compare the two neighbors */
-	for (int pt_index = 0; pt_index<4;pt_index++)
-	  {
-	    double tmp = parametrized_position[j][pt_index];         /* swap a[j] and a[j+1]      */
-	    parametrized_position[j][pt_index] = parametrized_position[j+1][pt_index];
-	    parametrized_position[j+1][pt_index] = tmp;
-	  }
 
-      }
-    }
-  }
-  return (parametrized_position);
-}
 void regression::Regression_Quantile(std::string output_file, std::vector< std::vector<double> > length, double step_size, double bandwidth, double q_perc, int all_flag)
 {
   //Variables
@@ -314,16 +287,12 @@ void regression::Regression_Beta_Gaussian(std::string output_file, std::vector< 
   //Variables
   double temp_param = 0.0, weight_sum = 0.0, V2 =0.0, clamp_count=0;
   double beta_regression_result[reg_counter][4];				//will hold the result of the regression for Beta and Gaussian
-  //parameterized fiber
-  double position_regression_fiber[l_count][reg_counter][3]; //position(x,y,z) of the regression fiber
-  double fiber_index_regression_fiber[l_count][reg_counter]; //fiber index of the poitions recorded for the regression fiber
-
+ 
   double std_dev[reg_counter][10];
   int num_fib_points[reg_counter];
   double hist[reg_counter][50];						//histogram has 50 bins
   double mode_est=0, mean_beta=0, wt_sample_mean=0;
   ofstream fp_output_file;
-  int global_counter_parameter = 0;	
   //initializing 
   for (int k=0;k<reg_counter;k++)
   {
@@ -349,7 +318,6 @@ void regression::Regression_Beta_Gaussian(std::string output_file, std::vector< 
     //if l is in current window, we find weighted mean and variance for diffusion parameter value using parameter estimation
     temp_param = 0.0, weight_sum = 0.0, V2 =0.0;
     //weighted sample mean
-    int fiber_index = 0;
     for (int j=0;j<l_counter;j++)
     {
       if (length[j][0] >=range_min && length[j][0] <=range_max)						
@@ -590,106 +558,4 @@ double regression::find_max(std::vector< std::vector<double> > length, int l_cou
 	max=length[i][1];
     }
   return(max);
-}
-
-void regression::Write_parametrized_fiber(std::string output_parametrized_fiber_file, std::vector< std::vector<double> > length, std::vector< itk::Vector<double, 4> > parametrized_position, bool stepsizeOn, double step_size)
-{
-  int l_counter = length.size();
-  std::cout<<"size of length is "<<length_size;
-  
-  std::vector< std::vector<double> > length_sorted = sort_length(length,l_counter);
-  std::vector< std::vector<double> > position_sorted = sort_position(length,parametrized_postion,l_counter);
-  
-  double min_length = length_sorted[0][0]; 
-  double max_length=length_sorted[l_counter-1][0];	//since length[][] is sorted 
-  int reg_counter = ceil((max_length - min_length +1)/step_size);	//note: min_length is negative
-
-  //getting minimum and maximum of the parameter for Beta regression
-  double min= find_min(length_sorted, l_counter);
-  double max= find_max(length_sorted, l_counter);
-
-  //Variables
-  double temp_param = 0.0, weight_sum = 0.0, V2 =0.0, clamp_count=0;
-  double fiber_distance[reg_counter]; //distance along the fiber
-  //initializing 
-  for (int k=0;k<reg_counter;k++)
-  {
-    fiber_distance[k] = min_length+k*step_size;
-  }
- 
-  // writing the fibers
-  vtkSmartPointer<vtkPolyData> polydata(vtkPolyData::New());
-  vtkSmartPointer<vtkIdList> ids(vtkIdList::New());
-  vtkSmartPointer<vtkPoints> pts(vtkPoints::New());
-  
-  polydata->SetPoints (pts);
-  
-  ids->SetNumberOfIds(0);
-  pts->SetNumberOfPoints(0);
-  polydata->Allocate();
-  
-  for (int i=0; i<reg_counter; i++)
-    {
-      //go along the fibers
-      for (int j=0;j<l_counter;j++){
-	//go though all the parametrized locations
-	//the sampling window
-	rang_min = min_length + i * step_size;
-	right_window_bound = min_length + (i + 1) * step_size;
-	 if (length[j][0] >=range_min && length[j][0] <=range_max)		
-      }
-    }
-  for (int j = 0; j < m_fibers->Count();  j++)
-    {  
-      //number of fiber points that are non zero 
-      int fiber_nozero_len = 0;
-      //iterate over all fiber points  
-      vtkIdType currentId = ids->GetNumberOfIds();
-      
-
-      for (int i =  0; i < m_outlength; i++) 
-	{
-	  //position of fibers
-	  //For visualizing with statistics done at these points
-	  //Added by Yundi Shi on 3/4/2010
-	  
-	  // already in world coordinate system, handled with spacing and origin
-	  //write  FiberPosX/Y/Z[j][i];
-	  // Build VTK data structure                                                                                                                               
-	  vtkIdType id;
-	  //DEBUG
-	  //std::cout <<i<<"-FiberPos"<<FiberPosX[j+i*m_outlength]<<"-"<<FiberPosY[j+i*m_outlength]<<"-"<<FiberPosZ[j+i*m_outlength]<<endl;
-	  // If there exists fiber that has one point on
-	  if (FiberPosX[i+j*m_outlength]!=0||FiberPosY[i+j*m_outlength]!=0||FiberPosZ[i+j*m_outlength]!=0)
-	    {
-	      
-	      //std::cout<<i<<endl;
-	      id = pts->InsertNextPoint(FiberPosX[i+j*m_outlength],
-					FiberPosY[i+j*m_outlength],
-					FiberPosZ[i+j*m_outlength]);
-	  
-	      ids->InsertNextId(id);
-	      fiber_nozero_len = fiber_nozero_len + 1;
-	      
-	    }
-	  else
-	    {
-	      //write 0 if the fiber point is on
-	      fprintf(file_nonzero_ind,"0\t");
-	    }
-	  
-	}
-      fprintf(file_nonzero_ind,"\n");
-      //std::cout << "Current ID is "<< currentId << std::endl;
-      polydata->InsertNextCell(VTK_POLY_LINE, fiber_nozero_len, ids->GetPointer(currentId));
-      
-    }
-  vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
-  fiberwriter->SetFileTypeToASCII();
-  QString parameter_fiber_filename = filename.mid(0,filename.findRev(".")) + "-parameterized.vtk";
-  fiberwriter->SetFileName(parameter_fiber_filename);
-  fiberwriter->SetInput(polydata);
-  fiberwriter->Update();
-    
-    
 }

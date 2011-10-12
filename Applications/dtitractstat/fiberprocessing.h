@@ -28,15 +28,17 @@ class fiberprocessing{
   bool read_plane_details(std::string plane_str, itk::Vector<double,3> spacing, itk::Vector<double,3> offset, bool worldspace);
   void writeFiberFile(const std::string & filename, GroupType::Pointer fibergroup);
   GroupType::Pointer readFiberFile(std::string filename);
+  void Write_parametrized_fiber(std::string input_file, std::string output_parametrized_fiber_file,double step_size);
 
   //Helper functions
   void find_distance_from_plane(itk::Point<double, 3> pos, int index);
   void find_plane(GroupType::Pointer group, std::string auto_plane_origin);
   bool Siequals(std::string a, std::string b);
+  double find_min_dist();
+  double find_max_dist();
   itk::Vector<double, 3> get_plane_origin();
   itk::Vector<double, 3> get_plane_normal();
   std::vector< std::vector<double> > get_arc_length_parametrized_fiber(std::string param_name);
-
  private:
   double SQ2(double x) {return x*x;};
 
