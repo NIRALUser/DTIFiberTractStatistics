@@ -77,7 +77,7 @@ void fiberprocessing::find_distance_from_plane(itk::Point<double, 3> pos, int in
 bool fiberprocessing::Siequals(std::string a, std::string b)
 {
     unsigned int sz = a.size();
-    std::cout<<"a size is "<<a.size()<<"b size is "<<b.size()<<std::endl;
+    //std::cout<<"a size is "<<a.size()<<"b size is "<<b.size()<<std::endl;
     if (b.size() != sz)
         return false;
     for (unsigned int i = 0; i < sz; ++i)
@@ -101,10 +101,10 @@ std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_
       for (int a =0;a<8;a++)
 	{
 	  std::string tmp_parameter(parameter_std_list[a]);
-	  std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
+	  //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
 	  if (Siequals(tmp_parameter, param_name))
 	    {
-	      std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<parameter_std_list[a]<<"a is"<<a<<std::endl;
+	      //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<parameter_std_list[a]<<"a is"<<a<<std::endl;
 	      parameter_index = a;
 	      break;
 	    }
@@ -224,7 +224,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	{
 	  parametrized_position[l_counter][pt_index] = p1[pt_index];
 	}
-      parametrized_position[l_counter][4] = fiber_counter;
+      parametrized_position[l_counter][3] = fiber_counter;
       
       all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
       all[l_counter].push_back((*pit).GetField("MD"));
@@ -285,7 +285,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
-	parametrized_position[l_counter][4] = fiber_counter;
+	parametrized_position[l_counter][3] = fiber_counter;
 	l_counter++;
 	count++;
       }
@@ -336,7 +336,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
-	parametrized_position[l_counter][4] = fiber_counter;
+	parametrized_position[l_counter][3] = fiber_counter;
 	l_counter++;
 	count++;
       }
@@ -414,7 +414,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	{
 	  parametrized_position[l_counter][pt_index] = p_inter[pt_index];
 	}
-      parametrized_position[l_counter][4] = fiber_counter;
+      parametrized_position[l_counter][3] = fiber_counter;
 	
       l_counter++;
       
@@ -465,7 +465,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
-	parametrized_position[l_counter][4] = fiber_counter;
+	parametrized_position[l_counter][3] = fiber_counter;
 	pit++;
 	l_counter++;
 	count++;
@@ -486,7 +486,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	{
 	  p1[0] = (p1[0] * spacing[0]) + offset[0];
 	  p1[1] = (p1[1] * spacing[1]) + offset[1];
-		  p1[2] = (p1[2] * spacing[2]) + offset[2];
+	  p1[2] = (p1[2] * spacing[2]) + offset[2];
 	}
 	
 	
@@ -520,13 +520,14 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  {
 	    parametrized_position[l_counter][pt_index] = p1[pt_index];
 	  }
-	parametrized_position[l_counter][4] = fiber_counter;
+	parametrized_position[l_counter][3] = fiber_counter;
 	pit--;
 	l_counter++;
 	count++;
       }
       
     }
+    //std::cout<<"fiber_counter is"<<fiber_counter<<std::endl;
     fiber_counter++;
   }  
   cout<<"Total # of opposite oriented fibers:"<<count_opposite<<endl;
@@ -945,72 +946,128 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
   }
 }
 
-void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::string output_parametrized_fiber_file, double step_size)
+void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::string output_parametrized_fiber_file, double step_size, bool worldspace)
 {
 
-  std::cout<<"Reading Fiber"<<std::endl;
   GroupType::Pointer group = readFiberFile(input_file);
+  //std::cout<<"Reading Fiber"<<std::endl;
   ChildrenListType* children = group->GetChildren(0);
-  ChildrenListType::iterator it;
-
   
-  int l_length = all.size();
-  std::cout<<"size of length is "<<l_length;
+  ChildrenListType::iterator it;
+  
+  //std::cout<<"Getting all size "<<all.size()<<std::endl;
   
   double min_length = find_min_dist(); 
   double max_length=find_max_dist();	//since length[][] is sorted 
-  int reg_counter = ceil((max_length - min_length +1)/step_size);	//note: min_length is negative
-
-  //Variables
-  double fiber_distance[reg_counter]; //distance along the fiber
-  //initializing 
-  for (int k=0;k<reg_counter;k++)
-  {
-    fiber_distance[k] = min_length+k*step_size;
-  }
+  int reg_length = ceil((max_length - min_length +1)/step_size);	//note: min_length is negative
+  std::cout<<"reg_length is  "<<reg_length<<std::endl;
  
   // writing the fibers
   vtkSmartPointer<vtkPolyData> polydata(vtkPolyData::New());
   vtkSmartPointer<vtkIdList> ids(vtkIdList::New());
   vtkSmartPointer<vtkPoints> pts(vtkPoints::New());
   vtkSmartPointer<vtkIntArray> fiberindex(vtkIntArray::New());
-  
-  fiberindex->SetName("fiberindex");
-  fiberindex->SetNumberOfTuples(0);
+
+  polydata->SetPoints (pts);
+  //fiberindex.SetNumberOfComponents(1);
+
+  fiberindex->SetName("FiberLocationIndex");
   ids->SetNumberOfIds(0);
   pts->SetNumberOfPoints(0);
+
   polydata->Allocate();
   
   //loop through all the fibers
   int fiber_counter = 0; //counter of the fiber
-  int l_counter = 0;
-  
+  int pos_counter = 0;
+  //int debugcounter = 0;
   for(it = (children->begin()); it != children->end() ; it++)
   {
-    int fiber_loc_index = 0; //index of fiber location 
+    //std::cout<<"debugcounter is "<<debugcounter<<std::endl;
+    //debugcounter++;
     vtkIdType currentId = ids->GetNumberOfIds();
-    while (parametrized_position[l_counter][4] == fiber_counter)
+    //    std::cout<<all[pos_counter][0]<<std::endl;
+    //    std::cout<<pos_counter<<std::endl;
+    // for every sampling pointDTIPointListType::iterator pit,pit_temp,pit_tmp;
+    
+    //check fiber orientation
+    DTIPointListType pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+    DTIPointListType::iterator pit_tmp;
+    itk::Vector<double,3> spacing = group->GetSpacing();
+    itk::Vector<double,3> offset = group->GetObjectToParentTransform()->GetOffset();
+    pit_tmp = pointlist.begin();
+    itk::Point<double, 3> position_first = (*pit_tmp).GetPosition();
+    if (worldspace)
     {
-      for (int i=0; i<reg_counter; i++)
-	{
-	  vtkIdType id;
-	  double range_min = min_length + i * step_size;
-	  double range_max = min_length + (i + 1) * step_size;
-	  if (fiber_distance[i] <= range_max && fiber_distance[i] >= range_min)
-	    {
-	      fiberindex->InsertNextTuple1(fiber_loc_index);
-	      id = pts->InsertNextPoint(parametrized_position[l_counter][0],
-					parametrized_position[l_counter][1],
-					parametrized_position[l_counter][2]);
-	  
-	      ids->InsertNextId(id);
-	      l_counter++;
-	    }
-	}
-      fiber_loc_index ++ ;
-      }
-    polydata->InsertNextCell(VTK_POLY_LINE, reg_counter, ids->GetPointer(currentId));
+      position_first[0] = (position_first[0] * spacing[0]) + offset[0];
+      position_first[1] = (position_first[1] * spacing[1]) + offset[1];
+      position_first[2] = (position_first[2] * spacing[2]) + offset[2];
+    }
+    pit_tmp = pointlist.end();
+    pit_tmp--;
+    itk::Point<double, 3> position_last = (*pit_tmp).GetPosition();
+    if (worldspace)
+    {
+      position_last[0] = (position_last[0] * spacing[0]) + offset[0];
+      position_last[1] = (position_last[1] * spacing[1]) + offset[1];
+      position_last[2] = (position_last[2] * spacing[2]) + offset[2];
+    }
+
+    itk::Vector<double, 3> orient_vec = position_first-position_last;
+    
+    double dot_prod = (plane_normal[0]*orient_vec[0] + plane_normal[1]*orient_vec[1] + plane_normal[2]*orient_vec[2] );
+    
+    
+    for (int parametrized_pos_counter=0; parametrized_pos_counter<reg_length;  parametrized_pos_counter++)
       
+      {
+	double range_min = min_length + parametrized_pos_counter * step_size;
+	double range_max = min_length + (parametrized_pos_counter + 1) * step_size;
+	double avglocation[3];
+	int noptinwindow = 0;
+	vtkIdType id;
+	std::cout<<"parametrized_pos_counter is "<<parametrized_pos_counter<<std::endl;
+	//initialize
+	for (int pt_index = 0;pt_index<3;++pt_index)
+	  {
+	    avglocation[pt_index] = 0;
+	  }
+	
+	
+	//std::cout<<"max and min are with all[pos_counter][0] is "<<range_max<<" "<<range_min<<" "<<all[pos_counter][0]<<std::endl;
+	//std::cout<<"parametrized_position[pos_counter][3] is "<<parametrized_position[pos_counter][3]<<std::endl;
+	
+	//stay in the window to average the postions
+	while (all[pos_counter][0] <= range_max && all[pos_counter][0] >= range_min)
+	  { 
+	    std::cout<<"Inserting data "<<parametrized_pos_counter<<std::endl;
+	    for (int pt_index = 0;pt_index<3;pt_index++)
+	      {
+		avglocation[pt_index] = parametrized_position[pos_counter][pt_index] + avglocation[pt_index];
+	      }
+	    std::cout<<"max and min are with all[pos_counter][0] is "<<range_max<<" "<<all[pos_counter][0]<<" "<<range_min<<std::endl;
+	    pos_counter++;
+		noptinwindow++; //number of points in the window
+	  }
+	
+	std::cout<<range_max<<" "<<all[pos_counter][0]<<" "<<range_min<<std::endl;
+	if (noptinwindow > 0)
+	  {
+	    std::cout<<"parametrized_pos_counter is "<<parametrized_pos_counter<<std::endl;
+	    fiberindex->InsertNextTuple1(parametrized_pos_counter);
+	    id = pts->InsertNextPoint(avglocation[0]/noptinwindow,
+				      avglocation[1]/noptinwindow,
+				      avglocation[2]/noptinwindow);
+	    ids->InsertNextId(id);
+	  }
+	
+	if (parametrized_position[pos_counter][3] > fiber_counter) break;
+      }
+    
+    
+    polydata->InsertNextCell(VTK_POLY_LINE,reg_length,ids->GetPointer(currentId));
+    std::cout<<"goes to fiber #"<<fiber_counter<<std::endl;
+    fiber_counter++;
   }
   polydata->GetPointData()->SetScalars(fiberindex);
   vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
@@ -1022,9 +1079,8 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 
 double fiberprocessing::find_min_dist()
 {
-  l_counter = all.size();
   double min=100000;
-  for (int i=0; i<l_counter; i++)
+  for (int i=0; i<all.size(); i++)
     {
       if (all[i][0]<min)
 	min=all[i][0];
@@ -1035,9 +1091,8 @@ double fiberprocessing::find_min_dist()
 
 double fiberprocessing::find_max_dist()
 {
-  l_counter = all.size();
   double max=-100000;
-  for (int i=0; i<l_counter; i++)
+  for (int i=0; i<all.size(); i++)
     {
       if (all[i][0]>max)
 	max=all[i][0];

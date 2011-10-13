@@ -28,7 +28,7 @@ class fiberprocessing{
   bool read_plane_details(std::string plane_str, itk::Vector<double,3> spacing, itk::Vector<double,3> offset, bool worldspace);
   void writeFiberFile(const std::string & filename, GroupType::Pointer fibergroup);
   GroupType::Pointer readFiberFile(std::string filename);
-  void Write_parametrized_fiber(std::string input_file, std::string output_parametrized_fiber_file,double step_size);
+  void Write_parametrized_fiber(std::string input_file, std::string output_parametrized_fiber_file,double step_size,bool worldspace);
 
   //Helper functions
   void find_distance_from_plane(itk::Point<double, 3> pos, int index);

@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
       {
 	all_flag = -1;
 	std::string tmp_parameter(parameter_list[a]);
-	std::cout<<"paramter list[a] is"<<tmp_parameter<<std::endl;
+	//std::cout<<"paramter list[a] is"<<tmp_parameter<<std::endl;
 	std::vector< std::vector<double> > length_temp = FP->get_arc_length_parametrized_fiber(tmp_parameter);	
 	REG->regression_main(output_stats_file,param,"All parameters", length_temp, origin, normal, stepsizeOn, step_size, bandwidthOn, bandwidth, statOn, 2, noisemodelOn, 2, qpercOn, q_perc, all_flag, windowOn, window, window_file, worldspace);
 
@@ -228,8 +228,7 @@ int main(int argc, char* argv[])
     std::vector< std::vector<double> > all_results_main = REG->get_all_results();
     int reg_counter = all_results_main.size();
     std::cout<<"start to write parametrized fiber file"<<std::endl;
-    //Write parametrized fiber by Yundi Shi
-    FP->Write_parametrized_fiber(input_fiber_file,output_parametrized_fiber_file,step_size);
+    
     //Writing results to the output file	
     ofstream fp_output_stats_file;
     fp_output_stats_file.open(output_stats_file.c_str(),ios::app);
@@ -274,6 +273,8 @@ int main(int argc, char* argv[])
       
       std::cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n"<<std::endl;
     }
+    //Write parametrized fiber by Yundi Shi
+    FP->Write_parametrized_fiber(input_fiber_file,output_parametrized_fiber_file,step_size,worldspace);
   }
   return 0;
 }
