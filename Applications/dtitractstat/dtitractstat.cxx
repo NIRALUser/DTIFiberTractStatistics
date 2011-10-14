@@ -273,9 +273,9 @@ int main(int argc, char* argv[])
       
       std::cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n"<<std::endl;
     }
-    //Write parametrized fiber by Yundi Shi
-    FP->Write_parametrized_fiber(input_fiber_file,output_parametrized_fiber_file,step_size,worldspace);
   }
+  //Write parametrized fiber by Yundi Shi
+  FP->Write_parametrized_fiber(input_fiber_file,output_parametrized_fiber_file,step_size,worldspace);
   return 0;
 }
  

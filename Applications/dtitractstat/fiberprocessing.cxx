@@ -133,7 +133,12 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
   for(it = (children->begin()); it != children->end() ; it++)
   {
     closest_d = 1000.0;		
-    closest_point.Fill(0);
+    closest_point.Fill(0);      
+    parametrized_position_dist.push_back(std::vector<double>());
+    parametrized_position_x.push_back(std::vector<double>());
+    parametrized_position_y.push_back(std::vector<double>());
+    parametrized_position_z.push_back(std::vector<double>());
+    
     int flag_orientation = 0, counter=0;
 		
     DTIPointListType pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
@@ -208,8 +213,8 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 
       //adding sample points AT the intersection point to avoid gap at origin
       all.push_back(std::vector<double>());
-      parametrized_position.push_back(itk::Vector<double, 4>());
       all[l_counter].push_back(0.0);
+      
       //add x,y,z information to vectors all by YUNDI SHI
       itk::Point<double, 3> p1;
       p1=(*pit).GetPosition();
@@ -219,13 +224,11 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	  p1[1] = (p1[1] * spacing[1]) + offset[1];
 	  p1[2] = (p1[2] * spacing[2]) + offset[2];
 	}
-      //add x,y,z information to vectors all by YUNDI SHI
-      for (int pt_index = 0;pt_index<3;++pt_index)
-	{
-	  parametrized_position[l_counter][pt_index] = p1[pt_index];
-	}
-      parametrized_position[l_counter][3] = fiber_counter;
-      
+      parametrized_position_dist[fiber_counter].push_back(0.0);
+      parametrized_position_x[fiber_counter].push_back(p1[0]);
+      parametrized_position_y[fiber_counter].push_back(p1[1]);
+      parametrized_position_z[fiber_counter].push_back(p1[2]);
+
       all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
       all[l_counter].push_back((*pit).GetField("MD"));
       all[l_counter].push_back((*pit).GetField("AD"));
@@ -269,7 +272,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	//multiplying by -1 to make arc length on 1 side of plane as negative
 	
 	all.push_back(std::vector<double>());
-	parametrized_position.push_back(itk::Vector<double, 4>());
+	
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
 	all[l_counter].push_back((*pit).GetField("MD"));
@@ -280,12 +283,12 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back((*pit).GetField("RD")); //RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 
-	//add x,y,z information to vectors all by YUNDI SHI
-	for (int pt_index = 0;pt_index<3;++pt_index)
-	  {
-	    parametrized_position[l_counter][pt_index] = p1[pt_index];
-	  }
-	parametrized_position[l_counter][3] = fiber_counter;
+	//add x,y,z information to vectors all by YUNDI SHI 
+	parametrized_position_dist[fiber_counter].push_back(-1 * cumulative_distance_1);
+	parametrized_position_x[fiber_counter].push_back(p1[0]);
+	parametrized_position_y[fiber_counter].push_back(p1[1]);
+	parametrized_position_z[fiber_counter].push_back(p1[2]);
+
 	l_counter++;
 	count++;
       }
@@ -319,7 +322,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	
 	cumulative_distance_2 += current_length;
 	all.push_back(std::vector<double>());
-	parametrized_position.push_back(itk::Vector<double, 4>());
+	
 	all[l_counter].push_back(cumulative_distance_2);
 
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));				
@@ -331,12 +334,12 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back((*pit).GetField("RD"));	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 	
-	//add x,y,z information to vectors all by YUNDI SHI
-	for (int pt_index = 0;pt_index<3;++pt_index)
-	  {
-	    parametrized_position[l_counter][pt_index] = p1[pt_index];
-	  }
-	parametrized_position[l_counter][3] = fiber_counter;
+	//add x,y,z information to vectors all by YUNDI SHI 
+	parametrized_position_dist[fiber_counter].push_back(cumulative_distance_2);
+	parametrized_position_x[fiber_counter].push_back(p1[0]);
+	parametrized_position_y[fiber_counter].push_back(p1[1]);
+	parametrized_position_z[fiber_counter].push_back(p1[2]);
+
 	l_counter++;
 	count++;
       }
@@ -386,7 +389,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       
       //adding sample points AT the intersection point to avoid gap at origin
       all.push_back(std::vector<double>());
-      parametrized_position.push_back(itk::Vector<double, 4>());
+      
       all[l_counter].push_back(0.0);
 
       itk::Point<double, 3> p_inter;
@@ -409,13 +412,13 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       all[l_counter].push_back((*pit).GetField("RD"));	//RD
       all[l_counter].push_back((*pit).GetField("GA"));
       
-      //add x,y,z information to vectors all by YUNDI SHI
-      for (int pt_index = 0;pt_index<3;++pt_index)
-	{
-	  parametrized_position[l_counter][pt_index] = p_inter[pt_index];
-	}
-      parametrized_position[l_counter][3] = fiber_counter;
-	
+      //add x,y,z information to vectors all by YUNDI SHI 
+      parametrized_position_dist[fiber_counter].push_back(0.0);
+      parametrized_position_x[fiber_counter].push_back(p_inter[0]);
+      parametrized_position_y[fiber_counter].push_back(p_inter[1]);
+      parametrized_position_z[fiber_counter].push_back(p_inter[2]);
+
+     	
       l_counter++;
       
       
@@ -448,7 +451,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	cumulative_distance_1 += current_length;
 	//multiplying by -1 to make arc length on 1 side of plane as negative
 	all.push_back(std::vector<double>());
-	parametrized_position.push_back(itk::Vector<double, 4>());
+	
 	all[l_counter].push_back(-1 * cumulative_distance_1);
 	
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
@@ -461,11 +464,12 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back((*pit).GetField("GA"));
       
 	//add x,y,z information to vectors all by YUNDI SHI
-	for (int pt_index = 0;pt_index<3;++pt_index)
-	  {
-	    parametrized_position[l_counter][pt_index] = p1[pt_index];
-	  }
-	parametrized_position[l_counter][3] = fiber_counter;
+	//add x,y,z information to vectors all by YUNDI SHI 
+	parametrized_position_dist[fiber_counter].push_back(-1 * cumulative_distance_1);
+	parametrized_position_x[fiber_counter].push_back(p1[0]);
+	parametrized_position_y[fiber_counter].push_back(p1[1]);
+	parametrized_position_z[fiber_counter].push_back(p1[2]);
+	
 	pit++;
 	l_counter++;
 	count++;
@@ -503,7 +507,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	
 
 	all.push_back(std::vector<double>());
-	parametrized_position.push_back(itk::Vector<double, 4>());
+	
 	all[l_counter].push_back(cumulative_distance_2);
 
 	all[l_counter].push_back((*pit).GetField(DTIPointType::FA));			
@@ -515,12 +519,12 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 	all[l_counter].push_back((*pit).GetField("RD"));	//RD
 	all[l_counter].push_back((*pit).GetField("GA"));
 	
-	//add x,y,z information to vectors all by YUNDI SHI
-	for (int pt_index = 0;pt_index<3;++pt_index)
-	  {
-	    parametrized_position[l_counter][pt_index] = p1[pt_index];
-	  }
-	parametrized_position[l_counter][3] = fiber_counter;
+	//add x,y,z information to vectors all by YUNDI SHI 
+	parametrized_position_dist[fiber_counter].push_back(cumulative_distance_2);
+	parametrized_position_x[fiber_counter].push_back(p1[0]);
+	parametrized_position_y[fiber_counter].push_back(p1[1]);
+	parametrized_position_z[fiber_counter].push_back(p1[2]);
+
 	pit--;
 	l_counter++;
 	count++;
@@ -528,8 +532,10 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       
     }
     //std::cout<<"fiber_counter is"<<fiber_counter<<std::endl;
+    // cout<<"size is "<<parametrized_position_z[fiber_counter].size()<<endl;
     fiber_counter++;
   }  
+  
   cout<<"Total # of opposite oriented fibers:"<<count_opposite<<endl;
 }
 
@@ -950,15 +956,14 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 {
 
   GroupType::Pointer group = readFiberFile(input_file);
-  //std::cout<<"Reading Fiber"<<std::endl;
   ChildrenListType* children = group->GetChildren(0);
-  
+  //sort the parameter positions based on the cumulative distance
+  sort_parameter(group);
+
   ChildrenListType::iterator it;
-  
-  //std::cout<<"Getting all size "<<all.size()<<std::endl;
-  
+    
   double min_length = find_min_dist(); 
-  double max_length=find_max_dist();	//since length[][] is sorted 
+  double max_length = find_max_dist();	//since length[][] is sorted 
   int reg_length = ceil((max_length - min_length +1)/step_size);	//note: min_length is negative
   std::cout<<"reg_length is  "<<reg_length<<std::endl;
  
@@ -969,7 +974,6 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
   vtkSmartPointer<vtkIntArray> fiberindex(vtkIntArray::New());
 
   polydata->SetPoints (pts);
-  //fiberindex.SetNumberOfComponents(1);
 
   fiberindex->SetName("FiberLocationIndex");
   ids->SetNumberOfIds(0);
@@ -979,102 +983,98 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
   
   //loop through all the fibers
   int fiber_counter = 0; //counter of the fiber
-  int pos_counter = 0;
   //int debugcounter = 0;
+  double avglocation[3];
+  int noptinwindow = 0;
+  
+  
+  //initialize
+  for (int pt_index = 0;pt_index<3;++pt_index)
+    {
+      avglocation[pt_index] = 0;
+    }
   for(it = (children->begin()); it != children->end() ; it++)
   {
     //std::cout<<"debugcounter is "<<debugcounter<<std::endl;
     //debugcounter++;
+    
     vtkIdType currentId = ids->GetNumberOfIds();
-    //    std::cout<<all[pos_counter][0]<<std::endl;
-    //    std::cout<<pos_counter<<std::endl;
-    // for every sampling pointDTIPointListType::iterator pit,pit_temp,pit_tmp;
-    
-    //check fiber orientation
-    DTIPointListType pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
-    DTIPointListType::iterator pit_tmp;
-    itk::Vector<double,3> spacing = group->GetSpacing();
-    itk::Vector<double,3> offset = group->GetObjectToParentTransform()->GetOffset();
-    pit_tmp = pointlist.begin();
-    itk::Point<double, 3> position_first = (*pit_tmp).GetPosition();
-    if (worldspace)
-    {
-      position_first[0] = (position_first[0] * spacing[0]) + offset[0];
-      position_first[1] = (position_first[1] * spacing[1]) + offset[1];
-      position_first[2] = (position_first[2] * spacing[2]) + offset[2];
+    int fiber_length = parametrized_position_dist[fiber_counter].size();
+    int sampling_start=0;
+    double range_min = min_length;
+    double range_max =  min_length+step_size;
+    //std::cout<<"three numbers are "<<parametrized_position_dist[fiber_counter][0]<<" "<<parametrized_position_dist[fiber_counter][fiber_length-1]<<std::endl;
+    //where to start sampling the data
+    while (parametrized_position_dist[fiber_counter][0] < range_min or parametrized_position_dist[fiber_counter][0] > range_max){
+      range_min = min_length + sampling_start * step_size;
+      range_max = min_length + (sampling_start + 1) * step_size;
+      sampling_start++;
     }
-    pit_tmp = pointlist.end();
-    pit_tmp--;
-    itk::Point<double, 3> position_last = (*pit_tmp).GetPosition();
-    if (worldspace)
-    {
-      position_last[0] = (position_last[0] * spacing[0]) + offset[0];
-      position_last[1] = (position_last[1] * spacing[1]) + offset[1];
-      position_last[2] = (position_last[2] * spacing[2]) + offset[2];
-    }
-
-    itk::Vector<double, 3> orient_vec = position_first-position_last;
-    
-    double dot_prod = (plane_normal[0]*orient_vec[0] + plane_normal[1]*orient_vec[1] + plane_normal[2]*orient_vec[2] );
-    
-    
-    for (int parametrized_pos_counter=0; parametrized_pos_counter<reg_length;  parametrized_pos_counter++)
-      
+    if (sampling_start > 0){
+      sampling_start--;}
+    //std::cout<<"three numbers are "<< min_length + sampling_start * step_size<<" "<<parametrized_position_dist[fiber_counter][0]<<" "<<min_length + (sampling_start+1)* step_size<<std::endl;	
+    //std::cout<<"three numbers are "<<range_min<<" "<<parametrized_position_dist[fiber_counter][0]<<" "<<range_max<<std::endl;
+    std::cout<<"sampling starts at "<<sampling_start<<std::endl;
+    int pos_counter = 0;
+    for (int sampling_loc = sampling_start;sampling_loc<reg_length;sampling_loc++)
       {
-	double range_min = min_length + parametrized_pos_counter * step_size;
-	double range_max = min_length + (parametrized_pos_counter + 1) * step_size;
-	double avglocation[3];
-	int noptinwindow = 0;
-	vtkIdType id;
-	std::cout<<"parametrized_pos_counter is "<<parametrized_pos_counter<<std::endl;
-	//initialize
+	range_min = min_length + sampling_loc * step_size;
+	range_max = min_length + (sampling_loc + 1) * step_size;
+	//std::cout<<"three numbers are "<<range_min<<" "<<parametrized_position_dist[fiber_counter][pos_counter]<<" "<<range_max<<std::endl;
 	for (int pt_index = 0;pt_index<3;++pt_index)
 	  {
 	    avglocation[pt_index] = 0;
 	  }
-	
-	
-	//std::cout<<"max and min are with all[pos_counter][0] is "<<range_max<<" "<<range_min<<" "<<all[pos_counter][0]<<std::endl;
-	//std::cout<<"parametrized_position[pos_counter][3] is "<<parametrized_position[pos_counter][3]<<std::endl;
-	
+	noptinwindow = 0;	    
 	//stay in the window to average the postions
-	while (all[pos_counter][0] <= range_max && all[pos_counter][0] >= range_min)
+	
+	while (parametrized_position_dist[fiber_counter][pos_counter] <= range_max && parametrized_position_dist[fiber_counter][pos_counter] >= range_min and pos_counter < fiber_length)
 	  { 
-	    std::cout<<"Inserting data "<<parametrized_pos_counter<<std::endl;
-	    for (int pt_index = 0;pt_index<3;pt_index++)
-	      {
-		avglocation[pt_index] = parametrized_position[pos_counter][pt_index] + avglocation[pt_index];
-	      }
-	    std::cout<<"max and min are with all[pos_counter][0] is "<<range_max<<" "<<all[pos_counter][0]<<" "<<range_min<<std::endl;
+	    //std::cout<<"Including data "<<pos_counter<<" for sampling location #"<<sampling_loc<<std::endl;
+	    
+	    //getting location info in this sampling window for average
+	    avglocation[0] = parametrized_position_x[fiber_counter][pos_counter] + avglocation[0];
+	    avglocation[1] = parametrized_position_y[fiber_counter][pos_counter] + avglocation[1];
+	    avglocation[2] = parametrized_position_z[fiber_counter][pos_counter] + avglocation[2];
+		
+	    noptinwindow++; //number of points in the window
 	    pos_counter++;
-		noptinwindow++; //number of points in the window
 	  }
 	
-	std::cout<<range_max<<" "<<all[pos_counter][0]<<" "<<range_min<<std::endl;
-	if (noptinwindow > 0)
+	//std::cout<<"pos_counter is "<<pos_counter<<" v.s. size is "<<fiber_length<<std::endl;
+	if(noptinwindow > 0)
 	  {
-	    std::cout<<"parametrized_pos_counter is "<<parametrized_pos_counter<<std::endl;
-	    fiberindex->InsertNextTuple1(parametrized_pos_counter);
+	    std::cout<<"there are #"<<noptinwindow<<" pts for sampling location #"<<sampling_loc<<std::endl;
+	    vtkIdType id;
+	    fiberindex->InsertNextTuple1(sampling_loc);
+	    
 	    id = pts->InsertNextPoint(avglocation[0]/noptinwindow,
 				      avglocation[1]/noptinwindow,
 				      avglocation[2]/noptinwindow);
+	    //std::cout<<avglocation[0]/noptinwindow<<" "<<avglocation[1]/noptinwindow<<" "<<avglocation[2]/noptinwindow;
 	    ids->InsertNextId(id);
+	    //std::cout<<"three numbers are "<<range_min<<" "<<parametrized_position_dist[fiber_counter][pos_counter]<<" "<<range_max<<std::endl;	
 	  }
 	
-	if (parametrized_position[pos_counter][3] > fiber_counter) break;
+	if (pos_counter >= fiber_length-1)
+	  {
+	    //std::cout<<"pos_counter is "<<pos_counter<<endl;
+	    break;
+	  }
       }
-    
-    
     polydata->InsertNextCell(VTK_POLY_LINE,reg_length,ids->GetPointer(currentId));
     std::cout<<"goes to fiber #"<<fiber_counter<<std::endl;
     fiber_counter++;
   }
+
+  std::cout<<"writing fiber"<<output_parametrized_fiber_file.c_str()<<std::endl;
   polydata->GetPointData()->SetScalars(fiberindex);
   vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
   fiberwriter->SetFileTypeToASCII();
   fiberwriter->SetFileName(output_parametrized_fiber_file.c_str());
   fiberwriter->SetInput(polydata);
   fiberwriter->Update();
+  
 }
 
 double fiberprocessing::find_min_dist()
@@ -1085,7 +1085,7 @@ double fiberprocessing::find_min_dist()
       if (all[i][0]<min)
 	min=all[i][0];
     }
-
+  std::cout<<"min is "<<min<<endl;
   return(min);
 }
 
@@ -1097,5 +1097,44 @@ double fiberprocessing::find_max_dist()
       if (all[i][0]>max)
 	max=all[i][0];
     }
+  std::cout<<"max is "<<max<<endl;
   return(max);
+}
+
+void fiberprocessing::sort_parameter(GroupType::Pointer fibergroup)
+{
+  //sort parameter_x,y,z,dist based on dist
+  ChildrenListType* children = fibergroup->GetChildren(0);
+  ChildrenListType::iterator it;
+  int fiber_counter = 0;
+
+  for(it = (children->begin()); it != children->end() ; it++)
+  {
+    int fiber_length = parametrized_position_dist[fiber_counter].size();
+    std::cout<<"fiber # "<<fiber_counter<<" has the length of "<<fiber_length<<std::endl;
+    for (int i=0; i<fiber_length-1; i++) 
+      {
+	for (int j=0; j<fiber_length-1-i; j++)
+	  {
+	    if (parametrized_position_dist[fiber_counter][j+1] < parametrized_position_dist[fiber_counter][j]) 
+	      {  /* compare the two neighbors */
+		double tmp_dist = parametrized_position_dist[fiber_counter][j];         /* swap a[j] and a[j+1]      */
+		double tmp_x = parametrized_position_x[fiber_counter][j];
+		double tmp_y = parametrized_position_y[fiber_counter][j];
+		double tmp_z = parametrized_position_z[fiber_counter][j];
+		
+		parametrized_position_dist[fiber_counter][j] = parametrized_position_dist[fiber_counter][j+1];
+		parametrized_position_x[fiber_counter][j] = parametrized_position_x[fiber_counter][j+1];
+		parametrized_position_y[fiber_counter][j] = parametrized_position_y[fiber_counter][j+1];
+		parametrized_position_z[fiber_counter][j] = parametrized_position_z[fiber_counter][j+1];
+		
+		parametrized_position_dist[fiber_counter][j+1] = tmp_dist;
+		parametrized_position_x[fiber_counter][j+1] = tmp_x;
+		parametrized_position_y[fiber_counter][j+1] = tmp_y;
+		parametrized_position_z[fiber_counter][j+1] = tmp_z;
+	      }
+	  }
+      }
+    fiber_counter++;
+  }
 }

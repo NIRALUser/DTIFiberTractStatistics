@@ -36,6 +36,7 @@ class fiberprocessing{
   bool Siequals(std::string a, std::string b);
   double find_min_dist();
   double find_max_dist();
+  void sort_parameter(GroupType::Pointer fibergroup);
   itk::Vector<double, 3> get_plane_origin();
   itk::Vector<double, 3> get_plane_normal();
   std::vector< std::vector<double> > get_arc_length_parametrized_fiber(std::string param_name);
@@ -47,10 +48,12 @@ class fiberprocessing{
   itk::Point<double, 3> closest_point;
   //all --> contain all the dti info in the order of FA, MD FRO, l2, l3, AD, RD, GA
   std::vector< std::vector<double> >  all;
-  std::vector< itk::Vector<double, 4> > parametrized_position;
+  std::vector< std::vector<double> > parametrized_position_dist;
+  std::vector< std::vector<double> > parametrized_position_x;
+  std::vector< std::vector<double> > parametrized_position_y;
+  std::vector< std::vector<double> > parametrized_position_z;
   double closest_d;
   int l_counter;
-
 };
 
 
