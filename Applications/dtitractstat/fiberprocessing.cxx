@@ -934,7 +934,7 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
 	pt.AddField("FRO",fro);
         pt.AddField("l2",lambdas[1]);
         pt.AddField("l3",lambdas[0]);
-	pt.AddField("AD",ad);
+	pt.AddField("l1",ad);
 	pt.AddField("RD",rd);
 	pt.AddField("GA",ga);
 	
@@ -1006,12 +1006,12 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
     //std::cout<<"three numbers are "<<parametrized_position_dist[fiber_counter][0]<<" "<<parametrized_position_dist[fiber_counter][fiber_length-1]<<std::endl;
     //where to start sampling the data
     while (parametrized_position_dist[fiber_counter][0] < range_min or parametrized_position_dist[fiber_counter][0] > range_max){
+      sampling_start++;
+      
       range_min = min_length + sampling_start * step_size;
       range_max = min_length + (sampling_start + 1) * step_size;
-      sampling_start++;
     }
-    if (sampling_start > 0){
-      sampling_start--;}
+   
     //std::cout<<"three numbers are "<< min_length + sampling_start * step_size<<" "<<parametrized_position_dist[fiber_counter][0]<<" "<<min_length + (sampling_start+1)* step_size<<std::endl;	
     //std::cout<<"three numbers are "<<range_min<<" "<<parametrized_position_dist[fiber_counter][0]<<" "<<range_max<<std::endl;
     std::cout<<"sampling starts at "<<sampling_start<<std::endl;
@@ -1028,7 +1028,7 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	noptinwindow = 0;	    
 	//stay in the window to average the postions
 	
-	while (parametrized_position_dist[fiber_counter][pos_counter] <= range_max && parametrized_position_dist[fiber_counter][pos_counter] >= range_min and pos_counter < fiber_length)
+	while (parametrized_position_dist[fiber_counter][pos_counter] <= range_max && parametrized_position_dist[fiber_counter][pos_counter] >= range_min && pos_counter < fiber_length)
 	  { 
 	    //std::cout<<"Including data "<<pos_counter<<" for sampling location #"<<sampling_loc<<std::endl;
 	    
@@ -1056,7 +1056,7 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	    //std::cout<<"three numbers are "<<range_min<<" "<<parametrized_position_dist[fiber_counter][pos_counter]<<" "<<range_max<<std::endl;	
 	  }
 	
-	if (pos_counter >= fiber_length-1)
+	if (pos_counter == fiber_length-1)
 	  {
 	    //std::cout<<"pos_counter is "<<pos_counter<<endl;
 	    break;
