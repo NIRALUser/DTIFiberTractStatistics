@@ -993,12 +993,14 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
     {
       avglocation[pt_index] = 0;
     }
+  int real_no_pits_on_fiber = 0;
   for(it = (children->begin()); it != children->end() ; it++)
   {
     //std::cout<<"debugcounter is "<<debugcounter<<std::endl;
     //debugcounter++;
     
-    vtkIdType currentId = ids->GetId();
+    vtkIdType currentId = ids->GetNumberOfIds();
+    //std::cout<<"currentID is"<<currentID<<std::endl;
     int fiber_length = parametrized_position_dist[fiber_counter].size();
     int sampling_start=0;
     double range_min = min_length;
@@ -1046,6 +1048,7 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	  {
 	    std::cout<<"there are #"<<noptinwindow<<" pts for sampling location #"<<sampling_loc<<std::endl;
 	    vtkIdType id;
+	    real_no_pits_on_fiber ++;
 	    fiberindex->InsertNextTuple1(sampling_loc);
 	    
 	    id = pts->InsertNextPoint(avglocation[0]/noptinwindow,
@@ -1062,7 +1065,8 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	    break;
 	  }
       }
-    polydata->InsertNextCell(VTK_POLY_LINE,reg_length,ids->GetPointer(currentId));
+    std::cout<<"real_no_pits_on_fiber is "<<real_no_pits_on_fiber<<std::endl;
+    polydata->InsertNextCell(VTK_POLY_LINE,real_no_pits_on_fiber,ids->GetPointer(currentId));
     std::cout<<"goes to fiber #"<<fiber_counter<<std::endl;
     fiber_counter++;
   }
