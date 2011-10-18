@@ -972,10 +972,11 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
   vtkSmartPointer<vtkIdList> ids(vtkIdList::New());
   vtkSmartPointer<vtkPoints> pts(vtkPoints::New());
   vtkSmartPointer<vtkIntArray> fiberindex(vtkIntArray::New());
-
+  vtkSmartPointer<vtkFloatArray> arclength(vtkFloatArray::New());
   polydata->SetPoints (pts);
 
   fiberindex->SetName("FiberLocationIndex");
+  arclength->SetName("SamplingDistance2Origin");
   ids->SetNumberOfIds(0);
   pts->SetNumberOfPoints(0);
 
@@ -984,12 +985,12 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
   //loop through all the fibers
   int fiber_counter = 0; //counter of the fiber
   //int debugcounter = 0;
-  double avglocation[3];
+  double avglocation[4];
   int noptinwindow = 0;
   
   
   //initialize
-  for (int pt_index = 0;pt_index<3;++pt_index)
+  for (int pt_index = 0;pt_index<4;++pt_index)
     {
       avglocation[pt_index] = 0;
     }
@@ -1000,12 +1001,10 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
     //debugcounter++;
     int real_no_pits_on_fiber = 0; 
     vtkIdType currentId = ids->GetNumberOfIds();
-    //std::cout<<"currentID is"<<currentID<<std::endl;
     int fiber_length = parametrized_position_dist[fiber_counter].size();
     int sampling_start=0;
     double range_min = min_length;
     double range_max =  min_length+step_size;
-    //std::cout<<"three numbers are "<<parametrized_position_dist[fiber_counter][0]<<" "<<parametrized_position_dist[fiber_counter][fiber_length-1]<<std::endl;
     //where to start sampling the data
     while (parametrized_position_dist[fiber_counter][0] < range_min or parametrized_position_dist[fiber_counter][0] > range_max){
       sampling_start++;
@@ -1014,16 +1013,15 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
       range_max = min_length + (sampling_start + 1) * step_size;
     }
    
-    //std::cout<<"three numbers are "<< min_length + sampling_start * step_size<<" "<<parametrized_position_dist[fiber_counter][0]<<" "<<min_length + (sampling_start+1)* step_size<<std::endl;	
-    //std::cout<<"three numbers are "<<range_min<<" "<<parametrized_position_dist[fiber_counter][0]<<" "<<range_max<<std::endl;
-    std::cout<<"sampling starts at "<<sampling_start<<std::endl;
+   
+    //    std::cout<<"sampling starts at "<<sampling_start<<std::endl;
     int pos_counter = 0;
     for (int sampling_loc = sampling_start;sampling_loc<reg_length;sampling_loc++)
       {
 	range_min = min_length + sampling_loc * step_size;
 	range_max = min_length + (sampling_loc + 1) * step_size;
 	//std::cout<<"three numbers are "<<range_min<<" "<<parametrized_position_dist[fiber_counter][pos_counter]<<" "<<range_max<<std::endl;
-	for (int pt_index = 0;pt_index<3;++pt_index)
+	for (int pt_index = 0;pt_index<4;++pt_index)
 	  {
 	    avglocation[pt_index] = 0;
 	  }
@@ -1033,12 +1031,12 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	while (parametrized_position_dist[fiber_counter][pos_counter] <= range_max && parametrized_position_dist[fiber_counter][pos_counter] >= range_min && pos_counter < fiber_length)
 	  { 
 	    //std::cout<<"Including data "<<pos_counter<<" for sampling location #"<<sampling_loc<<std::endl;
-	    
+	    avglocation[3] = parametrized_position_dist[fiber_counter][pos_counter] + avglocation[3];
 	    //getting location info in this sampling window for average
 	    avglocation[0] = parametrized_position_x[fiber_counter][pos_counter] + avglocation[0];
 	    avglocation[1] = parametrized_position_y[fiber_counter][pos_counter] + avglocation[1];
 	    avglocation[2] = parametrized_position_z[fiber_counter][pos_counter] + avglocation[2];
-		
+	    
 	    noptinwindow++; //number of points in the window
 	    pos_counter++;
 	  }
@@ -1046,11 +1044,11 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	//std::cout<<"pos_counter is "<<pos_counter<<" v.s. size is "<<fiber_length<<std::endl;
 	if(noptinwindow > 0)
 	  {
-	    std::cout<<"there are #"<<noptinwindow<<" pts for sampling location #"<<sampling_loc<<std::endl;
+	    //	    std::cout<<"there are #"<<noptinwindow<<" pts for sampling location #"<<sampling_loc<<std::endl;
 	    vtkIdType id;
 	    real_no_pits_on_fiber ++;
 	    fiberindex->InsertNextTuple1(sampling_loc);
-	    
+	    arclength->InsertNextTuple1(avglocation[3]/noptinwindow);
 	    id = pts->InsertNextPoint(avglocation[0]/noptinwindow,
 				      avglocation[1]/noptinwindow,
 				      avglocation[2]/noptinwindow);
@@ -1065,14 +1063,19 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	    break;
 	  }
       }
-    std::cout<<"real_no_pits_on_fiber is "<<real_no_pits_on_fiber<<std::endl;
+    //    std::cout<<"real_no_pits_on_fiber is "<<real_no_pits_on_fiber<<std::endl;
     polydata->InsertNextCell(VTK_POLY_LINE,real_no_pits_on_fiber,ids->GetPointer(currentId));
-    std::cout<<"goes to fiber #"<<fiber_counter<<std::endl;
+    //    std::cout<<"goes to fiber #"<<fiber_counter<<std::endl;
     fiber_counter++;
   }
 
   std::cout<<"writing fiber"<<output_parametrized_fiber_file.c_str()<<std::endl;
+
+  polydata->GetPointData()->SetActiveScalars("SamplingDistance2Origin");
+  polydata->GetPointData()->SetScalars(arclength);
+  polydata->GetPointData()->SetActiveScalars("FiberLocationIndex");
   polydata->GetPointData()->SetScalars(fiberindex);
+
   vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
   fiberwriter->SetFileTypeToASCII();
   fiberwriter->SetFileName(output_parametrized_fiber_file.c_str());
@@ -1115,7 +1118,8 @@ void fiberprocessing::sort_parameter(GroupType::Pointer fibergroup)
   for(it = (children->begin()); it != children->end() ; it++)
   {
     int fiber_length = parametrized_position_dist[fiber_counter].size();
-    std::cout<<"fiber # "<<fiber_counter<<" has the length of "<<fiber_length<<std::endl;
+    //    std::cout<<"fiber # "<<fiber_counter<<" has the length of "<<fiber_length<<std::endl;
+
     for (int i=0; i<fiber_length-1; i++) 
       {
 	for (int j=0; j<fiber_length-1-i; j++)
