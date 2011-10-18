@@ -998,7 +998,7 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
     //std::cout<<"debugcounter is "<<debugcounter<<std::endl;
     //debugcounter++;
     
-    vtkIdType currentId = ids->GetNumberOfIds();
+    vtkIdType currentId = ids->GetId();
     int fiber_length = parametrized_position_dist[fiber_counter].size();
     int sampling_start=0;
     double range_min = min_length;
