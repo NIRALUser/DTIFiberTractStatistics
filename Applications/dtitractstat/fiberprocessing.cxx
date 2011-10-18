@@ -993,12 +993,12 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
     {
       avglocation[pt_index] = 0;
     }
-  int real_no_pits_on_fiber = 0;
+  
   for(it = (children->begin()); it != children->end() ; it++)
   {
     //std::cout<<"debugcounter is "<<debugcounter<<std::endl;
     //debugcounter++;
-    
+    int real_no_pits_on_fiber = 0; 
     vtkIdType currentId = ids->GetNumberOfIds();
     //std::cout<<"currentID is"<<currentID<<std::endl;
     int fiber_length = parametrized_position_dist[fiber_counter].size();
