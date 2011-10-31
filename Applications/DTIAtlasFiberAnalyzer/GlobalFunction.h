@@ -81,7 +81,7 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 int CalculNumberOfProfileParam(std::string parameters);
 
 /* look for a plane associated to fiber */
-int PlaneAssociatedToFiber(std::string fibername, vstring fibersplane);
+std::vector<int> PlaneAssociatedToFiber(std::string fibername, vstring fibersplane);
 
 void convert(QVector <std::string> line, QVector < QVector <double> >& data);
 
@@ -118,6 +118,10 @@ QVector<double> getCorr(QVector<QVector<double> > data1, QVector<QVector<double>
 vstring getparameterslines(std::ifstream& fvpfile);
 
 std::string getParamFromFile(std::string filepath);
+
+bool IsFile(std::string);
+
+int CallDTIParametrization(std::string, std::string, std::string, std::string);
 
 
 #endif

@@ -332,13 +332,16 @@ void PlotWindow::CreateStatStyle()
 {
 	QVector <qreal> dashes;
 	QPen pen;
+	QColor color;
+	color.setRgb(204,153,0);
 	
-	pen.setColor(Qt::green);
+	pen.setColor(color);
 	m_StatStyle.push_back(pen);
 	
 	dashes<<10<<5;
 	pen.setDashPattern(dashes);
-	pen.setColor(Qt::darkGreen);
+	color.setRgb(204,102,0);
+	pen.setColor(color);
 	m_StatStyle.push_back(pen);
 	m_StatStyle.push_back(pen);
 }

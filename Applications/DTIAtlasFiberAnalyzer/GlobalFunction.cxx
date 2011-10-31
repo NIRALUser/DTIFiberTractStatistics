@@ -61,14 +61,17 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 	// Read atlas directory
 	ReadFiberNameInAtlasDirectory(fibers,fibersplane, AtlasFiberDir);
 	
-	int plane = -1;
+	std::vector<int> plane;
 	//Select the plane of the selected fiber
 	for(unsigned int i=0;i<SelectedFibers.size();i++)
 	{
 		/* Check the plane and add/erase it */
 		plane = PlaneAssociatedToFiber(SelectedFibers[i], SelectedPlanes);
-		if(plane!=-1)
-			Selectedfibersplane.push_back(SelectedPlanes[plane]);
+		if(plane.size()!=0)
+		{
+			for(unsigned int k=0; k<plane.size(); k++)
+				Selectedfibersplane.push_back(SelectedPlanes[plane[k]]);
+		}
 		else
 			Selectedfibersplane.push_back("");
 	}
@@ -495,7 +498,7 @@ void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::s
 			for(unsigned long j=0;j<NumberOfFiles;j++)
 			{
 				planename = takeoffExtension(AtlasDirectory.GetFile(j));
-				if(planename.compare(fibername)==0)
+				if(planename.rfind(fibername)!=std::string::npos || fibername.rfind(planename)!=std::string::npos)
 				{
 					extensionfiberplane = ExtensionofFile(AtlasDirectory.GetFile(j));
 					if(/*extensionfiberplane.compare("fvb")==0||*/extensionfiberplane.compare("fvp")==0)
@@ -609,6 +612,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 				if(!DataExistedInFiberColumn(CSV,row,col,outputname))
 				{
 					CSV->AddData(outputname,row,col);
+					//nouveau vtk
 				}
 			}
 			else
@@ -660,7 +664,10 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 		else if(!skipdata[0] || !ExistedFile)
 		{
 			if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory, inputname, outputname, fibersplane[j], parameters, CoG)!=0)
+			{
 				std::cout<<"Fail during dti_tract_stat!"<<std::endl;
+				return false;
+			}
 		}
 		
 	}
@@ -722,8 +729,9 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 			qs = parameter.c_str();
 			arguments.append(QString("--parameter_list ") + qs);
 		}
-		std::cout<<"Command Line :  "<< (arguments.join(" ")).toStdString() <<std::endl;
+		
 		state = process->execute( pathdti_tract_stat.c_str(), arguments);
+		std::cout<<"Command Line :  "<< (arguments.join(" ")).toStdString() <<std::endl;
 		std::cout<<"End of Dti Tract Stat."<<std::endl;
 	}
 	else
@@ -1001,7 +1009,7 @@ void SaveData(std::string filename,std::string CSVFilename, int DataCol, int Def
 		savefile << "#Data/Case/Deformation Column --> index starts at 1" <<std::endl;
 		savefile << "Data Column : " << DataCol +1 <<std::endl;
 		if(DefCol!=-1)
-			savefile << "Defomation Field Column : " << DefCol +1 <<std::endl;
+			savefile << "Deformation Field Column : " << DefCol +1 <<std::endl;
 		if(NameCol!=-1)
 			savefile << "Case Column : " << NameCol +1 <<std::endl;
 		savefile << "Output Folder : " << OutputFolder <<std::endl;
@@ -1101,7 +1109,7 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 							str = buf1.substr(14,buf1.size()-14);
 							DataCol = atoi(str.c_str())-1;
 						}
-						else if(buf1.compare(0,26,"Defomation Field Column : ")==0)
+						else if(buf1.compare(0,26,"Deformation Field Column : ")==0)
 						{
 							str = buf1.substr(26,buf1.size()-26);
 							DefCol = atoi(str.c_str())-1;
@@ -1116,6 +1124,7 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 						else if(buf1.size()!=0)
 						{
 							std::cout<<"Syntax error in data file"<<std::endl;
+							std::cout<<"Errot at this line : "<<buf1<<std::endl;
 							return false;
 						}
 					}
@@ -1247,14 +1256,18 @@ int CalculNumberOfProfileParam(std::string parameters)
  * fibersplaneSelected
  ********************************************************************************/
 
-int PlaneAssociatedToFiber(std::string fibername, vstring fibersplane)
+std::vector<int> PlaneAssociatedToFiber(std::string fibername, vstring fibersplane)
 {
+	std::vector <int> plane;
 	for(unsigned int j=0;j<fibersplane.size();j++)
 	{
-		if(fibersplane[j].compare(takeoffExtension(fibername)+".fvp")==0 /*|| fibersplane[j].compare(takeoffExtension(fibername)+".fvb")==0*/ || fibersplane[j].compare(takeoffExtension(fibername)+"_auto")==0)
-			return j;
+		if(ExtensionofFile(fibersplane[j])=="fvp")
+		{
+			if(fibersplane[j].rfind(takeoffExtension(fibername))!=std::string::npos || takeoffExtension(fibername).rfind(fibersplane[j])!=std::string::npos)
+				plane.push_back(j);
+		}
 	}
-	return -1;
+	return plane;
 }
 
  /************************************************************************************
@@ -1532,4 +1545,31 @@ std::string getParamFromFile(std::string filepath)
 	else
 		std::cout<<"Error Opening file to read parameters"<<std::endl;
 	return parameters;
+}
+
+bool IsFile(std::string filename)
+{
+	if(ExtensionofFile(filename)=="")
+		return false;
+	else
+		return true;
+}
+
+int CallDTIParametrization(std::string PathDTIParametrization, std::string CSVFilename, std::string VTKFilename, std::string OutputFilename)
+{
+	int state=0;
+	QProcess* process= new QProcess();
+	QStringList arguments;
+	
+	std::cout<<"Compute DTIParametrization..."<<std::endl;
+	QString qs=CSVFilename.c_str();
+	arguments.append(QString("-c ")+qs);
+	qs=VTKFilename.c_str();
+	arguments.append("-v "+qs);
+	qs=OutputFilename.c_str();
+	arguments.append("-o "+qs);
+	std::cout<<"Command Line: "<<arguments.join(" ").toStdString()<<std::endl;
+	state=process->execute(PathDTIParametrization.c_str(), arguments);
+	std::cout<<"End of DTIParametrization."<<std::endl;
+	return state;
 }

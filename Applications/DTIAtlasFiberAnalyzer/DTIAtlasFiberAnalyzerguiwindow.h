@@ -78,6 +78,10 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void EnterCsvFileName();
 		void ApplySlot();
 		void TabChanged(int);
+		void BrowserDTIPCsvFilename();
+		void BrowserDTIPVtkFilename();
+		void BrowserDTIPOutputFilename();
+		bool ComputeDTIParametrization();
 		
 	protected:
 		QWidget* stepwidget(int numberstep);
@@ -153,7 +157,6 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		QVector<qv3double> m_casedata;
 		QVector<qv3double> m_atlasdata;
 		QVector<qv3double> m_statdata;
-		
 		vstring m_parameterslines;
 		bool m_PlotError;
 };

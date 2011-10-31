@@ -571,11 +571,16 @@ void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plan
 			  sum_x=sum_x+position[0]; sum_y=sum_y+position[1]; sum_z=sum_z+position[2];
 		  }
 	  }
+	  plane_origin[0]=sum_x/num_points;
+	  plane_origin[1]=sum_y/num_points;
+	  plane_origin[2]=sum_z/num_points;
   }
   else if(auto_plane_origin=="median")
   {
+	  itk::Vector<double, 3> median_point;
 	  //Finding Plane origin as the average x,y,z of middle points for each fibers
 	  int median=0;
+	  double distance_min=10000.0;
 	  for(it=pchildren->begin(); it!=pchildren->end(); it++)
 	  {
 		  pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
@@ -586,10 +591,26 @@ void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plan
 		  num_points++;
 		  sum_x+=position[0]; sum_y+=position[1]; sum_z+=position[2];
 	  }
+	  median_point[0]=sum_x/num_points;
+	  median_point[1]=sum_y/num_points;
+	  median_point[2]=sum_z/num_points;
+	  for(it=pchildren->begin(); it!=pchildren->end(); it++)
+	  {
+		  pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+		  median=ceil((double)pointlist.size()/2.0);
+		  pit=pointlist.begin();
+		  pit+=median;
+		  itk::Point<double,3> position=(*pit).GetPosition();
+		  double distance=sqrt(pow(position[0]-median_point[0],2)+pow(position[1]-median_point[1],2)+pow(position[2]-median_point[2],2));
+		  if(distance<distance_min)
+		  {
+			  distance_min=distance;
+			  plane_origin[0]=position[0];
+			  plane_origin[1]=position[1];
+			  plane_origin[2]=position[2];
+		  }
+	  }
   }
-  plane_origin[0]=sum_x/num_points;
-  plane_origin[1]=sum_y/num_points;
-  plane_origin[2]=sum_z/num_points;
   cout<<"\nCalculated Plane Origin (avg x,y,z): "<<plane_origin[0]<<","<<plane_origin[1]<<","<<plane_origin[2]<<endl;
 		
   //Leaving a percent of the bundle end points, find the closest point on bundle to the plane origin (to avoid curved bundles getting ends as the closest point)
