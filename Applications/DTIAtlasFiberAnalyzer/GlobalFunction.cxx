@@ -1555,21 +1555,31 @@ bool IsFile(std::string filename)
 		return true;
 }
 
-int CallDTIParametrization(std::string PathDTIParametrization, std::string CSVFilename, std::string VTKFilename, std::string OutputFilename)
+int CallMergeStatWithFiber(std::string PathMergeStatWithFiber, std::string CSVFilename, std::string VTKFilename, std::string OutputFilename, std::string Min, std::string Max)
 {
 	int state=0;
 	QProcess* process= new QProcess();
 	QStringList arguments;
 	
-	std::cout<<"Compute DTIParametrization..."<<std::endl;
+	std::cout<<"Compute MergeStatWithFiber..."<<std::endl;
 	QString qs=CSVFilename.c_str();
 	arguments.append(QString("-c ")+qs);
 	qs=VTKFilename.c_str();
 	arguments.append("-v "+qs);
 	qs=OutputFilename.c_str();
 	arguments.append("-o "+qs);
+	if(Min!="")
+	{
+		qs=Min.c_str();
+		arguments.append("-m "+qs);
+	}
+	if(Max!="")
+	{
+		qs=Max.c_str();
+		arguments.append("-M "+qs);
+	}
 	std::cout<<"Command Line: "<<arguments.join(" ").toStdString()<<std::endl;
-	state=process->execute(PathDTIParametrization.c_str(), arguments);
-	std::cout<<"End of DTIParametrization."<<std::endl;
+	state=process->execute(PathMergeStatWithFiber.c_str(), arguments);
+	std::cout<<"End of MergeStatWithFiber."<<std::endl;
 	return state;
 }

@@ -1916,7 +1916,7 @@ vstring DTIAtlasFiberAnalyzerguiwindow::getFiberInformations(std::string fiber)
 
 
 /***************************************************
- * 				DTIParametrization Tab
+ * 				MergeStatWithFiber Tab
  ***************************************************/
  
  
@@ -1960,19 +1960,19 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	
-	std::string PathDTIParametrization = itksys::SystemTools::FindProgram("dtiparametrization");
-	std::cout<<PathDTIParametrization<<std::endl;
-	if(PathDTIParametrization.size()==0)
+	std::string PathMergeStatWithFiber = itksys::SystemTools::FindProgram("MergeStatWithFiber");
+	std::cout<<PathMergeStatWithFiber<<std::endl;
+	if(PathMergeStatWithFiber.size()==0)
 	{
-		QMessageBox::warning(this, "dtiparametrization", "Select the folder where dtiparametrization is located.");
-		PathDTIParametrization=QFileDialog::getExistingDirectory(this).toStdString();
-		PathDTIParametrization=PathDTIParametrization+"/dtiparametrization";
+		QMessageBox::warning(this, "MergeStatWithFiber", "Select the folder where MergeStatWithFiber is located.");
+		PathMergeStatWithFiber=QFileDialog::getExistingDirectory(this).toStdString();
+		PathMergeStatWithFiber=PathMergeStatWithFiber+"/MergeStatWithFiber";
 	}
-	if(PathDTIParametrization.size()!=0)
+	if(PathMergeStatWithFiber.size()!=0)
 	{
-		if(CallDTIParametrization(PathDTIParametrization, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString())!=0)
+		if(CallMergeStatWithFiber(PathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString())!=0)
 		{
-			std::cout<<"Fail during dtiparametrization!"<<std::endl;
+			std::cout<<"Fail during MergeStatWithFiber!"<<std::endl;
 			return false;
 		}
 	}

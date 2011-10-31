@@ -121,7 +121,7 @@ std::string getParamFromFile(std::string filepath);
 
 bool IsFile(std::string);
 
-int CallDTIParametrization(std::string, std::string, std::string, std::string);
+int CallMergeStatWithFiber(std::string, std::string, std::string, std::string, std::string, std::string);
 
 
 #endif

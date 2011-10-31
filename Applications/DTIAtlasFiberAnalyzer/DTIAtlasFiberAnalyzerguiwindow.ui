@@ -1496,9 +1496,9 @@
          </property>
         </widget>
        </widget>
-       <widget class="QWidget" name="DTIParametrization">
+       <widget class="QWidget" name="MergeStatWithFiber">
         <attribute name="title">
-         <string>DTIParametrization</string>
+         <string>MergeStatWithFiber</string>
         </attribute>
         <widget class="QFrame" name="loadparamframe_2">
          <property name="enabled">
@@ -1743,6 +1743,87 @@
          <property name="text">
           <string>Parametrization</string>
          </property>
+        </widget>
+        <widget class="QFrame" name="loadparamframe_5">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>510</x>
+           <y>140</y>
+           <width>191</width>
+           <height>121</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="csvfilenametitle_5">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>111</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Interpolation</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="DTIP_LE_Min">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>40</y>
+            <width>113</width>
+            <height>26</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="DTIP_LE_Max">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>80</y>
+            <width>113</width>
+            <height>26</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>21</width>
+            <height>18</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Min</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>80</y>
+            <width>31</width>
+            <height>18</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Max</string>
+          </property>
+         </widget>
         </widget>
        </widget>
       </widget>
