@@ -1289,25 +1289,42 @@ void DTIAtlasFiberAnalyzerguiwindow::AddFiberInList()
  ********************************************************************************/
 void DTIAtlasFiberAnalyzerguiwindow::SelectAllFiber()
 {
+	int found;
+	std::vector<int> plane;
 	//Read all the fibername data
-	for( unsigned int i=0;i<m_Fibername.size();i++)
+	for(int i=0;i<FiberInAtlasList->count();i++)
 	{
-		for(int j=0;j<FiberInAtlasList->count();j++)
+		found=-1;
+		for( unsigned int j=0;j<m_Fibername.size();j++)
 		{
-			if(((FiberInAtlasList->item(j))->text()).compare(m_Fibername[i].c_str())==0)
-				FiberInAtlasList->takeItem(j);
+			if(((FiberInAtlasList->item(i))->text()).compare(m_Fibername[j].c_str())==0)
+			{
+				found=j;
+				break;
+			}
 		}
-		
-		QListWidgetItem* item1= new QListWidgetItem;
-		QString qs(m_Fibername[i].c_str());
-		item1->setData( 0, qs );
-		FiberSelectedList->addItem(item1);
-		QListWidgetItem* item2= new QListWidgetItem;
-		qs=m_Fibername[i].c_str();
-		item2->setData( 0, qs );
-		FiberSelected2List->addItem(item2);
-		m_FiberSelectedname.push_back(m_Fibername[i]);
-		m_RelevantPlane.push_back(m_Fibersplane[i]);
+		if(found>=0)
+		{
+			QListWidgetItem* item= new QListWidgetItem;
+			item=(FiberInAtlasList->takeItem(i));
+			i--;
+			FiberSelectedList->addItem(item);
+			FiberSelected2List->addItem(item);
+			m_FiberSelectedname.push_back(item->text().toStdString());
+			plane = PlaneAssociatedToFiber(m_FiberSelectedname[m_FiberSelectedname.size()-1], m_Fibersplane);
+			if(plane.size()!=0)
+			{
+				for(unsigned int k=0; k<plane.size(); k++)
+				{
+					m_RelevantPlane.push_back(m_Fibersplane[plane[k]]);
+					QListWidgetItem* itemplane= new QListWidgetItem;
+					QString qs(m_Fibersplane[plane[k]].c_str());
+					itemplane->setData( 0, qs );
+					FiberPlaneFile->addItem(itemplane);
+					m_Fibersplane.erase(m_Fibersplane.begin()+plane[k]);
+				}
+			}			
+		}
 	}
 	
 	//Read all the fiberplane name data
@@ -1318,7 +1335,6 @@ void DTIAtlasFiberAnalyzerguiwindow::SelectAllFiber()
 		itemplane->setData( 0, qs );
 		FiberPlaneFile->addItem(itemplane);
 	}
-	
 	//Clear the vector with the initial list of fibers' name.
 	m_Fibername.clear();
 	m_Fibersplane.clear();
@@ -1563,7 +1579,7 @@ void DTIAtlasFiberAnalyzerguiwindow::FillSelectedPlane()
 		for(int j=0; j<SelectedItems.size(); j++)
 		{
 			plane=takeoffExtension(SelectedItems[j]->text().toStdString());
-			if(fiber.rfind(plane) || plane.rfind(fiber))
+			if(fiber.rfind(plane)!=std::string::npos || plane.rfind(fiber)!=std::string::npos)
 			{
 				m_SelectedPlane.push_back(SelectedItems[j]->text().toStdString());
 				found=true;
@@ -2258,6 +2274,20 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 				{
 					if(SelectedFiberDone)
 					{
+						bool found;
+						for(unsigned int i=0; i<m_FiberSelectedname.size(); i++)
+						{
+							for(unsigned int j=0; j<m_Fibername.size(); j++)
+							{
+								if(m_FiberSelectedname[i]==m_Fibername[j])
+									found=true;
+							}
+							if(!found)
+							{
+								m_FiberSelectedname.erase(m_FiberSelectedname.begin()+i);
+								i--;
+							}
+						}							
 						for(unsigned int i=0;i<m_FiberSelectedname.size();i++)
 						{
 							//remove the name in the first vector and the list
@@ -2267,7 +2297,6 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 								{
 									FiberSelectedList->addItem(m_FiberSelectedname[i].c_str());
 									FiberSelected2List->addItem(m_FiberSelectedname[i].c_str());
-									m_Fibername.erase(m_Fibername.begin()+k);
 									FiberInAtlasList->takeItem(k);
 								}
 							}

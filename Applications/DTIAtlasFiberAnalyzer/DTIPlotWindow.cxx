@@ -35,7 +35,7 @@ PlotWindow::PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata
 	Plotting(statdata, "Stat");
 	m_Plot->setAxisTitle(QwtPlot::xBottom,"Arc_Lengh");
 	m_Plot->setAxisTitle(QwtPlot::yRight,"Nb_of_fiber_points");
-	m_Plot->setAxisTitle(QwtPlot::yLeft,"fa");
+	m_Plot->setAxisTitle(QwtPlot::yLeft,m_Parameters[0].c_str());
 	InitAxisInterval();
 	show();
 }
@@ -61,6 +61,12 @@ void PlotWindow::InitWidget()
 	m_CorrLayout=new QGridLayout;
 	m_AxesLayout=new QGridLayout;
 	
+	m_CaseBoxes=new QListWidget(this);
+	m_CaseBoxes->setMaximumSize(200,400);
+	m_AtlasBoxes=new QListWidget(this);
+	m_AtlasBoxes->setMaximumSize(200,400);
+	m_StatBoxes=new QListWidget(this);
+	m_StatBoxes->setMaximumSize(200,400);
 	m_CaseLcd=new QLCDNumber(this);
 	m_CaseSlider=new QSlider(Qt::Horizontal, this);
 	m_AtlasLcd=new QLCDNumber(this);
@@ -68,6 +74,7 @@ void PlotWindow::InitWidget()
 	m_StatLcd=new QLCDNumber(this);
 	m_StatSlider=new QSlider(Qt::Horizontal, this);
 	m_Plot=new QwtPlot;
+	m_Plot->setMinimumSize(700,850);
 	m_CasePxSize=new QLabel("Case width", this);
 	m_AtlasPxSize=new QLabel("Atlas width", this);
 	m_StatPxSize=new QLabel("Stat width", this);
@@ -119,8 +126,17 @@ void PlotWindow::InitWidget()
 	 
 	//Fill each Layout
 	GroupParameters->setLayout(m_ParameterLayout);
+	m_CaseLayout->addWidget(m_CaseBoxes,0,0);
+	m_CaseLayout->setRowStretch(1,1);
+	m_CaseLayout->setColumnStretch(1,1);
 	GroupCases->setLayout(m_CaseLayout);
+	m_AtlasLayout->addWidget(m_AtlasBoxes,0,0);
+	m_AtlasLayout->setRowStretch(1,1);
+	m_AtlasLayout->setColumnStretch(1,1);
 	GroupAtlas->setLayout(m_AtlasLayout);
+	m_StatLayout->addWidget(m_StatBoxes,0,0);
+	m_StatLayout->setRowStretch(1,1);
+	m_StatLayout->setColumnStretch(1,1);
 	GroupStat->setLayout(m_StatLayout);
 	GroupFibers->setLayout(m_FiberLayout);
 	m_CheckBoxLayout->addWidget(GroupCases);
@@ -193,6 +209,9 @@ void PlotWindow::InitWidget()
 	connect(m_YMin, SIGNAL(editingFinished()), this, SLOT(UpdateAxis()));
 	connect(m_YMax, SIGNAL(editingFinished()), this, SLOT(UpdateAxis()));
 	connect(m_AutoScale, SIGNAL(clicked()), this, SLOT(AutoScale()));
+	connect(m_CaseBoxes, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(setCurveVisible()));
+	connect(m_AtlasBoxes, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(setCurveVisible()));
+	connect(m_StatBoxes, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(setCurveVisible()));
 	
 }
 
@@ -611,12 +630,13 @@ int PlotWindow::GetCheckedParameter()
 	return -1;
 }
 
+//TODO LIST
 std::vector <int> PlotWindow::GetCheckedCase()
 {
 	std::vector <int> checked;
-	for(unsigned int i=0; i<m_CaseBoxes.size(); i++)
+	for(int i=0; i<m_CaseBoxes->count(); i++)
 	{
-		if(m_CaseBoxes[i]->isChecked()==true)
+		if(m_CaseBoxes->item(i)->checkState()==Qt::Checked)
 			checked.push_back(i);
 	}
 	checked.push_back(-1);
@@ -626,9 +646,9 @@ std::vector <int> PlotWindow::GetCheckedCase()
 std::vector <int> PlotWindow::GetCheckedAtlas()
 {
 	std::vector <int> checked;
-	for(unsigned int i=0; i<m_AtlasBoxes.size(); i++)
+	for(int i=0; i<m_AtlasBoxes->count(); i++)
 	{
-		if(m_AtlasBoxes[i]->isChecked()==true)
+		if(m_AtlasBoxes->item(i)->checkState()==Qt::Checked)
 			checked.push_back(i);
 	}
 	checked.push_back(-1);
@@ -638,13 +658,14 @@ std::vector <int> PlotWindow::GetCheckedAtlas()
 std::vector <int> PlotWindow::GetCheckedStat()
 {
 	std::vector <int> checked;
-	for(unsigned int i=0; i<m_StatBoxes.size(); i++)
+	for(int i=0; i<m_StatBoxes->count(); i++)
 	{
-		if(m_StatBoxes[i]->isChecked()==true)
+		if(m_StatBoxes->item(i)->checkState()==Qt::Checked)
 			checked.push_back(i);
 	}
 	checked.push_back(-1);
 	return checked;
+	
 }
 
 int PlotWindow::GetCheckedFiber()
@@ -679,78 +700,83 @@ void PlotWindow::CreateParameterButtons()
 
 void PlotWindow::CreateCaseBoxes()
 {
-	std::string box;
 	// 	Creation of case checkboxes
 	int styleindex=-1;
 	for(unsigned int i=0; i<m_Cases.size()*2; i++)
 	{
+		QListWidgetItem* item=new QListWidgetItem;
+		QString label=m_Cases[i/2].c_str();
+		QBrush brush;
 		styleindex++;
 		if(i%2==1)
 			styleindex++;
-		if(i%2==0)
-			box=m_Cases[i/2];
+		if(i%2!=0)
+			label+=" and Std";
+		item->setText(label);
+		brush.setColor(m_CaseStyle[styleindex].color());
+		item->setForeground(brush);
+		if(i==0)
+			item->setCheckState(Qt::Checked);
 		else
-			box=m_Cases[i/2]+" and Std";
-		box="<font color="+m_CaseStyle[styleindex].color().name().toStdString()+">"+box+"</font>";
-		m_CaseBoxes.push_back(new QCheckBox("", this));
-		m_CaseLabel.push_back(new QLabel(box.c_str(),this));
-		m_CaseLayout->addWidget(m_CaseBoxes[i],i%8,((int)(i/8))*2);
-		m_CaseLayout->addWidget(m_CaseLabel[i],i%8,((int)(1+i/8))*2-1);
-		
-		connect(this->m_CaseBoxes[i], SIGNAL(stateChanged(int)), this, SLOT(setCurveVisible()));
+			item->setCheckState(Qt::Unchecked);
+		item->setToolTip(label);
+		item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+		m_CaseBoxes->addItem(item);
 	}
-	m_CaseLayout->setColumnStretch((int)(3+m_Cases.size()/4),1);
-	m_CaseBoxes[0]->setChecked(true);
 }
 
 void PlotWindow::CreateAtlasBoxes()
 {
-	std::string box;
 	int styleindex=-1;
 	//Creation of atlas boxe
 	for(unsigned int i=0; i<3; i++)
 	{
+		QListWidgetItem* item=new QListWidgetItem;
+		QString label;
+		QBrush brush;
 		styleindex++;
 		if(i%2==1)
 			styleindex++;
 		if(i==0)
-			box="Atlas value";
+			label="Atlas value";
 		else if(i==1)
-			box="Atlas value and std";
+			label="Atlas value and std";
 		else if(i==2)
-			box="Nb of fiber points";
-		box="<font color="+m_AtlasStyle[styleindex].color().name().toStdString()+">"+box+"</font>";
-		m_AtlasBoxes.push_back(new QCheckBox("", this));
-		m_AtlasLabel.push_back(new QLabel(box.c_str(), this));
-		m_AtlasLayout->addWidget(m_AtlasBoxes[i],i,0);
-		m_AtlasLayout->addWidget(m_AtlasLabel[i],i,1);
-		connect(this->m_AtlasBoxes[i], SIGNAL(clicked()), this, SLOT(setCurveVisible()));
+			label="Nb of fiber points";
+		brush.setColor(m_AtlasStyle[styleindex].color());
+		item->setForeground(brush);
+		item->setText(label);
+		item->setCheckState(Qt::Unchecked);
+		item->setToolTip(label);
+		item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+		m_AtlasBoxes->addItem(item);
 	}
-	m_AtlasLayout->setColumnStretch(3,1);
 }
 
 void PlotWindow::CreateStatBoxes()
-{	
-	std::string box;
+{
 	int styleindex=-1;
 	//Creation of stat boxes
 	for(unsigned int i=0; i<2; i++)
 	{
+		QListWidgetItem* item=new QListWidgetItem;
+		QString label;
+		QBrush brush;
 		styleindex++;
 		if(i%2==1)
 			styleindex++;
 		if(i==0)
-			box="Mean";
+			label="Mean";
 		else if(i==1)
-			box="Mean and std";
-		box="<font color="+m_StatStyle[styleindex].color().name().toStdString()+">"+box+"</font>";
-		m_StatBoxes.push_back(new QCheckBox("", this));
-		m_StatLabel.push_back(new QLabel(box.c_str(), this));
-		m_StatLayout->addWidget(m_StatBoxes[i],i,0);
-		m_StatLayout->addWidget(m_StatLabel[i],i,1);
-		connect(this->m_StatBoxes[i], SIGNAL(clicked()), this, SLOT(setCurveVisible()));
+			label="Mean and std";
+		brush.setColor(m_StatStyle[styleindex].color());
+		item->setText(label);
+		item->setForeground(brush);
+		item->setCheckState(Qt::Unchecked);
+		item->setToolTip(label);
+		item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+		m_StatBoxes->addItem(item);
 	}
-	m_StatLayout->setColumnStretch(3,1);
 }
 
 void PlotWindow::CreateFiberButtons()

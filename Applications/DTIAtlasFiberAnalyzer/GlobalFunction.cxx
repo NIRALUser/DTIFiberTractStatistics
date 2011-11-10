@@ -570,7 +570,6 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 	CreateDirectoryForData(OutputFolder,"Fibers");
 	
 	
-	
 	/* Loop for all the fibers */
 	for(unsigned int j=0;j<fibers.size();j++)
 	{

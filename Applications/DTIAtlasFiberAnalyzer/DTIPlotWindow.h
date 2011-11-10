@@ -96,12 +96,9 @@ class PlotWindow : public QWidget
 		std::vector <QLabel*> m_InfoLabel;
 		std::vector <QRadioButton*> m_ParameterButtons;
 		std::vector <QRadioButton*> m_FiberButtons;
-		std::vector <QCheckBox*> m_CaseBoxes;
-		std::vector <QCheckBox*> m_AtlasBoxes;
-		std::vector <QCheckBox*> m_StatBoxes;
-		std::vector <QLabel*> m_CaseLabel;
-		std::vector <QLabel*> m_AtlasLabel;
-		std::vector <QLabel*> m_StatLabel;
+		QListWidget* m_CaseBoxes;
+		QListWidget* m_AtlasBoxes;
+		QListWidget* m_StatBoxes;
 		std::vector <QPen> m_CaseStyle;
 		std::vector <QPen> m_AtlasStyle;
 		std::vector <QPen> m_StatStyle;
