@@ -62,11 +62,21 @@ void PlotWindow::InitWidget()
 	m_AxesLayout=new QGridLayout;
 	
 	m_CaseBoxes=new QListWidget(this);
-	m_CaseBoxes->setMaximumSize(200,400);
+	m_CaseBoxes->setMaximumSize(235,400);
+	m_SAllReg=new QPushButton("Show All Average", this);
+	m_SAllReg->setMinimumHeight(20);
+	m_SAllStd=new QPushButton("Show All Std", this);
+	m_SAllStd->setMinimumHeight(20);
+	m_DAllReg=new QPushButton("Hide All Average", this);
+	m_DAllReg->setMinimumHeight(20);
+	m_DAllReg->hide();
+	m_DAllStd=new QPushButton("Hide All Std", this);
+	m_DAllStd->setMinimumHeight(20);
+	m_DAllStd->hide();
 	m_AtlasBoxes=new QListWidget(this);
-	m_AtlasBoxes->setMaximumSize(200,400);
+	m_AtlasBoxes->setMaximumSize(235,400);
 	m_StatBoxes=new QListWidget(this);
-	m_StatBoxes->setMaximumSize(200,400);
+	m_StatBoxes->setMaximumSize(235,400);
 	m_CaseLcd=new QLCDNumber(this);
 	m_CaseSlider=new QSlider(Qt::Horizontal, this);
 	m_AtlasLcd=new QLCDNumber(this);
@@ -78,15 +88,23 @@ void PlotWindow::InitWidget()
 	m_CasePxSize=new QLabel("Case width", this);
 	m_AtlasPxSize=new QLabel("Atlas width", this);
 	m_StatPxSize=new QLabel("Stat width", this);
-	m_ComputeCorr=new QPushButton("Compute and color correlation", this);
-	m_ComputeCorr->setMinimumSize(150, 30);
+	m_ComputeCorr=new QPushButton("Color correlation", this);
+	m_ComputeCorr->setMinimumSize(150, 20);
 	m_DecomputeCorr=new QPushButton("Decolor correlation", this);
-	m_DecomputeCorr->setMinimumSize(150, 30);
+	m_DecomputeCorr->setMinimumSize(150, 20);
 	m_DecomputeCorr->setVisible(false);
 	m_ThSlider=new QSlider(Qt::Horizontal, this);
 	m_ThLcd=new QLCDNumber(this);
 	m_ThLabel=new QLabel("Threshold", this);
 	m_CorrText=new QTextEdit("", this);
+	m_L_CorrColorMap=new QLabel(this);
+	m_L_CorrColorMap->setFixedSize(550,20);
+	m_L_CorrColorMap->setPixmap(GeneratePixmap());
+	m_L_CorrColorMap->hide();
+	m_L_Min=new QLabel("0.8",this);
+	m_L_Min->hide();
+	m_L_Max=new QLabel("1",this);
+	m_L_Max->hide();
 	m_Min=new QLabel("Min", this);
 	m_Max=new QLabel("Max", this);
 	m_X=new QLabel("X", this);
@@ -96,6 +114,7 @@ void PlotWindow::InitWidget()
 	m_YMin=new QLineEdit;
 	m_YMax=new QLineEdit;
 	m_AutoScale=new QPushButton("Auto Scale", this);
+	m_AutoScale->setMinimumHeight(20);
 	InitCorrText();
 	QGroupBox* DetailledInfo=new QGroupBox("Detailled Information");
 	QGroupBox* CurveDisplay=new QGroupBox("Choose Curve to diplay");
@@ -126,9 +145,13 @@ void PlotWindow::InitWidget()
 	 
 	//Fill each Layout
 	GroupParameters->setLayout(m_ParameterLayout);
-	m_CaseLayout->addWidget(m_CaseBoxes,0,0);
-	m_CaseLayout->setRowStretch(1,1);
-	m_CaseLayout->setColumnStretch(1,1);
+	m_CaseLayout->addWidget(m_CaseBoxes,0,0,1,2);
+	m_CaseLayout->addWidget(m_SAllReg,1,0);
+	m_CaseLayout->addWidget(m_SAllStd,1,1);
+	m_CaseLayout->addWidget(m_DAllReg,1,0);
+	m_CaseLayout->addWidget(m_DAllStd,1,1);
+	m_CaseLayout->setRowStretch(2,1);
+	m_CaseLayout->setColumnStretch(3,1);
 	GroupCases->setLayout(m_CaseLayout);
 	m_AtlasLayout->addWidget(m_AtlasBoxes,0,0);
 	m_AtlasLayout->setRowStretch(1,1);
@@ -165,7 +188,10 @@ void PlotWindow::InitWidget()
 	m_CorrLayout->addWidget(m_ThLcd,0,0);
 	m_CorrLayout->addWidget(m_ThSlider,0,1);
 	m_CorrLayout->addWidget(m_ThLabel,0,2);
-	m_CorrLayout->addWidget(m_CorrText,1,0);
+	m_CorrLayout->addWidget(m_CorrText,1,0,1,4);
+	m_CorrLayout->addWidget(m_L_CorrColorMap,2,0,1,4);
+	m_CorrLayout->addWidget(m_L_Min,3,0);
+	m_CorrLayout->addWidget(m_L_Max,3,4);
 	m_CorrLayout->setColumnStretch(4,1);
 	GroupCorr->setLayout(m_CorrLayout);
 	m_AxesLayout->addWidget(m_Min,0,1);
@@ -184,7 +210,6 @@ void PlotWindow::InitWidget()
 	m_VLayout->addWidget(GroupPxSize);
 	m_VLayout->addWidget(GroupAxes);
 	m_VLayout->addWidget(GroupCorr);
-	m_VLayout->addWidget(m_CorrText);
 	m_MainLayout->addWidget(m_Plot);
 	m_MainLayout->addLayout(m_VLayout);
 	setLayout(m_MainLayout);
@@ -212,9 +237,44 @@ void PlotWindow::InitWidget()
 	connect(m_CaseBoxes, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(setCurveVisible()));
 	connect(m_AtlasBoxes, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(setCurveVisible()));
 	connect(m_StatBoxes, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(setCurveVisible()));
+	connect(m_SAllReg, SIGNAL(clicked()), this, SLOT(SelectAllRegular()));
+	connect(m_DAllReg, SIGNAL(clicked()), this, SLOT(DeselectAllRegular()));
+	connect(m_SAllStd, SIGNAL(clicked()), this, SLOT(SelectAllStd()));
+	connect(m_DAllStd, SIGNAL(clicked()), this, SLOT(DeselectAllStd()));
 	
 }
 
+void PlotWindow::SelectAllRegular()
+{
+	for(unsigned int CaseId=0; CaseId<m_Cases.size(); CaseId++)
+		m_CaseBoxes->item(CaseId*2)->setCheckState(Qt::Checked);
+	m_SAllReg->hide();
+	m_DAllReg->show();
+}
+
+void PlotWindow::DeselectAllRegular()
+{
+	for(unsigned int CaseId=0; CaseId<m_Cases.size(); CaseId++)
+		m_CaseBoxes->item(CaseId*2)->setCheckState(Qt::Unchecked);
+	m_SAllReg->show();
+	m_DAllReg->hide();
+}
+
+void PlotWindow::SelectAllStd()
+{
+	for(unsigned int CaseId=0; CaseId<m_Cases.size(); CaseId++)
+		m_CaseBoxes->item(CaseId*2+1)->setCheckState(Qt::Checked);
+	m_SAllStd->hide();
+	m_DAllStd->show();
+}
+
+void PlotWindow::DeselectAllStd()
+{
+	for(unsigned int CaseId=0; CaseId<m_Cases.size(); CaseId++)
+		m_CaseBoxes->item(CaseId*2+1)->setCheckState(Qt::Unchecked);
+	m_SAllStd->show();
+	m_DAllStd->hide();
+}
 /********************************************************************************
  *setSliderLcd: Geometry settings of Lcd and Slider widgets
  ********************************************************************************/
@@ -495,6 +555,7 @@ void PlotWindow::setCurveVisible()
 	m_Plot->replot();
 	if(fiberindex>=0 && paramindex>=0)
 	{
+		ApplyTh(m_ThSlider->value());
 		for(unsigned int i=0; i<m_Cases.size(); i++)
 		{
 			corrtext<<m_Cases[i]<<" : "<<m_Corr[fiberindex][i][paramindex]<<" ";
@@ -503,7 +564,6 @@ void PlotWindow::setCurveVisible()
 		}
 		m_CorrText->setText(corrtext.str().c_str());
 	}
-		
 }		
 
 
@@ -513,44 +573,42 @@ void PlotWindow::setCurveVisible()
 
 void PlotWindow::ColorCorr()
 {
-	QPen pen;
-	QColor color;
-	for(unsigned int i=0; i<m_Fibers.size(); i++)
-	{
-		for(unsigned int j=0; j<m_Cases.size(); j++)
-		{
-			for(unsigned int k=0; k<m_Parameters.size(); k++)
-			{
-				color.setRgb((int)(215*fabs(m_Corr[i][j][k])),(int)(215*fabs(m_Corr[i][j][k])),(int)(215*fabs(m_Corr[i][j][k])));
-				pen.setColor(color);
-				pen.setWidth(m_CaseLcd->intValue());
-				m_CaseCurves[i][j*3][k]->setPen(pen);
-			}
-		}
-	}
-	m_Plot->replot();
-	
 	m_ComputeCorr->setVisible(false);
 	m_DecomputeCorr->setVisible(true);
 	m_CorrText->setVisible(true);
+	m_L_CorrColorMap->show();
+	m_L_Min->show();
+	m_L_Max->show();
+	ApplyTh(m_ThSlider->value());
 }
 
 void PlotWindow::DecolorCorr()
 {
-	for(unsigned int i=0; i<m_Fibers.size(); i++)
-	{
-		for(unsigned int j=0; j<m_Cases.size(); j++)
-		{
-			for(unsigned int k=0; k<m_Parameters.size(); k++)
-				m_CaseCurves[i][j*3][k]->setPen(m_CaseStyle[j*3]);
-		}
-	}
-	m_Plot->replot();
-	
 	m_ComputeCorr->setVisible(true);
 	m_DecomputeCorr->setVisible(false);
 	m_CorrText->setVisible(false);
+	m_L_CorrColorMap->hide();
+	m_L_Min->hide();
+	m_L_Max->hide();
+	ApplyTh(m_ThSlider->value());
 }
+
+QPixmap PlotWindow::GeneratePixmap()
+{
+	QPixmap pixels(550,30);
+	pixels.fill(QColor::QColor(0,0,0));
+	QPainter pen(&pixels);
+	for(int i=0; i<156; i++)
+	{
+		int ActualY=550-i*550/156;
+		int NextY=550-(i+1)*550/156;
+		pen.setPen(QColor::QColor(0,255-i,0));
+		pen.setBrush(QColor::QColor(0,255-i,0));
+		pen.drawRect(ActualY,0,NextY-ActualY,70);
+	}
+	return pixels;
+}
+	
 
 /**********************************************************************************************
  *ApplyTh : Color each curves below threshold in red
@@ -559,30 +617,43 @@ void PlotWindow::DecolorCorr()
 void PlotWindow::ApplyTh(int value)
 {
 	double thvalue=((double)value)/100.0;
-	QPen pen;
+	QBrush brush;
 	QColor color;
 	m_ThLcd->display(thvalue);
-	for(unsigned int i=0; i<m_Fibers.size(); i++)
+	std::ostringstream min;
+	min<<thvalue;
+	m_L_Min->setText(min.str().c_str());
+	int FiberId=GetCheckedFiber();
+	int ParameterId=GetCheckedParameter();
+	for(unsigned int CaseId=0; CaseId<m_Cases.size(); CaseId++)
 	{
-		for(unsigned int j=0; j<m_Cases.size(); j++)
+		QPen pen;
+		if(m_Corr[FiberId][CaseId][ParameterId]<thvalue)
 		{
-			for(unsigned int k=0; k<m_Parameters.size(); k++)
-			{
-				if(m_Corr[i][j][k]<thvalue)
-					pen.setColor(Qt::red);
-				else
-				{
-					if(m_ComputeCorr->isVisible())
-						pen=m_CaseStyle[j*3];
-					else
-					{
-						color.setRgb((int)(215*fabs(m_Corr[i][j][k])),(int)(215*fabs(m_Corr[i][j][k])),(int)(215*fabs(m_Corr[i][j][k])));
-						pen.setColor(color);
-					}
-				}
-				m_CaseCurves[i][j*3][k]->setPen(pen);
+			pen.setColor(Qt::red);
+			brush.setColor(Qt::red);
+		}
+		else
+		{
+			brush.setColor(m_CaseStyle[CaseId*3].color());
+			if(m_ComputeCorr->isVisible())
+				pen=m_CaseStyle[CaseId*3];
+			else
+			{				
+				color.setRgb(0,100+(int)(155*(fabs(m_Corr[FiberId][CaseId][ParameterId])-thvalue)/(1-thvalue)),0);
+				brush.setColor(color);
+				pen.setColor(color);
 			}
 		}
+		m_CaseBoxes->item(CaseId*2)->setForeground(brush);
+		m_CaseBoxes->item(CaseId*2+1)->setForeground(brush);
+		m_CaseCurves[FiberId][CaseId*3][ParameterId]->setPen(pen);
+		
+		QVector <qreal> dashes;
+		dashes<<10<<5;
+		pen.setDashPattern(dashes);
+		m_CaseCurves[FiberId][CaseId*3+1][ParameterId]->setPen(pen);
+		m_CaseCurves[FiberId][CaseId*3+2][ParameterId]->setPen(pen);
 	}
 	m_Plot->replot();
 }

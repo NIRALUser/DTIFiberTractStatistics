@@ -16,6 +16,8 @@
 #include <QSlider>
 #include <QLCDNumber>
 #include <QTextEdit>
+#include <QPixmap>
+#include <QPainter>
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
@@ -67,7 +69,7 @@ class PlotWindow : public QWidget
 		void InitCorrText();
 		bool getError(){return m_Error;}
 		void InitAxisInterval();
-
+		QPixmap GeneratePixmap();
 		
 	public slots:
 		void setCurveVisible();
@@ -77,7 +79,10 @@ class PlotWindow : public QWidget
 		void ApplyTh(int);
 		void UpdateAxis();
 		void AutoScale();
-		
+		void SelectAllRegular();
+		void DeselectAllRegular();
+		void SelectAllStd();
+		void DeselectAllStd();
 		
 	private:
 		QHBoxLayout* m_MainLayout;
@@ -97,6 +102,10 @@ class PlotWindow : public QWidget
 		std::vector <QRadioButton*> m_ParameterButtons;
 		std::vector <QRadioButton*> m_FiberButtons;
 		QListWidget* m_CaseBoxes;
+		QPushButton* m_SAllReg;
+		QPushButton* m_SAllStd;
+		QPushButton* m_DAllReg;
+		QPushButton* m_DAllStd;
 		QListWidget* m_AtlasBoxes;
 		QListWidget* m_StatBoxes;
 		std::vector <QPen> m_CaseStyle;
@@ -117,6 +126,9 @@ class PlotWindow : public QWidget
 		QLCDNumber* m_ThLcd;
 		QLabel* m_ThLabel;
 		QTextEdit* m_CorrText;
+		QLabel* m_L_CorrColorMap;
+		QLabel* m_L_Min;
+		QLabel* m_L_Max;
 		QLabel* m_Min;
 		QLabel* m_Max;
 		QLabel* m_X;
