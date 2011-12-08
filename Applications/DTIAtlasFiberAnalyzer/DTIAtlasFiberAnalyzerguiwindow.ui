@@ -1,0 +1,1879 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1010</width>
+    <height>789</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DTI Atlas Fiber Analyser</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1001</width>
+      <height>791</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="PrincipalLayout">
+     <item row="1" column="0">
+      <layout class="QHBoxLayout" name="steplayout">
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="previousstep">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>85</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Previous Step</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>150</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="nextstep">
+         <property name="minimumSize">
+          <size>
+           <width>88</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>88</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Next Step</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Apply">
+         <property name="minimumSize">
+          <size>
+           <width>88</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>88</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="AutomatedComputation">
+         <property name="minimumSize">
+          <size>
+           <width>95</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>95</width>
+           <height>27</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Computes All</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="CsvTitle">
+       <property name="frameShape">
+        <enum>QFrame::Box</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
+       <property name="text">
+        <string>Computation file :</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="wordWrap">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QTableWidget" name="CSVtable">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="textElideMode">
+        <enum>Qt::ElideLeft</enum>
+       </property>
+       <property name="gridStyle">
+        <enum>Qt::SolidLine</enum>
+       </property>
+       <row>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </row>
+       <column>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QTabWidget" name="PrincipalWidget">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>999</width>
+         <height>410</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>999</width>
+         <height>450</height>
+        </size>
+       </property>
+       <property name="mouseTracking">
+        <bool>false</bool>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="currentIndex">
+        <number>4</number>
+       </property>
+       <property name="usesScrollButtons">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="Step1">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <attribute name="title">
+         <string>Data definition</string>
+        </attribute>
+        <widget class="QFrame" name="addCRframe">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>110</y>
+           <width>241</width>
+           <height>261</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QFrame" name="rowframe">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>170</y>
+            <width>201</width>
+            <height>81</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QPushButton" name="addrow">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>181</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>Add Row</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="deleterow">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>40</y>
+             <width>181</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>Delete row</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QFrame" name="columnframe">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>30</y>
+            <width>201</width>
+            <height>101</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QPushButton" name="addcolumn">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>40</y>
+             <width>181</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>Add Column</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="deletecolumn">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>70</y>
+             <width>181</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>Delete column</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="headername">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>181</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>new header</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QLabel" name="Rowtitle">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>140</y>
+            <width>201</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Row :</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="Columntitle">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>10</y>
+            <width>201</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Column :</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QFrame" name="saveframe">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>260</x>
+           <y>200</y>
+           <width>261</width>
+           <height>121</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QPushButton" name="savecsv">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>241</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(220, 220, 220);</string>
+          </property>
+          <property name="text">
+           <string>Save CSV</string>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
+          <property name="default">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="deletecsv">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>70</y>
+            <width>241</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(220, 220, 220);</string>
+          </property>
+          <property name="text">
+           <string>Delete CSV</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QFrame" name="ColumnFrame">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>530</x>
+           <y>10</y>
+           <width>341</width>
+           <height>181</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="individualDatatitle">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>321</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>Column with the Individual data Images : </string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="DeformationFieldtitle">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>321</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>Column with the Deformation Field (optional) :</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="ColumnData">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>131</width>
+            <height>27</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="ColumnDeformation">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>80</y>
+            <width>131</width>
+            <height>27</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="Nameofcasetitle">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>110</y>
+            <width>321</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true"/>
+          </property>
+          <property name="text">
+           <string>Column with the name of cases (optional) :</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="ColumnNameCases">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>140</y>
+            <width>131</width>
+            <height>27</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="greenlabel">
+          <property name="geometry">
+           <rect>
+            <x>150</x>
+            <y>30</y>
+            <width>101</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(0, 147, 0);</string>
+          </property>
+          <property name="text">
+           <string>(green color)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="bluelabel">
+          <property name="geometry">
+           <rect>
+            <x>150</x>
+            <y>80</y>
+            <width>101</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(85, 170, 255);</string>
+          </property>
+          <property name="text">
+           <string>(blue color)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="orangelabel">
+          <property name="geometry">
+           <rect>
+            <x>150</x>
+            <y>140</y>
+            <width>101</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: rgb(255, 170, 0);</string>
+          </property>
+          <property name="text">
+           <string>(orange color)</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QFrame" name="newparamframe">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>260</x>
+           <y>10</y>
+           <width>261</width>
+           <height>181</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QFrame" name="design">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>239</width>
+            <height>96</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_20">
+           <item>
+            <widget class="QFrame" name="nameframe">
+             <property name="minimumSize">
+              <size>
+               <width>151</width>
+               <height>78</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">border-color: rgb(4, 4, 4);</string>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::Box</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_18">
+              <item>
+               <widget class="QLabel" name="numberdatatitle">
+                <property name="minimumSize">
+                 <size>
+                  <width>133</width>
+                  <height>27</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
+                <property name="text">
+                 <string>Number of data</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="numbercolumntitle">
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
+                <property name="text">
+                 <string>Number of columns</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="numberframe">
+             <property name="frameShape">
+              <enum>QFrame::Box</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_19">
+              <item>
+               <widget class="QSpinBox" name="numberdata">
+                <property name="maximum">
+                 <number>500</number>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="numbercolumn">
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QPushButton" name="apply">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>140</y>
+            <width>239</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(220, 220, 220);</string>
+          </property>
+          <property name="text">
+           <string>Apply</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="newCsvTitle">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>211</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>New CSV :</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QFrame" name="loadparamframe">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>241</width>
+           <height>91</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="csvfilenametitle">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>211</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Load CSV : filename :</string>
+          </property>
+         </widget>
+         <widget class="QFrame" name="csvframe">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>221</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLineEdit" name="csvfilename">
+           <property name="geometry">
+            <rect>
+             <x>7</x>
+             <y>7</y>
+             <width>161</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="browsercsvfilename">
+           <property name="geometry">
+            <rect>
+             <x>180</x>
+             <y>7</y>
+             <width>26</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+        <widget class="QFrame" name="OutputFolderFrame">
+         <property name="geometry">
+          <rect>
+           <x>530</x>
+           <y>200</y>
+           <width>341</width>
+           <height>111</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="outputFoldertitle">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>291</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Output Folder :</string>
+          </property>
+         </widget>
+         <widget class="QFrame" name="outputframe">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>50</y>
+            <width>291</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(255, 255, 255);</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLineEdit" name="outputfolder">
+           <property name="geometry">
+            <rect>
+             <x>7</x>
+             <y>7</y>
+             <width>241</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="browserOutputFolder">
+           <property name="geometry">
+            <rect>
+             <x>260</x>
+             <y>7</y>
+             <width>26</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="Step2">
+        <attribute name="title">
+         <string>Attribute fibers</string>
+        </attribute>
+        <widget class="QFrame" name="FiberprocessFrame">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>70</y>
+           <width>971</width>
+           <height>301</height>
+          </rect>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="AtlasFoldertitle">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>291</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Atlas Fiber Folder :</string>
+          </property>
+         </widget>
+         <widget class="QFrame" name="Atlasframe">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>291</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(255, 255, 255);</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLineEdit" name="AtlasFiberFolder">
+           <property name="geometry">
+            <rect>
+             <x>7</x>
+             <y>7</y>
+             <width>241</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="browserAtlasFiberFolder">
+           <property name="geometry">
+            <rect>
+             <x>260</x>
+             <y>7</y>
+             <width>26</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QLabel" name="fiberinAtlastitle">
+          <property name="geometry">
+           <rect>
+            <x>360</x>
+            <y>20</y>
+            <width>241</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Fibers in the Atlas :</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="FiberSelectedtitle">
+          <property name="geometry">
+           <rect>
+            <x>710</x>
+            <y>20</y>
+            <width>241</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>selected fibers :</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="AddFiber">
+          <property name="geometry">
+           <rect>
+            <x>610</x>
+            <y>60</y>
+            <width>88</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>&gt;&gt;</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="RemoveFiber">
+          <property name="geometry">
+           <rect>
+            <x>610</x>
+            <y>110</y>
+            <width>88</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>&lt;&lt;</string>
+          </property>
+         </widget>
+         <widget class="QListWidget" name="FiberInAtlasList">
+          <property name="geometry">
+           <rect>
+            <x>360</x>
+            <y>50</y>
+            <width>231</width>
+            <height>221</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QListWidget" name="FiberSelectedList">
+          <property name="geometry">
+           <rect>
+            <x>710</x>
+            <y>50</y>
+            <width>231</width>
+            <height>221</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="AddAllFiber">
+          <property name="geometry">
+           <rect>
+            <x>610</x>
+            <y>170</y>
+            <width>88</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Add All</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="Removeallfiber">
+          <property name="geometry">
+           <rect>
+            <x>610</x>
+            <y>230</y>
+            <width>88</width>
+            <height>27</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Remove All</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QLabel" name="Fiberprocesstitle">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>16</y>
+           <width>971</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="text">
+          <string>Attribute fibers :</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="Step3">
+        <attribute name="title">
+         <string>Fibers properties</string>
+        </attribute>
+        <widget class="QLabel" name="Propertiestitle">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>16</y>
+           <width>971</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="text">
+          <string>Fibers Properties :</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+        <widget class="QFrame" name="PropertiesFrame">
+         <property name="geometry">
+          <rect>
+           <x>670</x>
+           <y>110</y>
+           <width>291</width>
+           <height>111</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QCheckBox" name="FABox">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>10</y>
+            <width>71</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>FA</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="MDBox">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>40</y>
+            <width>81</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>MD</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="FroBox">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>70</y>
+            <width>81</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Fro</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="l1Box">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>10</y>
+            <width>181</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>lambda 1 = AD</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="l2Box">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>40</y>
+            <width>93</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>lambda 2</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="l3Box">
+          <property name="geometry">
+           <rect>
+            <x>100</x>
+            <y>70</y>
+            <width>93</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>lambda 3</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="RDBox">
+          <property name="geometry">
+           <rect>
+            <x>220</x>
+            <y>40</y>
+            <width>61</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>RD</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="GABox">
+          <property name="geometry">
+           <rect>
+            <x>220</x>
+            <y>70</y>
+            <width>61</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>GA</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QLabel" name="FiberPlaneFiletitle">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>70</y>
+           <width>241</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Fiber's Plane file :</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="Propertieschoicetitle">
+         <property name="geometry">
+          <rect>
+           <x>670</x>
+           <y>80</y>
+           <width>241</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Properties :</string>
+         </property>
+        </widget>
+        <widget class="QListWidget" name="FiberPlaneFile">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>130</y>
+           <width>231</width>
+           <height>221</height>
+          </rect>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::MultiSelection</enum>
+         </property>
+         <property name="sortingEnabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="FiberSelected2title">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>90</y>
+           <width>241</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Attributed fibers :</string>
+         </property>
+        </widget>
+        <widget class="QListWidget" name="FiberSelected2List">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>130</y>
+           <width>231</width>
+           <height>221</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QGroupBox" name="invertionBox">
+         <property name="geometry">
+          <rect>
+           <x>670</x>
+           <y>230</y>
+           <width>291</width>
+           <height>61</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="title">
+          <string>Summary reports</string>
+         </property>
+         <widget class="QRadioButton" name="ArcOnCase">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>371</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Arc lenght : row / Case : column</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="CaseOnArc">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>311</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Case : row / Arc lenght : column</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QGroupBox" name="invertionBox_2">
+         <property name="geometry">
+          <rect>
+           <x>670</x>
+           <y>300</y>
+           <width>291</width>
+           <height>61</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="title">
+          <string>Auto Plane Origin Options</string>
+         </property>
+         <widget class="QRadioButton" name="APCenterOfGravity">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>371</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Center of Gravity</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="APMedianOnFiber">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>311</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Median point on Fiber</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QLabel" name="FiberPlaneFiletitle_2">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>90</y>
+           <width>241</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>&lt;font color=#ff0000&gt;(Only selected planes will be used)&lt;/font&gt;</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="FiberPlaneFiletitle_3">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>110</y>
+           <width>241</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>&lt;font color=#ff0000&gt;(If not, an auto plane will be used)&lt;/font&gt;</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="Step4">
+        <attribute name="title">
+         <string>Plotting parameters</string>
+        </attribute>
+        <widget class="QListWidget" name="DataFilesList">
+         <property name="geometry">
+          <rect>
+           <x>380</x>
+           <y>70</y>
+           <width>231</width>
+           <height>221</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="DataFilesTitle">
+         <property name="geometry">
+          <rect>
+           <x>380</x>
+           <y>30</y>
+           <width>241</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Data files :</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="PlotButton">
+         <property name="geometry">
+          <rect>
+           <x>400</x>
+           <y>320</y>
+           <width>191</width>
+           <height>28</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Plot</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="MergeStatWithFiber">
+        <attribute name="title">
+         <string>MergeStatWithFiber</string>
+        </attribute>
+        <widget class="QFrame" name="loadparamframe_2">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>30</y>
+           <width>241</width>
+           <height>91</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="csvfilenametitle_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>211</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>CSV Input File</string>
+          </property>
+         </widget>
+         <widget class="QFrame" name="csvframe_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>221</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLineEdit" name="DTIPcsvfilename">
+           <property name="geometry">
+            <rect>
+             <x>7</x>
+             <y>7</y>
+             <width>161</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="DTIPbrowsercsv">
+           <property name="geometry">
+            <rect>
+             <x>180</x>
+             <y>7</y>
+             <width>26</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+        <widget class="QFrame" name="loadparamframe_3">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>460</x>
+           <y>30</y>
+           <width>241</width>
+           <height>91</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="csvfilenametitle_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>211</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>VTK Input File</string>
+          </property>
+         </widget>
+         <widget class="QFrame" name="csvframe_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>221</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLineEdit" name="DTIPvtkfilename">
+           <property name="geometry">
+            <rect>
+             <x>7</x>
+             <y>7</y>
+             <width>161</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="DTIPbrowservtk">
+           <property name="geometry">
+            <rect>
+             <x>180</x>
+             <y>7</y>
+             <width>26</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+        <widget class="QFrame" name="loadparamframe_4">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>170</y>
+           <width>291</width>
+           <height>91</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="csvfilenametitle_4">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>211</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Output Filename</string>
+          </property>
+         </widget>
+         <widget class="QFrame" name="csvframe_4">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>271</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLineEdit" name="DTIPoutputfilename">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>221</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="DTIPbrowseroutput">
+           <property name="geometry">
+            <rect>
+             <x>240</x>
+             <y>10</y>
+             <width>26</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgb(220, 220, 220);</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+        <widget class="QPushButton" name="DTIPcomputes">
+         <property name="geometry">
+          <rect>
+           <x>340</x>
+           <y>310</y>
+           <width>281</width>
+           <height>28</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Parametrization</string>
+         </property>
+        </widget>
+        <widget class="QFrame" name="loadparamframe_5">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>510</x>
+           <y>140</y>
+           <width>191</width>
+           <height>121</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLabel" name="csvfilenametitle_5">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>111</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Interpolation</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="DTIP_LE_Min">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>40</y>
+            <width>113</width>
+            <height>26</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="DTIP_LE_Max">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>80</y>
+            <width>113</width>
+            <height>26</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>21</width>
+            <height>18</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Min</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>80</y>
+            <width>31</width>
+            <height>18</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Max</string>
+          </property>
+         </widget>
+        </widget>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1010</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen_data_file"/>
+    <addaction name="actionSave_data_file"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_analysis_file"/>
+    <addaction name="actionSave_analysis_file"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpen_data_file">
+   <property name="text">
+    <string>Open data file</string>
+   </property>
+  </action>
+  <action name="actionSave_data_file">
+   <property name="text">
+    <string>Save data file</string>
+   </property>
+  </action>
+  <action name="actionOpen_analysis_file">
+   <property name="text">
+    <string>Open analysis file</string>
+   </property>
+  </action>
+  <action name="actionSave_analysis_file">
+   <property name="text">
+    <string>Save analysis file</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
