@@ -2,6 +2,8 @@
 #define _DTIATLASFIBERANALYZERGUIWINDOW_H_
 
 
+#include<algorithm>
+
 //QT librairies
 #include <QFileDialog>
 #include <QScrollArea>

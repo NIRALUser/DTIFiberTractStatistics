@@ -5,10 +5,14 @@
  ********************************************************************************/
 
 PlotWindow::PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata, QVector<qv3double> statdata, std::string parameters, DTIAtlasFiberAnalyzerguiwindow* parent) : QWidget(0)
-{	
+{
+	QFont Font=font();
+	Font.setPointSize(7);
+	setFont(Font);
 	m_Error=false;
 	m_parent=parent;
 	m_SpecialCurves=4;
+	setStyleSheet("QListWidget::indicator, QRadioButton::indicator{width:17px;height:17px;}");
 	
 	//Fill the m_Parameters, m_Cases, m_Fibers and m_Corr vectors
 	LineInVector(parameters, m_Parameters);
@@ -60,11 +64,15 @@ void PlotWindow::InitWidget()
 	m_PixelGridLayout=new QGridLayout;
 	m_CorrLayout=new QGridLayout;
 	m_AxesLayout=new QGridLayout;
+	m_Option2Layout=new QHBoxLayout;
 	
 	m_CaseBoxes=new QListWidget(this);
-	m_CaseBoxes->setMaximumSize(235,400);
+	m_CaseBoxes->setSpacing(-2);
+	m_CaseBoxes->setMinimumSize(150,40);
+	m_CaseBoxes->setMaximumSize(235,300);
+	
 	m_SAllReg=new QPushButton("Show All Average", this);
-	m_SAllReg->setMinimumHeight(20);
+	m_SAllReg->setMinimumHeight(20); //Maximum?
 	m_SAllStd=new QPushButton("Show All Std", this);
 	m_SAllStd->setMinimumHeight(20);
 	m_DAllReg=new QPushButton("Hide All Average", this);
@@ -73,21 +81,27 @@ void PlotWindow::InitWidget()
 	m_DAllStd=new QPushButton("Hide All Std", this);
 	m_DAllStd->setMinimumHeight(20);
 	m_DAllStd->hide();
+	
 	m_AtlasBoxes=new QListWidget(this);
-	m_AtlasBoxes->setMaximumSize(235,400);
+	m_AtlasBoxes->setSpacing(-2);
+	m_AtlasBoxes->setMinimumSize(150,40);
+	m_AtlasBoxes->setMaximumSize(235,300);
+	
 	m_StatBoxes=new QListWidget(this);
-	m_StatBoxes->setMaximumSize(235,400);
+	m_StatBoxes->setSpacing(-2);
+	m_StatBoxes->setMinimumSize(150,40);
+	m_StatBoxes->setMaximumSize(235,300);
+	
 	m_CaseLcd=new QLCDNumber(this);
 	m_CaseSlider=new QSlider(Qt::Horizontal, this);
 	m_AtlasLcd=new QLCDNumber(this);
 	m_AtlasSlider=new QSlider(Qt::Horizontal, this);
 	m_StatLcd=new QLCDNumber(this);
-	m_StatSlider=new QSlider(Qt::Horizontal, this);
-	m_Plot=new QwtPlot;
-	m_Plot->setMinimumSize(700,850);
+	m_StatSlider=new QSlider(Qt::Horizontal, this);	
 	m_CasePxSize=new QLabel("Case width", this);
 	m_AtlasPxSize=new QLabel("Atlas width", this);
 	m_StatPxSize=new QLabel("Stat width", this);
+	
 	m_ComputeCorr=new QPushButton("Color correlation", this);
 	m_ComputeCorr->setMinimumSize(150, 20);
 	m_DecomputeCorr=new QPushButton("Decolor correlation", this);
@@ -97,25 +111,40 @@ void PlotWindow::InitWidget()
 	m_ThLcd=new QLCDNumber(this);
 	m_ThLabel=new QLabel("Threshold", this);
 	m_CorrText=new QTextEdit("", this);
+	m_CorrText->setFixedSize(250,30);
 	m_L_CorrColorMap=new QLabel(this);
-	m_L_CorrColorMap->setFixedSize(550,20);
+	m_L_CorrColorMap->setFixedSize(250,20);
 	m_L_CorrColorMap->setPixmap(GeneratePixmap());
 	m_L_CorrColorMap->hide();
-	m_L_Min=new QLabel("0.8",this);
+	QFont Font=font();
+	Font.setBold(true);
+	m_L_Min=new QLabel("<FONT COLOR=#000000>0.8</FONT>",this);
+	m_L_Min->setFont(Font);
 	m_L_Min->hide();
-	m_L_Max=new QLabel("1",this);
+	m_L_Max=new QLabel("<FONT COLOR=#000000>1</FONT>",this);
+	m_L_Max->setFont(Font);
 	m_L_Max->hide();
+	
 	m_Min=new QLabel("Min", this);
 	m_Max=new QLabel("Max", this);
 	m_X=new QLabel("X", this);
 	m_Y=new QLabel("Y", this);
 	m_XMin=new QLineEdit;
+	m_XMin->setFixedSize(40,18);
 	m_XMax=new QLineEdit;
+	m_XMax->setFixedSize(40,18);
 	m_YMin=new QLineEdit;
+	m_YMin->setFixedSize(40,18);
 	m_YMax=new QLineEdit;
+	m_YMax->setFixedSize(40,18);
 	m_AutoScale=new QPushButton("Auto Scale", this);
 	m_AutoScale->setMinimumHeight(20);
+	
+	m_Plot=new QwtPlot;
+	m_Plot->setMinimumSize(600,600);
+	
 	InitCorrText();
+	
 	QGroupBox* DetailledInfo=new QGroupBox("Detailled Information");
 	QGroupBox* CurveDisplay=new QGroupBox("Choose Curve to diplay");
 	QGroupBox* GroupParameters=new QGroupBox("Parameters");
@@ -139,12 +168,15 @@ void PlotWindow::InitWidget()
 	m_AtlasLayout->setAlignment(Qt::AlignTop);
 	m_StatLayout->setAlignment(Qt::AlignTop);
 	m_FiberLayout->setAlignment(Qt::AlignTop);
-	m_PixelGridLayout->setVerticalSpacing(15);
+	m_PixelGridLayout->setVerticalSpacing(0);
 	GroupPxSize->setAlignment(Qt::AlignLeft);
 	
 	 
 	//Fill each Layout
+	DetailledInfo->setLayout(m_InfoLayout);
+	
 	GroupParameters->setLayout(m_ParameterLayout);
+	
 	m_CaseLayout->addWidget(m_CaseBoxes,0,0,1,2);
 	m_CaseLayout->addWidget(m_SAllReg,1,0);
 	m_CaseLayout->addWidget(m_SAllStd,1,1);
@@ -153,24 +185,29 @@ void PlotWindow::InitWidget()
 	m_CaseLayout->setRowStretch(2,1);
 	m_CaseLayout->setColumnStretch(3,1);
 	GroupCases->setLayout(m_CaseLayout);
+	
 	m_AtlasLayout->addWidget(m_AtlasBoxes,0,0);
 	m_AtlasLayout->setRowStretch(1,1);
 	m_AtlasLayout->setColumnStretch(1,1);
 	GroupAtlas->setLayout(m_AtlasLayout);
+	
 	m_StatLayout->addWidget(m_StatBoxes,0,0);
 	m_StatLayout->setRowStretch(1,1);
 	m_StatLayout->setColumnStretch(1,1);
 	GroupStat->setLayout(m_StatLayout);
+	
 	GroupFibers->setLayout(m_FiberLayout);
+	
 	m_CheckBoxLayout->addWidget(GroupCases);
 	m_CheckBoxLayout->addWidget(GroupAtlas);
 	m_CheckBoxLayout->addWidget(GroupStat);
+	
 	m_OptionLayout->addWidget(GroupParameters);
 	m_OptionLayout->addLayout(m_CheckBoxLayout);
 	m_OptionLayout->addWidget(GroupFibers);
 	m_OptionLayout->addStretch(2);
-	DetailledInfo->setLayout(m_InfoLayout);
 	CurveDisplay->setLayout(m_OptionLayout);
+	
 	m_PixelGridLayout->addWidget(m_CaseLcd, 0, 0);
 	m_PixelGridLayout->addWidget(m_CaseSlider, 0, 1);
 	m_PixelGridLayout->addWidget(m_CasePxSize, 0, 2);
@@ -182,35 +219,44 @@ void PlotWindow::InitWidget()
 	m_PixelGridLayout->addWidget(m_StatPxSize, 2, 2);
 	m_PixelGridLayout->setHorizontalSpacing(1);
 	m_PixelGridLayout->setColumnStretch(3,1);
+	m_PixelGridLayout->setRowStretch(3,1);
 	GroupPxSize->setLayout(m_PixelGridLayout);
+	
 	m_CorrLayout->addWidget(m_ComputeCorr,0,3);
 	m_CorrLayout->addWidget(m_DecomputeCorr,0,3);
 	m_CorrLayout->addWidget(m_ThLcd,0,0);
 	m_CorrLayout->addWidget(m_ThSlider,0,1);
 	m_CorrLayout->addWidget(m_ThLabel,0,2);
-	m_CorrLayout->addWidget(m_CorrText,1,0,1,4);
-	m_CorrLayout->addWidget(m_L_CorrColorMap,2,0,1,4);
-	m_CorrLayout->addWidget(m_L_Min,3,0);
-	m_CorrLayout->addWidget(m_L_Max,3,4);
-	m_CorrLayout->setColumnStretch(4,1);
+	m_CorrLayout->addWidget(m_CorrText,1,2,1,2);
+	m_CorrLayout->addWidget(m_L_CorrColorMap,1,0,1,2);
+	m_CorrLayout->addWidget(m_L_Min,1,0);
+	m_CorrLayout->addWidget(m_L_Max,1,1, Qt::AlignRight);
+	m_CorrLayout->setColumnStretch(4,2);
 	GroupCorr->setLayout(m_CorrLayout);
+	
 	m_AxesLayout->addWidget(m_Min,0,1);
 	m_AxesLayout->addWidget(m_Max,0,2);
-	m_AxesLayout->addWidget(m_X,1,0);
+	m_AxesLayout->addWidget(m_X,1,0,Qt::AlignRight);
 	m_AxesLayout->addWidget(m_XMin,1,1);
 	m_AxesLayout->addWidget(m_XMax,1,2);
-	m_AxesLayout->addWidget(m_Y,2,0);
+	m_AxesLayout->addWidget(m_Y,2,0,Qt::AlignRight);
 	m_AxesLayout->addWidget(m_YMin,2,1);
 	m_AxesLayout->addWidget(m_YMax,2,2);
-	m_AxesLayout->addWidget(m_AutoScale,3,0);
+	m_AxesLayout->addWidget(m_AutoScale,3,0,1,2);
 	m_AxesLayout->setColumnStretch(3,1);
 	GroupAxes->setLayout(m_AxesLayout);
+	
 	m_VLayout->addWidget(DetailledInfo);
 	m_VLayout->addWidget(CurveDisplay);
-	m_VLayout->addWidget(GroupPxSize);
-	m_VLayout->addWidget(GroupAxes);
+	
+	m_Option2Layout->addWidget(GroupAxes);
+	m_Option2Layout->addWidget(GroupPxSize);
+	m_Option2Layout->addStretch(2);
+	
+	m_VLayout->addLayout(m_Option2Layout);
 	m_VLayout->addWidget(GroupCorr);
-	m_MainLayout->addWidget(m_Plot);
+	
+	m_MainLayout->addWidget(m_Plot,1);
 	m_MainLayout->addLayout(m_VLayout);
 	setLayout(m_MainLayout);
 	
@@ -219,7 +265,6 @@ void PlotWindow::InitWidget()
 	CreateAtlasBoxes();
 	CreateStatBoxes();
 	CreateFiberButtons();
-	
 	CreateInfoLabel();
 	CreateCurves();
 	
@@ -283,22 +328,26 @@ void PlotWindow::setSliderLcd()
 {
 	m_CaseLcd->setSegmentStyle(QLCDNumber::Flat);
 	m_CaseLcd->display(1);
+	m_CaseLcd->setMaximumSize(40,20);
 	m_AtlasLcd->setSegmentStyle(QLCDNumber::Flat);
 	m_AtlasLcd->display(1);
+	m_AtlasLcd->setMaximumSize(40,20);
 	m_StatLcd->setSegmentStyle(QLCDNumber::Flat);
 	m_StatLcd->display(1);
+	m_StatLcd->setMaximumSize(40,20);
 	m_ThLcd->setSegmentStyle(QLCDNumber::Flat);
 	m_ThLcd->display(0.8);
+	m_ThLcd->setMaximumSize(40,20);
 	
 	m_CaseSlider->setRange(1,10);
-	m_CaseSlider->setMinimumSize(200,20);
+	m_CaseSlider->setFixedSize(150,20);
 	m_AtlasSlider->setRange(1,10);
-	m_AtlasSlider->setMinimumSize(200,20);
+	m_AtlasSlider->setFixedSize(150,20);
 	m_StatSlider->setRange(1,10);
-	m_StatSlider->setMinimumSize(200,20);
+	m_StatSlider->setFixedSize(150,20);
 	m_ThSlider->setRange(0,100);
 	m_ThSlider->setValue(80);
-	m_ThSlider->setMinimumSize(200,20);
+	m_ThSlider->setFixedSize(200,20);
 }
 
 void PlotWindow::InitCorrText()
@@ -595,15 +644,15 @@ void PlotWindow::DecolorCorr()
 
 QPixmap PlotWindow::GeneratePixmap()
 {
-	QPixmap pixels(550,30);
-	pixels.fill(QColor::QColor(0,0,0));
+	QPixmap pixels(250,30);
+	pixels.fill(QColor(0,0,0));
 	QPainter pen(&pixels);
 	for(int i=0; i<156; i++)
 	{
-		int ActualY=550-i*550/156;
-		int NextY=550-(i+1)*550/156;
-		pen.setPen(QColor::QColor(0,255-i,0));
-		pen.setBrush(QColor::QColor(0,255-i,0));
+		int ActualY=250-i*250/156;
+		int NextY=250-(i+1)*250/156;
+		pen.setPen(QColor(0,255-i,0));
+		pen.setBrush(QColor(0,255-i,0));
 		pen.drawRect(ActualY,0,NextY-ActualY,70);
 	}
 	return pixels;
@@ -621,7 +670,7 @@ void PlotWindow::ApplyTh(int value)
 	QColor color;
 	m_ThLcd->display(thvalue);
 	std::ostringstream min;
-	min<<thvalue;
+	min<<"<FONT COLOR=#000000>"<<thvalue<<"</FONT>";
 	m_L_Min->setText(min.str().c_str());
 	int FiberId=GetCheckedFiber();
 	int ParameterId=GetCheckedParameter();
@@ -701,7 +750,6 @@ int PlotWindow::GetCheckedParameter()
 	return -1;
 }
 
-//TODO LIST
 std::vector <int> PlotWindow::GetCheckedCase()
 {
 	std::vector <int> checked;
@@ -762,7 +810,9 @@ void PlotWindow::CreateParameterButtons()
 	//Creation of parameter buttons
 	for(unsigned int i=0; i<m_Parameters.size(); i++)
 	{
-		m_ParameterButtons.push_back(new QRadioButton(m_Parameters[i].c_str(), this));
+		QRadioButton* button=new QRadioButton(m_Parameters[i].c_str(),this);
+		button->setIconSize(QSize(2,2));
+		m_ParameterButtons.push_back(button);
 		m_ParameterLayout->addWidget(m_ParameterButtons[i]);
 		connect(this->m_ParameterButtons[i], SIGNAL(clicked()), this, SLOT(setCurveVisible()));
 	}
@@ -934,8 +984,12 @@ void PlotWindow::CreateInfoLabel()
 	{
 		if(i!=4)
 		{
+			QFont Font=font();
+			Font.setPointSize(7);
 			labelindex++;
-			m_InfoLabel.push_back(new QLabel(info[i].c_str()));
+			QLabel* label=new QLabel(info[i].c_str());
+			label->setFont(Font);
+			m_InfoLabel.push_back(label);
 		}
 		m_InfoLayout->addWidget(m_InfoLabel[labelindex]);
 	}
@@ -983,7 +1037,7 @@ void PlotWindow::Plotting(QVector<qv3double> data, std::string type)
 	std::vector <std::vector <std::vector <QwtPlotCurve*> > > curves;
 	QVector< QVector< double > > casedata;
 	QVector<double>x_data, y_data;
-	int tablesize;
+	int tablesize=0;
 	
 	
 	//Utilisation pointeur?

@@ -18,6 +18,7 @@
 #include <QTextEdit>
 #include <QPixmap>
 #include <QPainter>
+#include <QFont>
 
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
@@ -98,6 +99,7 @@ class PlotWindow : public QWidget
 		QGridLayout* m_PixelGridLayout;
 		QGridLayout* m_CorrLayout;
 		QGridLayout* m_AxesLayout;
+		QHBoxLayout* m_Option2Layout;
 		std::vector <QLabel*> m_InfoLabel;
 		std::vector <QRadioButton*> m_ParameterButtons;
 		std::vector <QRadioButton*> m_FiberButtons;
@@ -142,7 +144,6 @@ class PlotWindow : public QWidget
 		std::vector <std::vector <std::vector <QwtPlotCurve*> > > m_CaseCurves;
 		std::vector <std::vector <std::vector <QwtPlotCurve*> > > m_AtlasCurves;
 		std::vector <std::vector <std::vector <QwtPlotCurve*> > > m_StatCurves;
-		
 		
 		DTIAtlasFiberAnalyzerguiwindow* m_parent;
 		int m_SpecialCurves;

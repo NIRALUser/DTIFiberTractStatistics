@@ -1679,7 +1679,7 @@ void DTIAtlasFiberAnalyzerguiwindow::setFibers()
 			m_Fibers.push_back(fiber);
 		}
 	}
-	std::sort(m_Fibers.begin(), m_Fibers.end());
+	sort(m_Fibers.begin(), m_Fibers.end());
 }
 
  /************************************************************************************
