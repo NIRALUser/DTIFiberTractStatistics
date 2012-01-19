@@ -5,7 +5,7 @@
 	<description>
 		Compute statistics on DTI Fiber Tracts. \n Writing a parameter file : \n The file need a special key in the first line which is : "Parameters for DTIAtlasFiberAnalyzer : ". \n Each line after the first line need a key and then the value. \n For the CSV file, write the key : "CSVFile : " and the path of your file. \n For the Data column, write the key : "Data Column : " and the number of the column in the CSV File. \n For the Deformation Field column, write the key : "Defomation Field Column : " and the number of the column in the CSV File. \n If you don't put this line, the software will use no deformations field. \n For the Case column, write the key : "Case Column : " and the number of the column in the CSV File. \n If you don't put this line, the software will use the name of the T1 image. \n For the Output folder, write the key : "Output Folder : " and the path of your file. \n For the Atlas Fiber Folder, write the key : "Atlas Fiber Folder : " and the path of your file. \n For the CSV file, write the key : "Selected Fibers : " and the name of your fiber separate by a coma. \n If you don't put this line, the software will use all the fibers from the Atlas. \n For the CSV file, write the key : "Profile parameter : " and the name of the parameter separate by a coma. \n If you don't put this line, the software will use all the parameters.
 	</description>
-	<contributor>Benjamin Yvernault</contributor>
+	<contributor>Jean-Baptiste Berger, Benjamin Yvernault</contributor>
 	
 	<parameters>
 		<boolean>
