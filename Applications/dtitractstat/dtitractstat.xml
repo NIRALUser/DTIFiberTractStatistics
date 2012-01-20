@@ -1,7 +1,7 @@
 <?xml version="1.2" encoding="utf-8"?>
 <executable>
   <category>
-    Diffusion
+    Diffusion.FiberAnalysis
   </category>
   <title>
     DTI Fiber tract statistics tol
