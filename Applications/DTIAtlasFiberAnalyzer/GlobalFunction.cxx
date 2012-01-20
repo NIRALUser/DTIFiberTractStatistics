@@ -1108,7 +1108,7 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 							str = buf1.substr(14,buf1.size()-14);
 							DataCol = atoi(str.c_str())-1;
 						}
-						else if(buf1.compare(0,26,"Deformation Field Column : ")==0)
+						else if(buf1.compare(0,27,"Deformation Field Column : ")==0)
 						{
 							str = buf1.substr(26,buf1.size()-26);
 							DefCol = atoi(str.c_str())-1;
