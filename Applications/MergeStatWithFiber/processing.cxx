@@ -13,6 +13,13 @@ Processing::~Processing()
 {
 }
 
+bool Processing::IsFloat(std::string Str)
+{
+	std::istringstream iss( Str );
+	float temp;
+	return (iss >> temp) && (iss.eof());
+}
+
 /**********************************************************************************
 *ReadDataFromCSV: Look on the CSV file, read the data and put it in m_DataTable
 ***********************************************************************************/
@@ -34,10 +41,12 @@ void Processing::ReadDataFromCSV(std::string Filename)
 		getline(File, Buffer);
 	}
 	
+	
+	
 	//Check if the table is written by column or by row.
-	if(atof(TempTable[0][0].c_str())==atof(TempTable[0][1].c_str()))
+	if(!IsFloat(TempTable[0][1].c_str()))
 		TransposeCol=true;
-	else if(atof(TempTable[0][0].c_str())==atof(TempTable[1][0].c_str()))
+	else if(!IsFloat(TempTable[1][0].c_str()))
 		TransposeCol=false;
 	else
 		std::cout<<"Error finding to transpose csv table or not."<<std::endl;

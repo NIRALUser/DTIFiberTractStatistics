@@ -1027,7 +1027,7 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
     double range_min = min_length;
     double range_max =  min_length+step_size;
     //where to start sampling the data
-    while (parametrized_position_dist[fiber_counter][0] < range_min or parametrized_position_dist[fiber_counter][0] > range_max){
+    while (parametrized_position_dist[fiber_counter][0] < range_min || parametrized_position_dist[fiber_counter][0] > range_max){
       sampling_start++;
       
       range_min = min_length + sampling_start * step_size;

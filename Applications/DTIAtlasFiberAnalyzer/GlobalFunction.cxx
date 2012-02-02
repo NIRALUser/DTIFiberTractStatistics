@@ -459,8 +459,10 @@ int CallFiberProcess(std::string pathFiberProcess,
 		if(DeformationField.compare("no")!=0 && DeformationField.compare("no deformation")!=0)
 		{
 			qs =  DeformationField.c_str();
-			arguments.append("--h_field " +qs);
+			arguments.append("--displacement_field " +qs);
 		}
+		
+		arguments.append("--no_warp");
 		//output
 		qs = outputname.c_str();
 		arguments.append("--fiber_output " + qs);
@@ -706,6 +708,10 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 		//Output fiber file
 		qs =  Output_fiber_file.c_str();
 		arguments.append(QString("--ouput_stats_file ") + qs);
+		
+		qs = (takeoffExtension(Output_fiber_file)+"_parametrized.vtk").c_str();
+		arguments.append(QString("--output_parametrized_fiber_file ") + qs);
+		
 		//Plane
 		if(/*(plane.substr(plane.find_last_of("_")+1,plane.size()-plane.find_last_of("_")+1)).compare("auto")!=0*/plane!="")
 		{

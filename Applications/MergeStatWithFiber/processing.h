@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <sstream>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyDataReader.h>
@@ -25,6 +26,7 @@ class Processing{
 		Processing();
 		~Processing();
 		
+		bool IsFloat(std::string);
 		void ReadDataFromCSV(std::string Filename);
 		void ReadDataFromVTK(std::string Filename);
 		void WritingDataInVTK(std::string output_vtk_file, double Min, double Max);
