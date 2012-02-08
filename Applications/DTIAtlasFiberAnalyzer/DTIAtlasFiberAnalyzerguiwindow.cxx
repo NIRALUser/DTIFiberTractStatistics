@@ -1526,6 +1526,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		//Find path for fiberprocess
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
 		//if path not found
+		std::cout<<pathdti_tract_stat<<std::endl;
 		if(pathdti_tract_stat.empty()==true)
 		{
 			QMessageBox::information(this, "dtitractstatCLP", "Select the folder where dti_tract_stat is located .");

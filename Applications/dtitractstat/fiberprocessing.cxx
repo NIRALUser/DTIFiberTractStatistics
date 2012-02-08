@@ -143,7 +143,6 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
 		
     DTIPointListType pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
     DTIPointListType::iterator pit,pit_temp,pit_tmp;
-    
     //check fiber orientation
     pit_tmp = pointlist.begin();
     itk::Point<double, 3> position_first = (*pit_tmp).GetPosition();
@@ -214,7 +213,6 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       //adding sample points AT the intersection point to avoid gap at origin
       all.push_back(std::vector<double>());
       all[l_counter].push_back(0.0);
-      
       //add x,y,z information to vectors all by YUNDI SHI
       itk::Point<double, 3> p1;
       p1=(*pit).GetPosition();
@@ -350,9 +348,8 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
     else 
     {
       int count=1;
-      
       // For each point along the fiber
-      for(pit = pointlist.end(); pit != pointlist.begin(); --pit)
+      for(pit = pointlist.end()-1; pit != pointlist.begin(); --pit)
       {
 	typedef DTIPointType::PointType PointType;
 	itk::Point<double, 3> position = (*pit).GetPosition();
@@ -369,7 +366,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       }
       
       //getting an iterator at the intersection point
-      for (pit = pointlist.end(); pit != pointlist.begin(); --pit)
+      for (pit = pointlist.end()-1; pit != pointlist.begin(); --pit)
       {
 	itk::Point<double, 3> position_o = (*pit).GetPosition();
 	if (worldspace)
@@ -1027,6 +1024,7 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
     double range_min = min_length;
     double range_max =  min_length+step_size;
     //where to start sampling the data
+	
     while (parametrized_position_dist[fiber_counter][0] < range_min || parametrized_position_dist[fiber_counter][0] > range_max){
       sampling_start++;
       
@@ -1048,8 +1046,7 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	  }
 	noptinwindow = 0;	    
 	//stay in the window to average the postions
-	
-	while (parametrized_position_dist[fiber_counter][pos_counter] <= range_max && parametrized_position_dist[fiber_counter][pos_counter] >= range_min && pos_counter < fiber_length)
+	while (pos_counter < fiber_length && parametrized_position_dist[fiber_counter][pos_counter] <= range_max && parametrized_position_dist[fiber_counter][pos_counter] >= range_min)
 	  { 
 	    //std::cout<<"Including data "<<pos_counter<<" for sampling location #"<<sampling_loc<<std::endl;
 	    avglocation[3] = parametrized_position_dist[fiber_counter][pos_counter] + avglocation[3];
@@ -1083,7 +1080,7 @@ void fiberprocessing::Write_parametrized_fiber(std::string input_file, std::stri
 	    //std::cout<<"pos_counter is "<<pos_counter<<endl;
 	    break;
 	  }
-      }
+    }
     //    std::cout<<"real_no_pits_on_fiber is "<<real_no_pits_on_fiber<<std::endl;
     polydata->InsertNextCell(VTK_POLY_LINE,real_no_pits_on_fiber,ids->GetPointer(currentId));
     //    std::cout<<"goes to fiber #"<<fiber_counter<<std::endl;

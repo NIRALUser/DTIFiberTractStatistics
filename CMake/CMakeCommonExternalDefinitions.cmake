@@ -20,7 +20,7 @@ macro(PACKAGE_NEEDS_ITK LOCAL_CMAKE_BUILD_OPTIONS gen)
   OPTION(OPT_USE_SYSTEM_${packageToCheck} "Use the system's ${packageToCheck} library." OFF)
   #  MARK_AS_ADVANCED(OPT_USE_SYSTEM_${packageToCheck})
   if(OPT_USE_SYSTEM_ITK)
-    find_package(ITK 3.20 REQUIRED)
+    find_package(ITK REQUIRED)
     include(${ITK_USE_FILE})
     set(ITK_DEPEND "") ## Set the external depandancy for ITK
   else()

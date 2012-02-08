@@ -136,7 +136,9 @@ void regression::Regression_Quantile(std::string output_file, std::vector< std::
   double min_length = length[0][0]; 
   double max_length=length[l_counter-1][0];			//since length[][] is sorted 
   int reg_counter = ceil((max_length - min_length+1)/step_size);	//note: min_length is negative
-  double regression_result_quan[reg_counter][2];			//will hold the arc length and result of the quantile 
+  double** regression_result_quan=new double*[reg_counter];			//will hold the arc length and result of the quantile 
+  for(int x=0; x<reg_counter; x++)
+	  regression_result_quan[x]=new double[2];
 
   for (int k=0;k<reg_counter;k++)
   {
@@ -148,11 +150,14 @@ void regression::Regression_Quantile(std::string output_file, std::vector< std::
   {	
     //create list of param values in the current window
     //holds param value and its weight in that window
-    double curr_param[l_counter][2];
+	double** curr_param=new double*[l_counter]; 
+    for(int x=0; x<l_counter; x++)
+	  curr_param[x]=new double[2];
     
     double range_min= regression_result_quan[i][0] -bandwidth*1;		//***************    taking cut off as 1 std deviation
     double range_max= regression_result_quan[i][0] +bandwidth*1;
-    double current_weights[l_counter], y[l_counter];
+    double* current_weights=new double[l_counter];
+	double* y=new double[l_counter];
     for (int k=0;k<l_counter;k++)
     {
       y[k] = (regression_result_quan[i][0]-length[k][0])/bandwidth;
@@ -192,7 +197,9 @@ void regression::Regression_Quantile(std::string output_file, std::vector< std::
     double q_step;
     int q_bin=20;
     q_step = (curr_param[curr_param_index-1][0] - curr_param[0][0] ) /  q_bin;
-    double q_pdf[q_bin][2];//0 holds the bin value for pdf, 1 holds the no of points contributing to this bin
+	double** q_pdf=new double*[q_bin]; //0 holds the bin value for pdf, 1 holds the no of points contributing to this bin
+    for(int x=0; x<q_bin; x++)
+	  q_pdf[x]=new double[2];
     double total =0;
     
     for (int g=0; g<q_bin;g++)
@@ -212,7 +219,7 @@ void regression::Regression_Quantile(std::string output_file, std::vector< std::
     }
     
     //now create cdf
-    double q_cdf[q_bin];
+    double* q_cdf=new double[q_bin];
     q_cdf[0] = q_pdf[0][0]/total;
     for (int g=1; g<q_bin; g++)
     {
@@ -234,8 +241,8 @@ void regression::Regression_Quantile(std::string output_file, std::vector< std::
   
   //finding the standard deviation now using the fitted value per window....
 
-  double std_dev[reg_counter];
-  int num_fib_points[reg_counter];
+  double* std_dev=new double[reg_counter];
+  int* num_fib_points=new int[reg_counter];
   for (int i=0; i<reg_counter; i++)
   {	
     double range_min= regression_result_quan[i][0] -bandwidth*1;		//***************    taking cut off as 1 std deviation
@@ -286,11 +293,16 @@ void regression::Regression_Beta_Gaussian(std::string output_file, std::vector< 
 
   //Variables
   double temp_param = 0.0, weight_sum = 0.0, V2 =0.0, clamp_count=0;
-  double beta_regression_result[reg_counter][4];				//will hold the result of the regression for Beta and Gaussian
- 
-  double std_dev[reg_counter][10];
-  int num_fib_points[reg_counter];
-  double hist[reg_counter][50];						//histogram has 50 bins
+ double** beta_regression_result=new double*[reg_counter]; //will hold the result of the regression for Beta and Gaussian
+    for(int x=0; x<reg_counter; x++)
+	  beta_regression_result[x]=new double[4];
+  double** std_dev=new double*[reg_counter]; 
+    for(int x=0; x<reg_counter; x++)
+	  std_dev[x]=new double[10];
+  int* num_fib_points=new int[reg_counter];
+  double** hist=new double*[reg_counter];				//histogram has 50 bins
+    for(int x=0; x<reg_counter; x++)
+	  hist[x]=new double[50];
   double mode_est=0, mean_beta=0, wt_sample_mean=0;
   ofstream fp_output_file;
   //initializing 
@@ -306,7 +318,8 @@ void regression::Regression_Beta_Gaussian(std::string output_file, std::vector< 
   {	
     double range_min= beta_regression_result[i][0] -bandwidth*1;		//***************    taking cut off as 1 std deviation
     double range_max= beta_regression_result[i][0] +bandwidth*1;
-    double current_weights[l_counter], y[l_counter];
+    double* current_weights=new double[l_counter];
+	double* y=new double[l_counter];
     for (int k=0;k<l_counter;k++)
     {
       y[k] = (beta_regression_result[i][0]-length[k][0])/bandwidth; //distance
