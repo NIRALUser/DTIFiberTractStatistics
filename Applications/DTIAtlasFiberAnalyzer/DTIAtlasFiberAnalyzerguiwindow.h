@@ -73,8 +73,8 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		bool OpenPlotWindow();
 		void OpenDataFile();
 		void OpenAnalysisFile();
-		void SaveDataAction();
-		void SaveAnalysisAction();
+		void SaveDataAction(std::string="");
+		void SaveAnalysisAction(std::string="");
 		void ClearDataInformation();
 		void CheckNextStep();
 		void EnterCsvFileName();

@@ -167,6 +167,7 @@ void DTIAtlasFiberAnalyzerguiwindow::NextStep()
 			SaveCSV();
 		}
 		//widget modifications
+		SaveDataAction("AutoSave_Data.txt");
 		nextstep->setVisible(false);
 		Apply->setVisible(true);
 		Apply->setEnabled(false);
@@ -344,6 +345,8 @@ void DTIAtlasFiberAnalyzerguiwindow::AutoCompute()
 	}
 	else
 	{
+		SaveDataAction("AutoSave_Data.txt");
+		SaveAnalysisAction("AutoSave_Analysis.txt");
 		if(m_numberstep<=3)
 		{
 			if(m_numberstep<=2)
@@ -2007,21 +2010,36 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
 /********************************************************************************* 
  * Save the value of the parameters for data or analysis
  ********************************************************************************/
-void DTIAtlasFiberAnalyzerguiwindow::SaveDataAction()
+void DTIAtlasFiberAnalyzerguiwindow::SaveDataAction(std::string Filename)
 {
 	QString output;
 	if(m_OutputFolder.size()!=0)
 		output=m_OutputFolder.c_str();
 	else
 		output=".";
-	QString filename = QFileDialog::getSaveFileName(this, "Save data file", output, "Text (*.txt)");
-	SaveData(filename.toStdString(), m_csvfilename, m_DataCol, m_DeformationCol, m_NameCol, m_OutputFolder);
+	if(Filename=="")
+	{
+		QString filename = QFileDialog::getSaveFileName(this, "Save data file", output, "Text (*.txt)");
+		SaveData(filename.toStdString(), m_csvfilename, m_DataCol, m_DeformationCol, m_NameCol, m_OutputFolder);
+	}
+	else
+		SaveData(output.toStdString()+Filename, m_csvfilename, m_DataCol, m_DeformationCol, m_NameCol, m_OutputFolder);
 }
 
-void DTIAtlasFiberAnalyzerguiwindow::SaveAnalysisAction()
+void DTIAtlasFiberAnalyzerguiwindow::SaveAnalysisAction(std::string Filename)
 {
-	QString filename = QFileDialog::getSaveFileName(this, "Save parameters file", QString(), "Text (*.txt)");
-	SaveAnalysis(filename.toStdString(), m_AtlasFiberDir, m_FiberSelectedname, m_parameters, m_transposeColRow);
+	QString output;
+	if(m_OutputFolder.size()!=0)
+		output=m_OutputFolder.c_str();
+	else
+		output=".";
+	if(Filename=="")
+	{
+		QString filename = QFileDialog::getSaveFileName(this, "Save parameters file", output, "Text (*.txt)");
+		SaveAnalysis(filename.toStdString(), m_AtlasFiberDir, m_FiberSelectedname, m_parameters, m_transposeColRow);
+	}
+	else
+		SaveAnalysis(Filename, m_AtlasFiberDir, m_FiberSelectedname, m_parameters, m_transposeColRow);
 }
 
 /********************************************************************************* 

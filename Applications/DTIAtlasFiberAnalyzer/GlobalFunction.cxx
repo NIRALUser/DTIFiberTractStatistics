@@ -734,9 +734,8 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 			qs = parameter.c_str();
 			arguments.append(QString("--parameter_list ") + qs);
 		}
-		
-		state = process->execute( pathdti_tract_stat.c_str(), arguments);
 		std::cout<<"Command Line :  "<< (arguments.join(" ")).toStdString() <<std::endl;
+		state = process->execute( pathdti_tract_stat.c_str(), arguments);
 		std::cout<<"End of Dti Tract Stat."<<std::endl;
 	}
 	else
