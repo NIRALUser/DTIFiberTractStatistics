@@ -112,6 +112,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void CompleteWithMeanData();
 		void CompleteWithCrossStdData();
 		QVector< QVector<double> > TableConversion(v2string table);
+		void LoadDataFile(std::string filename);
 		void LoadAnalysisFile(std::string filename);
 		void FillSelectedPlane();
 		bool GetAutoPlaneOption();

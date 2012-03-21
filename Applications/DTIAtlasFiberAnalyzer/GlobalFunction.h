@@ -15,7 +15,7 @@ bool CreateDirectoryForData(std::string outputfolder, std::string name);
 
 /* Compute fiber process : take the parameters and call the software for every fiber/data */
 bool Applyfiberprocess(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir, 
-		       std::string OutputFolder, int DataCol, int DefCol, int NameCol, vstring fibers, 
+		       std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers, 
 		       std::string parameters, bool transposeColRow, bool nogui, QWidget* parent=NULL);
 
 /* Check if the header existed */
@@ -35,7 +35,7 @@ std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget
 
 /* Call fiberprocess */
 int CallFiberProcess(std::string pathFiberProcess, std::string AtlasFolder, std::string outputname, 
-		     std::string Data, std::string DeformationField, std::string Fiber, std::string nameofcase);
+		     std::string Data, std::string DeformationField, bool FieldType, std::string Fiber, std::string nameofcase);
 
 /* Read the files in the folder and keep the one with the extension ".vtk" */
 void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::string AtlasFiberDir);
@@ -68,14 +68,12 @@ bool ReadFiberPtInformation(std::string filepath, v2string& fiberptdata, int nbo
 /* Write Profile information in an csv file */
 void WriteProfile(CSVClass* CSV, std::string filename,std::vector< v2string > FiberProfiles,int DataCol,int NameCol,int ParamCol, bool transposeColRow);
 
-std::string CreateDefaultAnalysisFile();
-
-void SaveData(std::string filename,std::string CSVFilename, int DataCol, int DefCol, int NameCol, std::string OutputFolder);
+void SaveData(std::string filename,std::string CSVFilename, int DataCol, int DefCol, bool FieldType, int NameCol, std::string OutputFolder);
 
 void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, std::string parameters, bool transposeColRow);
 
 /* Read the parameters from a file */
-bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, int &NameCol, vstring &SelectedFibers, vstring &SelectedPlanes, bool &transposeColRow, bool &CoG);
+bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, bool &FieldType, int &NameCol, vstring &SelectedFibers, vstring &SelectedPlanes, bool &transposeColRow, bool &CoG);
 
 /* Calcul the number of profiles parameters : FA,MD ... */
 int CalculNumberOfProfileParam(std::string parameters);

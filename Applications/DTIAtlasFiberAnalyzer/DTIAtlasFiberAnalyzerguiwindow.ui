@@ -218,7 +218,7 @@
         <string notr="true"/>
        </property>
        <property name="currentIndex">
-        <number>4</number>
+        <number>0</number>
        </property>
        <property name="usesScrollButtons">
         <bool>true</bool>
@@ -458,8 +458,8 @@
           <rect>
            <x>530</x>
            <y>10</y>
-           <width>341</width>
-           <height>181</height>
+           <width>411</width>
+           <height>201</height>
           </rect>
          </property>
          <property name="styleSheet">
@@ -475,7 +475,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>10</y>
+            <y>60</y>
             <width>321</width>
             <height>20</height>
            </rect>
@@ -491,7 +491,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>60</y>
+            <y>110</y>
             <width>321</width>
             <height>20</height>
            </rect>
@@ -507,7 +507,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>30</y>
+            <y>80</y>
             <width>131</width>
             <height>27</height>
            </rect>
@@ -517,7 +517,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>80</y>
+            <y>140</y>
             <width>131</width>
             <height>27</height>
            </rect>
@@ -527,7 +527,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>110</y>
+            <y>10</y>
             <width>321</width>
             <height>20</height>
            </rect>
@@ -543,7 +543,7 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>140</y>
+            <y>30</y>
             <width>131</width>
             <height>27</height>
            </rect>
@@ -553,7 +553,7 @@
           <property name="geometry">
            <rect>
             <x>150</x>
-            <y>30</y>
+            <y>80</y>
             <width>101</width>
             <height>31</height>
            </rect>
@@ -569,7 +569,7 @@
           <property name="geometry">
            <rect>
             <x>150</x>
-            <y>80</y>
+            <y>140</y>
             <width>101</width>
             <height>31</height>
            </rect>
@@ -585,7 +585,7 @@
           <property name="geometry">
            <rect>
             <x>150</x>
-            <y>140</y>
+            <y>30</y>
             <width>101</width>
             <height>31</height>
            </rect>
@@ -596,6 +596,41 @@
           <property name="text">
            <string>(orange color)</string>
           </property>
+         </widget>
+         <widget class="QWidget" name="verticalLayoutWidget_2">
+          <property name="geometry">
+           <rect>
+            <x>230</x>
+            <y>140</y>
+            <width>155</width>
+            <height>54</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QRadioButton" name="RB_HField">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>H Fields</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="RB_DField">
+             <property name="text">
+              <string>Displacement Fields</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </widget>
         <widget class="QFrame" name="newparamframe">
@@ -824,8 +859,8 @@
          <property name="geometry">
           <rect>
            <x>530</x>
-           <y>200</y>
-           <width>341</width>
+           <y>220</y>
+           <width>411</width>
            <height>111</height>
           </rect>
          </property>
@@ -854,9 +889,9 @@
          <widget class="QFrame" name="outputframe">
           <property name="geometry">
            <rect>
-            <x>20</x>
+            <x>10</x>
             <y>50</y>
-            <width>291</width>
+            <width>371</width>
             <height>41</height>
            </rect>
           </property>
@@ -874,7 +909,7 @@
             <rect>
              <x>7</x>
              <y>7</y>
-             <width>241</width>
+             <width>311</width>
              <height>27</height>
             </rect>
            </property>
@@ -882,7 +917,7 @@
           <widget class="QToolButton" name="browserOutputFolder">
            <property name="geometry">
             <rect>
-             <x>260</x>
+             <x>330</x>
              <y>7</y>
              <width>26</width>
              <height>27</height>

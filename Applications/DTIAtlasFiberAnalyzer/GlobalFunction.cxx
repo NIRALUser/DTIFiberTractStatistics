@@ -15,10 +15,10 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 	DataCol = -1;
 	DefCol = -1;
 	NameCol = -1;
-	bool transposeColRow, success=false, CoG=false;
+	bool transposeColRow, success=false, CoG=false, FieldType=true; //FieldType=true -> H-Field false -> D-Field
 	
 	//read the parameters from the file
-	if(!ReadParametersFromFiles(datafile, analysisfile, csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol, NameCol,SelectedFibers, SelectedPlanes, transposeColRow, CoG))
+	if(!ReadParametersFromFiles(datafile, analysisfile, csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol, FieldType, NameCol,SelectedFibers, SelectedPlanes, transposeColRow, CoG))
 		return false;
 	
 	if(debug)
@@ -30,6 +30,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 		std::cout<<"OutputFolder : "<<OutputFolder<<std::endl;
 		std::cout<<"DataCols :"<<DataCol<<std::endl;
 		std::cout<<"DefCol :"<<DefCol<<std::endl;
+		std::cout<<"Field Type :"<<FieldType<<std::endl;
 		std::cout<<"NameCol :"<<NameCol<<std::endl;
 		std::cout<<"Selected Fibers :"<<std::endl;
 		for(unsigned int i=0;i<SelectedFibers.size();i++)
@@ -88,8 +89,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 			std::cin>>pathFiberProcess;
 		}
 		//Call fiberprocess
-		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol,
-								NameCol, SelectedFibers,parameters,transposeColRow,true);
+		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,parameters,transposeColRow,true);
 		
 		/* Looking for dti_tract_stat */
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
@@ -113,8 +113,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 			std::cin>>pathFiberProcess;
 		}
 		//Call fiberprocess
-		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol,
-								NameCol, fibers,parameters,transposeColRow,true);
+		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,parameters,transposeColRow,true);
 		
 		/* Looking for dti_tract_stat */
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
@@ -167,6 +166,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 							  std::string OutputFolder,
 							  int DataCol,
 							  int DefCol,
+							  bool FieldType,
 							  int NameCol,
 							  vstring fibers,
 							  std::string parameters,
@@ -240,11 +240,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 						if(DefCol!=-1)
 						{
 							/* If fiberprocess worked */
-							if(CallFiberProcess(pathFiberProcess, AtlasFiberDir,
-								outputname, 
-								(*CSV->getData())[row][DataCol],
-								(*CSV->getData())[row][DefCol],fibers[j],
-								namecase)==0)
+							if(CallFiberProcess(pathFiberProcess, AtlasFiberDir, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j], namecase)==0)
 							{
 								//Check if the output exist
 								if(FileExisted(outputname))
@@ -258,7 +254,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 							/* If fiberprocess worked */
 							if(CallFiberProcess(pathFiberProcess, AtlasFiberDir,
 								outputname, 
-								(*CSV->getData())[row][DataCol],"no",fibers[j],
+								(*CSV->getData())[row][DataCol],"no",FieldType,fibers[j],
 								namecase)==0)
 							{
 								//Check if the output exist
@@ -438,6 +434,7 @@ int CallFiberProcess(std::string pathFiberProcess,
 							std::string outputname,
 							std::string Data,
 							std::string DeformationField,
+							bool FieldType,
 							std::string Fiber,
 							std::string nameofcase)
 {
@@ -459,7 +456,10 @@ int CallFiberProcess(std::string pathFiberProcess,
 		if(DeformationField.compare("no")!=0 && DeformationField.compare("no deformation")!=0)
 		{
 			qs =  DeformationField.c_str();
-			arguments.append("-H " +qs);
+			if(FieldType)
+				arguments.append("-H " +qs);
+			else
+				arguments.append("-D " +qs);
 		}
 		
 		arguments.append("--no_warp");
@@ -1002,7 +1002,7 @@ void WriteProfile(CSVClass* CSV, std::string filename, std::vector<v2string> Fib
 /********************************************************************************* 
  * save the parameters for DTIAtlasFiberAnalyzer in a file
  ********************************************************************************/
-void SaveData(std::string filename,std::string CSVFilename, int DataCol, int DefCol, int NameCol, std::string OutputFolder)
+void SaveData(std::string filename,std::string CSVFilename, int DataCol, int DefCol, bool FieldType, int NameCol, std::string OutputFolder)
 {
 	std::ofstream savefile(filename.c_str(), std::ios::out);
 	if(savefile)
@@ -1014,6 +1014,10 @@ void SaveData(std::string filename,std::string CSVFilename, int DataCol, int Def
 		savefile << "Data Column : " << DataCol +1 <<std::endl;
 		if(DefCol!=-1)
 			savefile << "Deformation Field Column : " << DefCol +1 <<std::endl;
+		if(FieldType==true)
+			savefile << "Field Type : h-field"<<std::endl;
+		else
+			savefile << "Field Type : displacement field"<<std::endl;
 		if(NameCol!=-1)
 			savefile << "Case Column : " << NameCol +1 <<std::endl;
 		savefile << "Output Folder : " << OutputFolder <<std::endl;
@@ -1022,20 +1026,6 @@ void SaveData(std::string filename,std::string CSVFilename, int DataCol, int Def
 	}
 	else
 		std::cout<<"ERROR: Problem to open the file for saving parameters"<<std::endl;
-}
-
-std::string CreateDefaultAnalysisFile()
-{
-	std::string filename, AtlasFiberFolder, parameters;
-	vstring FiberSelectedname;
-	bool transposeColRow=false;
-	filename="./Default_Analysis_Parameters.txt";
-	AtlasFiberFolder="/home/jaberger/Desktop/nitrc_files/Atlas";
-	FiberSelectedname.push_back("Genu.vtk");
-	parameters="fa,md,fro,ad,l2,l3,rd,ga";
-	if(!FileExisted(filename))
-		SaveAnalysis(filename, AtlasFiberFolder, FiberSelectedname, parameters, transposeColRow); 
-	return filename;
 }
 
 void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, std::string parameters, bool transposeColRow)
@@ -1081,7 +1071,7 @@ void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring Fi
 /********************************************************************************* 
  * Read the parameters for DTIAtlasFiberAnalyzer from a file
  ********************************************************************************/
-bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, int &NameCol, vstring &SelectedFiber, vstring &SelectedPlanes, bool &transposeColRow, bool &CoG)
+bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, bool &FieldType, int &NameCol, vstring &SelectedFiber, vstring &SelectedPlanes, bool &transposeColRow, bool &CoG)
 {
 	//variables
 	vstring fibers;
@@ -1115,8 +1105,17 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 						}
 						else if(buf1.compare(0,27,"Deformation Field Column : ")==0)
 						{
-							str = buf1.substr(26,buf1.size()-26);
+							str = buf1.substr(27,buf1.size()-27);
 							DefCol = atoi(str.c_str())-1;
+						}
+						else if(buf1.compare(0,13,"Field Type : ")==0)
+						{
+							if(buf1.substr(13,buf1.size()-13)=="h-field")
+								FieldType=true;
+							else if(buf1.substr(13,buf1.size()-13)=="displacement field")
+								FieldType=false;
+							else
+								std::cout<<"Warning: Wrong syntax of Field Type. Computing with default h-field."<<std::endl;
 						}
 						else if(buf1.compare(0,14,"Case Column : ")==0)
 						{
