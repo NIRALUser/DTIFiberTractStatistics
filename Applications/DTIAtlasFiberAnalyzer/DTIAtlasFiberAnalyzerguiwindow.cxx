@@ -720,22 +720,34 @@ void DTIAtlasFiberAnalyzerguiwindow::clearCSV()
 void DTIAtlasFiberAnalyzerguiwindow::AddC()
 {
 	int columns = CSVtable->columnCount ();
-	CSVtable->setColumnCount (columns + 1);
+	CSVtable->insertColumn(columns);
 	//add the header
 	QTableWidgetItem *header=  new QTableWidgetItem;
 	header->setData( 0, headername->text() );
 	CSVtable->setHorizontalHeaderItem(columns,header);
 	//Clear the Line edit
 	headername->clear();
+	for(int i=0; i<CSVtable->rowCount(); i++)
+	{
+		QTableWidgetItem *item= new QTableWidgetItem;
+		item->setData(0,"");
+		CSVtable->setItem(i,columns,item);
+	}
 }
 void DTIAtlasFiberAnalyzerguiwindow::AddColumnWithHearderName(std::string header)
 {
 	int columns = CSVtable->columnCount ();
-	CSVtable->setColumnCount (columns + 1);
+	CSVtable->insertColumn(columns);
 	//add the header
 	QTableWidgetItem *title=  new QTableWidgetItem;
 	title->setData( 0, header.c_str() );
 	CSVtable->setHorizontalHeaderItem(columns,title);
+	for(int i=0; i<CSVtable->rowCount(); i++)
+	{
+		QTableWidgetItem *item= new QTableWidgetItem;
+		item->setData(0,"");
+		CSVtable->setItem(i,columns,item);
+	}
 }
 /********************************************************************************* 
  * Delete current column
@@ -761,26 +773,32 @@ void DTIAtlasFiberAnalyzerguiwindow::AddR()
 	int rows = CSVtable->rowCount ();
 	CSVtable->setRowCount (rows + 1);
 	//fill the data column with no data and deformation field with no deformation
-	if(m_DataCol !=-1)
+	for(int i=0; i<CSVtable->columnCount(); i++)
 	{
-		QTableWidgetItem *item=  new QTableWidgetItem;
-		QString str("no data");
-		item->setData( 0, str);
-		CSVtable->setItem(CSVtable->rowCount()-1,m_DataCol,item);
-	}
-	if(m_DeformationCol !=-1)
-	{
-		QTableWidgetItem *item=  new QTableWidgetItem;
-		QString str("no deformation");
-		item->setData( 0, str);
-		CSVtable->setItem(CSVtable->rowCount()-1,m_DeformationCol,item);
-	}
-	if(m_NameCol !=-1)
-	{
-		QTableWidgetItem *item=  new QTableWidgetItem;
-		QString str("no name");
-		item->setData( 0, str);
-		CSVtable->setItem(CSVtable->rowCount()-1,m_NameCol,item);
+		if(i==m_DataCol)
+		{
+			QTableWidgetItem *item=  new QTableWidgetItem;
+			item->setData( 0, "no data");
+			CSVtable->setItem(CSVtable->rowCount()-1,i,item);
+		}
+		else if(i==m_DeformationCol)
+		{
+			QTableWidgetItem *item=  new QTableWidgetItem;
+			item->setData( 0, "no deformation");
+			CSVtable->setItem(CSVtable->rowCount()-1,i,item);
+		}
+		else if(i==m_NameCol)
+		{
+			QTableWidgetItem *item=  new QTableWidgetItem;
+			item->setData( 0, "no name");
+			CSVtable->setItem(CSVtable->rowCount()-1,i,item);
+		}
+		else
+		{
+			QTableWidgetItem *item=  new QTableWidgetItem;
+			item->setData( 0, "");
+			CSVtable->setItem(CSVtable->rowCount()-1,i,item);
+		}
 	}
 }
 /********************************************************************************* 

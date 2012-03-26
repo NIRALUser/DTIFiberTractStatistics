@@ -457,9 +457,9 @@ int CallFiberProcess(std::string pathFiberProcess,
 		{
 			qs =  DeformationField.c_str();
 			if(FieldType)
-				arguments.append("-H " +qs);
+				arguments.append("--h_field " +qs);
 			else
-				arguments.append("-D " +qs);
+				arguments.append("--displacement_field " +qs);
 		}
 		
 		arguments.append("--no_warp");
