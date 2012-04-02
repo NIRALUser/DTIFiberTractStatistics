@@ -33,6 +33,7 @@
 typedef QVector<QVector<double> > qv2double;
 typedef QVector<qv2double> qv3double;
 typedef std::vector<std::string> vstring;
+typedef std::vector<vstring> v2string;
 class DTIAtlasFiberAnalyzerguiwindow;
 
 /********************************************************************************
@@ -84,6 +85,7 @@ class PlotWindow : public QWidget
 		void DeselectAllRegular();
 		void SelectAllStd();
 		void DeselectAllStd();
+		void WriteCleanCSV();
 		
 	private:
 		QHBoxLayout* m_MainLayout;
@@ -124,6 +126,7 @@ class PlotWindow : public QWidget
 		QLabel* m_StatPxSize;
 		QPushButton* m_ComputeCorr;
 		QPushButton* m_DecomputeCorr;
+		QPushButton* m_SaveCleanCSV;
 		QSlider* m_ThSlider;
 		QLCDNumber* m_ThLcd;
 		QLabel* m_ThLabel;

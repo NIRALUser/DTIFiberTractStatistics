@@ -70,7 +70,7 @@ void WriteProfile(CSVClass* CSV, std::string filename,std::vector< v2string > Fi
 
 void SaveData(std::string filename,std::string CSVFilename, int DataCol, int DefCol, bool FieldType, int NameCol, std::string OutputFolder);
 
-void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, std::string parameters, bool transposeColRow);
+void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, vstring RelevantPlane, std::string parameters, bool transposeColRow);
 
 /* Read the parameters from a file */
 bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, bool &FieldType, int &NameCol, vstring &SelectedFibers, vstring &SelectedPlanes, bool &transposeColRow, bool &CoG);
@@ -121,5 +121,6 @@ bool IsFile(std::string);
 
 int CallMergeStatWithFiber(std::string, std::string, std::string, std::string, std::string, std::string);
 
+bool IsFloat(std::string);
 
 #endif

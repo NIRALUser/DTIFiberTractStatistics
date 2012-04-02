@@ -1292,17 +1292,9 @@ void DTIAtlasFiberAnalyzerguiwindow::AddFiberInList()
 						QString qs(m_Fibersplane[plane[k]].c_str());
 						itemplane->setData( 0, qs );
 						FiberPlaneFile->addItem(itemplane);
-						m_Fibersplane.erase(m_Fibersplane.begin()+plane[k]);
 					}
 				}
 			}
-		}
-		
-		//remove the name in the first vector
-		for(unsigned int k=0;k<m_Fibername.size();k++)
-		{
-			if(m_Fibername[k].compare(((SelectedFiber.at(i))->text()).toStdString())==0)
-				m_Fibername.erase(m_Fibername.begin()+k);
 		}
 	}
 	for(int i=0; i<FiberPlaneFile->count(); i++)
@@ -1347,23 +1339,10 @@ void DTIAtlasFiberAnalyzerguiwindow::SelectAllFiber()
 					QString qs(m_Fibersplane[plane[k]].c_str());
 					itemplane->setData( 0, qs );
 					FiberPlaneFile->addItem(itemplane);
-					m_Fibersplane.erase(m_Fibersplane.begin()+plane[k]);
 				}
-			}			
+			}
 		}
 	}
-	
-	//Read all the fiberplane name data
-	for( unsigned int i=0;i<m_Fibersplane.size();i++)
-	{
-		QListWidgetItem* itemplane= new QListWidgetItem;
-		QString qs(m_Fibersplane[i].c_str());
-		itemplane->setData( 0, qs );
-		FiberPlaneFile->addItem(itemplane);
-	}
-	//Clear the vector with the initial list of fibers' name.
-	m_Fibername.clear();
-	m_Fibersplane.clear();
 	CheckNextStep();
 }
 
@@ -1399,7 +1378,6 @@ void DTIAtlasFiberAnalyzerguiwindow::RemoveFiberInList()
 					for(unsigned int k=0; k<plane.size(); k++)
 					{
 						FiberPlaneFile->takeItem(plane[k]);
-						m_Fibersplane.push_back(m_RelevantPlane[plane[k]]);
 						m_RelevantPlane.erase(m_RelevantPlane.begin()+plane[k]);
 					}
 				}
@@ -1450,8 +1428,6 @@ void DTIAtlasFiberAnalyzerguiwindow::RemoveAllFiber()
 			if(((FiberPlaneFile->item(j))->text()).compare(m_RelevantPlane[i].c_str())==0)
 				FiberPlaneFile->takeItem(j);
 		}
-		
-		m_Fibersplane.push_back(m_RelevantPlane[i]);
 	}
 	
 	//Clear the vector with the initial list of fibers' name.
@@ -2059,11 +2035,12 @@ void DTIAtlasFiberAnalyzerguiwindow::SaveAnalysisAction(std::string Filename)
 	if(Filename=="")
 	{
 		QString filename = QFileDialog::getSaveFileName(this, "Save parameters file", output, "Text (*.txt)");
-		SaveAnalysis(filename.toStdString(), m_AtlasFiberDir, m_FiberSelectedname, m_parameters, m_transposeColRow);
+		SaveAnalysis(filename.toStdString(), m_AtlasFiberDir, m_FiberSelectedname, m_SelectedPlane, m_parameters, m_transposeColRow);
 	}
 	else
-		SaveAnalysis(output.toStdString()+"/"+Filename, m_AtlasFiberDir, m_FiberSelectedname, m_parameters, m_transposeColRow);
+		SaveAnalysis(output.toStdString()+"/"+Filename, m_AtlasFiberDir, m_FiberSelectedname, m_SelectedPlane, m_parameters, m_transposeColRow);
 }
+
 
 /********************************************************************************* 
  * Load a data file.
@@ -2369,14 +2346,14 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 									QString qs(m_Fibersplane[plane[k]].c_str());
 									itemplane->setData( 0, qs );
 									FiberPlaneFile->addItem(itemplane);
-									m_Fibersplane.erase(m_Fibersplane.begin()+plane[k]);
+// 									m_Fibersplane.erase(m_Fibersplane.begin()+plane[k]);
 								}
 							}
 						}
 						m_FiberSelectedname=FiberSelectedName;
 						//Select specified planes or all of them if not.
 						if(!SelectedPlaneDone)
-							m_SelectedPlane=m_RelevantPlane;
+							m_SelectedPlane.clear();
 						
 						for(unsigned int i=0; i<m_RelevantPlane.size(); i++)
 						{

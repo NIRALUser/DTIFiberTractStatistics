@@ -107,13 +107,15 @@ void PlotWindow::InitWidget()
 	m_DecomputeCorr=new QPushButton("Decolor correlation", this);
 	m_DecomputeCorr->setMinimumSize(150, 20);
 	m_DecomputeCorr->setVisible(false);
+	m_SaveCleanCSV=new QPushButton("Save Clean CSV", this);
+	m_SaveCleanCSV->setMinimumSize(150,20);
 	m_ThSlider=new QSlider(Qt::Horizontal, this);
 	m_ThLcd=new QLCDNumber(this);
 	m_ThLabel=new QLabel("Threshold", this);
 	m_CorrText=new QTextEdit("", this);
-	m_CorrText->setFixedSize(250,30);
+	m_CorrText->setMaximumHeight(45);
 	m_L_CorrColorMap=new QLabel(this);
-	m_L_CorrColorMap->setFixedSize(250,20);
+	m_L_CorrColorMap->setFixedSize(245,20);
 	m_L_CorrColorMap->setPixmap(GeneratePixmap());
 	m_L_CorrColorMap->hide();
 	QFont Font=font();
@@ -227,11 +229,13 @@ void PlotWindow::InitWidget()
 	m_CorrLayout->addWidget(m_ThLcd,0,0);
 	m_CorrLayout->addWidget(m_ThSlider,0,1);
 	m_CorrLayout->addWidget(m_ThLabel,0,2);
-	m_CorrLayout->addWidget(m_CorrText,1,2,1,2);
+	m_CorrLayout->addWidget(m_CorrText,1,2,3,2);
 	m_CorrLayout->addWidget(m_L_CorrColorMap,1,0,1,2);
 	m_CorrLayout->addWidget(m_L_Min,1,0);
 	m_CorrLayout->addWidget(m_L_Max,1,1, Qt::AlignRight);
+	m_CorrLayout->addWidget(m_SaveCleanCSV,2,0,1,2);
 	m_CorrLayout->setColumnStretch(4,2);
+	m_CorrLayout->setRowStretch(4,2);
 	GroupCorr->setLayout(m_CorrLayout);
 	
 	m_AxesLayout->addWidget(m_Min,0,1);
@@ -286,6 +290,7 @@ void PlotWindow::InitWidget()
 	connect(m_DAllReg, SIGNAL(clicked()), this, SLOT(DeselectAllRegular()));
 	connect(m_SAllStd, SIGNAL(clicked()), this, SLOT(SelectAllStd()));
 	connect(m_DAllStd, SIGNAL(clicked()), this, SLOT(DeselectAllStd()));
+	connect(m_SaveCleanCSV, SIGNAL(clicked()), this, SLOT(WriteCleanCSV()));
 	
 }
 
@@ -688,8 +693,11 @@ void PlotWindow::ApplyTh(int value)
 			if(m_ComputeCorr->isVisible())
 				pen=m_CaseStyle[CaseId*3];
 			else
-			{				
-				color.setRgb(0,100+(int)(155*(fabs(m_Corr[FiberId][CaseId][ParameterId])-thvalue)/(1-thvalue)),0);
+			{
+				if(thvalue!=1)
+					color.setRgb(0,100+(int)(155*(fabs(m_Corr[FiberId][CaseId][ParameterId])-thvalue)/(1-thvalue)),0);
+				else
+					color.setRgb(0,255,0);
 				brush.setColor(color);
 				pen.setColor(color);
 			}
@@ -735,6 +743,85 @@ void PlotWindow::ComputeCorr(QVector<qv3double> casedata, QVector<qv3double> sta
 		corr.clear();
 	}
 }
+
+/**********************************************************************************************
+ *WriteCleanCSV : ReWrite a profile parameter file without cases with a correlation below the 
+ *	threshold
+ **********************************************************************************************/
+
+void PlotWindow::WriteCleanCSV()
+{
+	int FiberId=GetCheckedFiber();
+	int ParameterId=GetCheckedParameter();
+	bool TransposeCol;
+	v2string TempTable;
+	vstring Line;
+	std::string Filename=m_parent->getOutputFolder()+"/FiberProfiles/"+m_Fibers[FiberId]+"/"+m_Parameters[ParameterId]+"_"+m_Fibers[FiberId]+".csv";
+	
+	std::ifstream File(Filename.c_str(), std::ios::in);
+	std::string Buffer;
+	
+	getline(File, Buffer);
+	if(File)
+	{
+		while(!File.eof())
+		{
+			LineInVector(Buffer,Line);
+			TempTable.push_back(Line);
+			getline(File, Buffer);
+		}
+	}
+	else
+	{
+		std::cout<<"Error reading original fiber profile."<<std::endl;
+		return;
+	}
+	//Check if the table is written by column or by row.
+	if(!IsFloat(TempTable[0][1].c_str()))
+		TransposeCol=true;
+	else if(!IsFloat(TempTable[1][0].c_str()))
+		TransposeCol=false;
+	else
+		std::cout<<"Error finding to transpose csv table or not."<<std::endl;
+	
+	std::string SaveFilename=takeoffExtension(Filename)+"_Clean.csv";
+	std::ofstream SaveFile(SaveFilename.c_str(), std::ios::out);
+	if(SaveFile)
+	{
+		if(!TransposeCol)
+		{
+			for(int i=0; i<TempTable.size()-1; i++)
+			{
+				if(i==0 || (i>0 && m_Corr[FiberId][i-1][ParameterId]>=(double)m_ThSlider->value()/100.0))
+				{
+					for(int j=0; j<TempTable[i].size()-1; j++)
+						SaveFile<<TempTable[i][j]<<",";
+					SaveFile<<TempTable[i][TempTable[i].size()-1]<<std::endl;
+				}
+			}
+			int Last=TempTable.size()-1;
+			for(int j=0; j<TempTable[Last].size()-1; j++)
+				SaveFile<<TempTable[Last][j]<<",";
+			SaveFile<<TempTable[Last][TempTable[Last].size()-1]<<std::endl;
+		}
+		else
+		{
+			for(int i=0; i<TempTable.size(); i++)
+			{
+				for(int j=0; j<TempTable[i].size()-1; j++)
+				{
+					if(j==0 || (j>0 && m_Corr[FiberId][j-1][ParameterId]>=(double)m_ThSlider->value()/100.0))
+						SaveFile<<TempTable[i][j]<<",";
+				}
+				SaveFile<<TempTable[i][TempTable[i].size()-1]<<std::endl;
+			}
+		}
+		SaveFile.close();
+	}
+	else
+		std::cout<<"ERROR: Open the file for saving profile info!"<<std::endl;
+}
+
 /********************************************************************************
  *GetChecked...: Return indexes of checked buttons and boxes.
  ********************************************************************************/

@@ -490,7 +490,6 @@ void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::s
 	//save the name of the Fibers Files in an vstring
 	for( unsigned long i=0;i<NumberOfFiles;i++)
 	{
-		noplane = false;
 		extensionfiber = ExtensionofFile(AtlasDirectory.GetFile(i));
 		if(extensionfiber.compare("vtk")==0 || extensionfiber.compare("fib")==0)
 		{
@@ -500,18 +499,16 @@ void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::s
 			for(unsigned long j=0;j<NumberOfFiles;j++)
 			{
 				planename = takeoffExtension(AtlasDirectory.GetFile(j));
-				if(planename.rfind(fibername)!=std::string::npos || fibername.rfind(planename)!=std::string::npos)
+				if(planename.rfind(fibername)!=std::string::npos)
 				{
 					extensionfiberplane = ExtensionofFile(AtlasDirectory.GetFile(j));
-					if(/*extensionfiberplane.compare("fvb")==0||*/extensionfiberplane.compare("fvp")==0)
+					if(extensionfiberplane.compare("fvp")==0)
 					{
+						std::cout<<AtlasDirectory.GetFile(j)<<std::endl;
 						fibersplane.push_back(AtlasDirectory.GetFile(j));
-						noplane = true;
 					}
 				}
 			}
-// 			if(!noplane)
-// 				fibersplane.push_back(fibername + "_auto");
 		}
 	}
 }
@@ -1028,9 +1025,9 @@ void SaveData(std::string filename,std::string CSVFilename, int DataCol, int Def
 		std::cout<<"ERROR: Problem to open the file for saving parameters"<<std::endl;
 }
 
-void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, std::string parameters, bool transposeColRow)
+void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, vstring RelevantPlane, std::string parameters, bool transposeColRow)
 {
-	std::string ListOfFiber = "";
+	std::string ListOfFiber = "", ListOfPlane = "";
 	std::ofstream savefile(filename.c_str(), std::ios::out);
 	if(savefile)
 	{
@@ -1046,6 +1043,14 @@ void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring Fi
 		}
 		savefile << "#Selected Fibers in the Atlas--> give the name of the file without the path"<<std::endl;
 		savefile << "Selected Fibers : " << ListOfFiber <<std::endl;
+		for(unsigned int i=0;i<RelevantPlane.size();i++)
+		{
+			if(i!=(RelevantPlane.size()-1) && RelevantPlane[i]!="")
+				ListOfPlane = ListOfPlane + RelevantPlane[i] +",";
+			else
+				ListOfPlane = ListOfPlane + RelevantPlane[i];
+		}
+		savefile << "Selected Planes : " << ListOfPlane <<std::endl;
 		if(parameters.compare("")!=0)
 		{
 			savefile << "#Profile parameter --> choice between fa,md,fro,ad,l2,l3,ga,rd "<<std::endl;
@@ -1266,7 +1271,7 @@ std::vector<int> PlaneAssociatedToFiber(std::string fibername, vstring fiberspla
 	{
 		if(ExtensionofFile(fibersplane[j])=="fvp")
 		{
-			if(fibersplane[j].rfind(takeoffExtension(fibername))!=std::string::npos || takeoffExtension(fibername).rfind(fibersplane[j])!=std::string::npos)
+			if(fibersplane[j].rfind(takeoffExtension(fibername))!=std::string::npos)
 				plane.push_back(j);
 		}
 	}
@@ -1585,4 +1590,11 @@ int CallMergeStatWithFiber(std::string PathMergeStatWithFiber, std::string CSVFi
 	state=process->execute(PathMergeStatWithFiber.c_str(), arguments);
 	std::cout<<"End of MergeStatWithFiber."<<std::endl;
 	return state;
+}
+
+bool IsFloat(std::string Str)
+{
+	std::istringstream iss( Str );
+	float temp;
+	return (iss >> temp) && (iss.eof());
 }

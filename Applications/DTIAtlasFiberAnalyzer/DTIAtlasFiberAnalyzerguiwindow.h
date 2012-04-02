@@ -38,6 +38,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		vstring getCases(){return m_Cases;}
 		vstring getFibers(){return m_Fibers;}
 		vstring getFiberInformations(std::string fiber);
+		std::string getOutputFolder(){return m_OutputFolder;}
 		
 		
 	private slots:
