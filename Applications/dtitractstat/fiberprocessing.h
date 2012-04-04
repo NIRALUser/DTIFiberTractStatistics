@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <vtkCellArray.h>
+#include <vtkPolyLine.h>
+
 #include <itkSpatialObjectReader.h>
 #include <itkSpatialObjectWriter.h>
 
@@ -21,7 +24,7 @@ class fiberprocessing{
   ~fiberprocessing();
 
   //Main functions
-  void fiberprocessing_main(std::string input_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin);
+  void fiberprocessing_main(std::string& input_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers);
   void arc_length_parametrization(GroupType::Pointer group, bool worldspace, itk::Vector<double,3> spacing, itk::Vector<double,3> offset);
 
   //IO functions
@@ -40,6 +43,11 @@ class fiberprocessing{
   itk::Vector<double, 3> get_plane_origin();
   itk::Vector<double, 3> get_plane_normal();
   std::vector< std::vector<double> > get_arc_length_parametrized_fiber(std::string param_name);
+  vtkSmartPointer<vtkPolyData> RemoveNonCrossingFibers(std::string Filename);
+  std::string takeoffExtension(std::string filename);
+  std::string takeoffPath(std::string filename);
+  std::string ExtensionofFile(std::string filename);
+  
  private:
   double SQ2(double x) {return x*x;};
 

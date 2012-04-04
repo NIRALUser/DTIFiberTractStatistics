@@ -30,9 +30,9 @@ fiberprocessing::fiberprocessing()
 fiberprocessing::~fiberprocessing()
 {}
 
-void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeautoOn, std::string plane_str, bool worldspace, std::string auto_plane_origin)
+void fiberprocessing::fiberprocessing_main(std::string& input_file, bool planeautoOn, std::string plane_str, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers)
 {
-  GroupType::Pointer group = readFiberFile(input_file);
+	GroupType::Pointer group = readFiberFile(input_file), Group=GroupType::New();
   itk::Vector<double,3> spacing = group->GetSpacing();
   itk::Vector<double,3> offset = group->GetObjectToParentTransform()->GetOffset();
   
@@ -51,7 +51,137 @@ void fiberprocessing::fiberprocessing_main(std::string input_file, bool planeaut
     }
     cout<<"return from read_plane_file function :"<<plane_defined<<plane_origin<<plane_normal<<endl;
   }
+  if(!useNonCrossingFibers)
+  {
+	  vtkSmartPointer<vtkPolyData> PolyData;
+	  PolyData=RemoveNonCrossingFibers(input_file);
+	  std::string extension=ExtensionofFile(input_file);
+	  std::string plane_name=takeoffExtension(takeoffPath(plane_str));
+	  input_file=takeoffExtension(input_file)+"_"+plane_name+"_Clean."+extension;
+	  if (input_file.rfind(".vtk") != std::string::npos)
+	  {
+			vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
+			fiberwriter->SetFileTypeToBinary();
+			fiberwriter->SetFileName(input_file.c_str());
+			fiberwriter->SetInput(PolyData);
+			fiberwriter->Update();
+	  }
+	  else if(input_file.rfind(".vtp") != std::string::npos)
+	  {
+		  vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
+		  fiberwriter->SetFileName(input_file.c_str());
+		  fiberwriter->SetInput(PolyData);
+		  fiberwriter->Update();
+	  }
+	  group=readFiberFile(input_file);
+  }
+  
   arc_length_parametrization(group,worldspace, spacing, offset);
+}
+
+std::string fiberprocessing::takeoffExtension(std::string filename)
+{
+	std::string inputfile;
+	inputfile = filename.substr(0,filename.find_first_of("."));
+	return inputfile;
+}
+
+std::string fiberprocessing::takeoffPath(std::string filename)
+{
+	std::string inputfile;
+	inputfile = filename.substr(filename.find_last_of("/")+1,filename.size()-filename.find_last_of("/")+1);
+	return inputfile;
+}
+
+std::string fiberprocessing::ExtensionofFile(std::string filename)
+{
+	std::string extension;
+	extension = filename.substr(filename.find_last_of(".")+1,filename.size()-filename.find_last_of(".")+1);
+	return extension;
+}
+
+vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNonCrossingFibers(std::string Filename)
+{
+	vtkSmartPointer<vtkPolyData> PolyData;
+	if (Filename.rfind(".vtk") != std::string::npos)
+	{
+		vtkSmartPointer<vtkPolyDataReader> reader = vtkPolyDataReader::New();
+		reader->SetFileName(Filename.c_str());
+		PolyData=reader->GetOutput();
+		reader->Update();
+	}
+	else if (Filename.rfind(".vtp") != std::string::npos)
+	{
+		vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkXMLPolyDataReader::New();
+		reader->SetFileName(Filename.c_str());
+		PolyData=reader->GetOutput();
+		reader->Update();
+	}
+	std::cout<<"Total Number of Fibers : "<<PolyData->GetNumberOfCells()<<std::endl;
+	
+	vtkSmartPointer<vtkPolyData> FinalPolyData=vtkSmartPointer<vtkPolyData>::New();
+	vtkSmartPointer<vtkFloatArray> NewTensors=vtkSmartPointer<vtkFloatArray>::New();
+	vtkSmartPointer<vtkPoints> NewPoints=vtkSmartPointer<vtkPoints>::New();
+	vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New();
+	NewTensors->SetNumberOfComponents(9);
+	vtkDataArray* Tensors=PolyData->GetPointData()->GetTensors();
+	
+	vtkPoints* Points=PolyData->GetPoints();
+	vtkCellArray* Lines=PolyData->GetLines();
+	vtkIdType* Ids;
+	vtkIdType NumberOfPoints;
+	int NewId=0;
+	Lines->InitTraversal();
+	
+	bool Cross;
+	for(int i=0; Lines->GetNextCell(NumberOfPoints, Ids); i++)
+	{
+		Cross=false;
+		vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
+		NewLine->GetPointIds()->SetNumberOfIds(NumberOfPoints);
+		for(int j=0; j<NumberOfPoints-1; j++)
+		{
+			double p1[3], p2[3];
+			Points->GetPoint(Ids[j],p1);
+			Points->GetPoint(Ids[j+1],p2);
+			
+			p1[0]=plane_origin[0]-p1[0];
+			p1[1]=plane_origin[1]-p1[1];
+			p1[2]=plane_origin[2]-p1[2];
+			
+			p2[0]=plane_origin[0]-p2[0];
+			p2[1]=plane_origin[1]-p2[1];
+			p2[2]=plane_origin[2]-p2[2];
+			
+			double ScalarProduct1, ScalarProduct2;
+			ScalarProduct1=p1[0]*plane_normal[0]+p1[1]*plane_normal[1]+p1[2]*plane_normal[2];
+			ScalarProduct2=p2[0]*plane_normal[0]+p2[1]*plane_normal[1]+p2[2]*plane_normal[2];
+			if(ScalarProduct1*ScalarProduct2<0)
+			{
+				Cross=true;
+				break;
+			}
+		}
+		if(Cross)
+		{
+			for(int j=0; j<NumberOfPoints; j++)
+			{
+				NewPoints->InsertNextPoint(Points->GetPoint(Ids[j]));
+				NewLine->GetPointIds()->SetId(j,NewId);
+				NewId++;
+				double tensorValue[9];
+				for(int k=0; k<9; k++)
+					tensorValue[k]=Tensors->GetComponent(Ids[j],k);
+				NewTensors->InsertNextTuple(tensorValue);
+			}
+			NewLines->InsertNextCell(NewLine);
+		}
+	}
+	FinalPolyData->SetPoints(NewPoints);
+	FinalPolyData->GetPointData()->SetTensors(NewTensors);
+	FinalPolyData->SetLines(NewLines);
+	std::cout<<"Number of Fibers without non crossing fibers : "<<FinalPolyData->GetNumberOfCells()<<std::endl;
+	return FinalPolyData;
 }
 
 void fiberprocessing::find_distance_from_plane(itk::Point<double, 3> pos, int index)
@@ -293,7 +423,7 @@ void fiberprocessing::arc_length_parametrization(GroupType::Pointer group, bool 
       
       //to find the total distance from origin to the current sample
       double cumulative_distance_2 = 0.0;
-      for (pit = pit_temp; pit < (pointlist.end()-1); ++pit)
+      for (pit = pit_temp; pit < (pointlist.end()-1); pit++)
       {
 	  //gives the distance between current and previous sample point
 	double current_length=0.0;
@@ -816,7 +946,7 @@ void fiberprocessing::writeFiberFile(const std::string & filename, GroupType::Po
     if (filename.rfind(".vtk") != std::string::npos)
     {
       vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
-      fiberwriter->SetFileTypeToBinary();
+//       fiberwriter->SetFileTypeToBinary();
       fiberwriter->SetFileName(filename.c_str());
       fiberwriter->SetInput(polydata);
       fiberwriter->Update();
