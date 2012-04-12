@@ -503,10 +503,7 @@ void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::s
 				{
 					extensionfiberplane = ExtensionofFile(AtlasDirectory.GetFile(j));
 					if(extensionfiberplane.compare("fvp")==0)
-					{
-						std::cout<<AtlasDirectory.GetFile(j)<<std::endl;
 						fibersplane.push_back(AtlasDirectory.GetFile(j));
-					}
 				}
 			}
 		}

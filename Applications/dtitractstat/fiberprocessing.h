@@ -24,7 +24,7 @@ class fiberprocessing{
   ~fiberprocessing();
 
   //Main functions
-  void fiberprocessing_main(std::string& input_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers);
+  void fiberprocessing_main(std::string& input_file,std::string& output_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers);
   void arc_length_parametrization(GroupType::Pointer group, bool worldspace, itk::Vector<double,3> spacing, itk::Vector<double,3> offset);
 
   //IO functions

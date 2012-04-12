@@ -30,7 +30,7 @@ fiberprocessing::fiberprocessing()
 fiberprocessing::~fiberprocessing()
 {}
 
-void fiberprocessing::fiberprocessing_main(std::string& input_file, bool planeautoOn, std::string plane_str, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers)
+void fiberprocessing::fiberprocessing_main(std::string& input_file, std::string& output_file, bool planeautoOn, std::string plane_str, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers)
 {
 	GroupType::Pointer group = readFiberFile(input_file), Group=GroupType::New();
   itk::Vector<double,3> spacing = group->GetSpacing();
@@ -57,7 +57,7 @@ void fiberprocessing::fiberprocessing_main(std::string& input_file, bool planeau
 	  PolyData=RemoveNonCrossingFibers(input_file);
 	  std::string extension=ExtensionofFile(input_file);
 	  std::string plane_name=takeoffExtension(takeoffPath(plane_str));
-	  input_file=takeoffExtension(input_file)+"_"+plane_name+"_Clean."+extension;
+	  input_file=takeoffExtension(output_file)+"_"+plane_name+"_Clean."+extension;
 	  if (input_file.rfind(".vtk") != std::string::npos)
 	  {
 			vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();

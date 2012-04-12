@@ -1528,7 +1528,6 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		//Find path for fiberprocess
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
 		//if path not found
-		std::cout<<pathdti_tract_stat<<std::endl;
 		if(pathdti_tract_stat.empty()==true)
 		{
 			QMessageBox::information(this, "dtitractstatCLP", "Select the folder where dti_tract_stat is located .");
@@ -1980,7 +1979,6 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	
 	std::string PathMergeStatWithFiber = itksys::SystemTools::FindProgram("MergeStatWithFiber");
-	std::cout<<PathMergeStatWithFiber<<std::endl;
 	if(PathMergeStatWithFiber.size()==0)
 	{
 		QMessageBox::warning(this, "MergeStatWithFiber", "Select the folder where MergeStatWithFiber is located.");
