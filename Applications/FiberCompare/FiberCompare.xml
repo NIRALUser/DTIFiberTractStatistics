@@ -48,8 +48,17 @@
 			<flag>s</flag>
 			<description>Step define the scale for the distance axis</description>
 			<channel>input</channel>
-			<default>0.1</default>
+			<default>-1</default>
 		</double>
+		<integer>
+			<name>number_of_entries</name>
+			<longflag>--number_of_entries</longflag>
+			<label>Number of entries</label>
+			<flag>n</flag>
+			<description>Number of entries define the number of lines there will be in the table</description>
+			<channel>input</channel>
+			<default>100</default>
+		</integer>
 		<file>
 			<name>output_stat_file</name>
 			<longflag>--output_stat_file</longflag>

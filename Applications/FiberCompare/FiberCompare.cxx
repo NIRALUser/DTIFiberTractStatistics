@@ -129,6 +129,9 @@ int main(int argc, char* argv[])
 	std::ofstream StatFile(output_stat_file.c_str(), std::ios::out);
 	if(StatFile)
 	{
+		if(step==-1)
+			step=(Bounds[1]-Bounds[0])/number_of_entries;
+		std::cout<<Bounds[0]<<" "<<Bounds[1]<<" "<<number_of_entries<<" "<<step<<std::endl;
 		double IntervalMin = Bounds[0], IntervalMax = Bounds[0] + step;
 		std::vector<int> FrequencyVector;
 		std::vector<double> DistanceVector;
@@ -181,7 +184,7 @@ int main(int argc, char* argv[])
 			{
 				std::cout<<"	Hausdorff..."<<std::endl;
 				
-				StatFile<<"Hausdorff,"<<Bounds[1]<<std::endl;
+				StatFile<<"100%,"<<Bounds[1]<<std::endl;
 				
 				std::cout<<"	End of Hausdorff."<<std::endl;
 			}
