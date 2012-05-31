@@ -30,9 +30,8 @@ PlotWindow::PlotWindow(QVector<qv3double> casedata, QVector<qv3double> atlasdata
 	CreateCaseStyle();
 	CreateAtlasStyle();
 	CreateStatStyle();
-	
 	InitWidget();
-	
+
 	//Data calculation to plot curves
 	Plotting(casedata, "Case");
 	Plotting(atlasdata, "Atlas");
@@ -602,7 +601,7 @@ void PlotWindow::setCurveVisible()
 		//Change the information label for informations of selected fiber
 		if(i==fiberindex)
 		{
-			parameterslines=m_parent->getFiberInformations(m_Fibers[i].c_str());
+			parameterslines=m_parent->getFiberInformations(m_Fibers[i].c_str(),m_Parameters[0]);
 			ChangeInfoLabel(parameterslines);
 		}
 	}
@@ -1066,7 +1065,7 @@ void PlotWindow::CreateInfoLabel()
 {
 	vstring info;
 	int labelindex=-1;	
-	info=m_parent->getFiberInformations(m_Fibers[0].c_str());
+	info=m_parent->getFiberInformations(m_Fibers[0].c_str(),m_Parameters[0].c_str());
 	for(unsigned int i=0; i<info.size(); i++)
 	{
 		if(i!=4)

@@ -61,9 +61,9 @@ int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirector
 std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int DataCol, int NameCol, bool transposeColRow, vstring fibers, bool& success);
 
 /* Read the fiber profile information from .fvp file */
-bool ReadProfileInformation(std::string filepath, v2string& finaldata, int nbofparameters);
+bool ReadProfileInformation(std::string globalFile, v2string& finaldata, vstring parameters);
 
-bool ReadFiberPtInformation(std::string filepath, v2string& fiberptdata, int nbofparameters);
+bool ReadFiberPtInformation(std::string globalFile, v2string& finaldata, vstring parameters);
 
 /* Write Profile information in an csv file */
 void WriteProfile(CSVClass* CSV, std::string filename,std::vector< v2string > FiberProfiles,int DataCol,int NameCol,int ParamCol, bool transposeColRow);
@@ -116,6 +116,7 @@ QVector<double> getCorr(QVector<QVector<double> > data1, QVector<QVector<double>
 vstring getparameterslines(std::ifstream& fvpfile);
 
 std::string getParamFromFile(std::string filepath);
+std::string getParamFromDirectory(std::string directory, std::string fibername);
 
 bool IsFile(std::string);
 

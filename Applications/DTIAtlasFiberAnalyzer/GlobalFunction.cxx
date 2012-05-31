@@ -562,109 +562,122 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 	std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false, 2  cancel
 	skipdata.push_back(false);
 	skipdata.push_back(false);
-	std::string outputname, name_of_fiber, header, namecase, nameoffile;
+	std::string outputname, name_of_fiber, header, namecase, nameoffile, globalFile;
 	CreateDirectoryForData(OutputFolder,"Fibers");
+	vstring param;
+	LineInVector(parameters, param);
 	
 	
-	/* Loop for all the fibers */
-	for(unsigned int j=0;j<fibers.size();j++)
+	for(int i=0; i<param.size(); i++)
 	{
-		DataAdded = false;
-		name_of_fiber = takeoffExtension(fibers[j]);
-		//Column where there is the name of the fiber
-		//header for the new column
-		header = name_of_fiber + ".fvp";
-		col = HeaderExisted(CSV,header);
-		if(col==-1)
+		/* Loop for all the fibers */
+		for(unsigned int j=0;j<fibers.size();j++)
 		{
-			CSV->AddData(header,0,col);
-			DataAdded = true;
-		}
-		/* Loop for all the Data */
-		for(unsigned int row=1;row<CSV->getRowSize();row++)
-		{
-			ExistedFile = false;
-			//Set the namecas and the outputname
-			namecase = NameOfCase(CSV,row,NameCol,DataCol);
-			outputname = OutputFolder + "/Cases/" + namecase + "/" + namecase + 
-					"_" + name_of_fiber + ".fvp";
-			nameoffile = namecase + "_" + name_of_fiber + ".fvp";
-			if(FileExisted(outputname))
+			DataAdded = false;
+			name_of_fiber = takeoffExtension(fibers[j]);
+			//Column where there is the name of the fiber
+			//header for the new column
+			header = name_of_fiber +".fvp";
+			col = HeaderExisted(CSV,header);
+			if(col==-1)
 			{
-				ExistedFile = true;
-				if(!skipdata[1])
-					skipdata = MessageExistedFile(nogui, nameoffile, parent);
+				CSV->AddData(header,0,col);
+				DataAdded = true;
 			}
-			
-			if(skipdata[2] == true)
+			/* Loop for all the Data */
+			for(unsigned int row=1;row<CSV->getRowSize();row++)
 			{
-				if(DataAdded)
-					(*CSV->getData())[0].pop_back();
-				return false;
-			}
-			if(skipdata[0] && ExistedFile)
-			{
-				if(!DataExistedInFiberColumn(CSV,row,col,outputname))
+				ExistedFile = false;
+				//Set the namecas and the outputname
+				namecase = NameOfCase(CSV,row,NameCol,DataCol);
+				outputname = OutputFolder + "/Cases/" + namecase + "/" + namecase + 
+						"_" + name_of_fiber + "_"+param[i]+".fvp";
+				nameoffile = namecase + "_" + name_of_fiber + "_" + param[i] + ".fvp";
+				if(FileExisted(outputname))
 				{
-					CSV->AddData(outputname,row,col);
-					//nouveau vtk
+					ExistedFile = true;
+					if(!skipdata[1])
+						skipdata = MessageExistedFile(nogui, nameoffile, parent);
 				}
-			}
-			else
-			{
-				//if there is a name
-				if(namecase.compare("")!=0)
+				
+				if(skipdata[2] == true)
 				{
-					int fibercol = HeaderExisted(CSV, fibers[j]);
-					if(fibercol!=-1)
+					if(DataAdded)
+						(*CSV->getData())[0].pop_back();
+					return false;
+				}
+				if(skipdata[0] && ExistedFile)
+				{
+					globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase + 
+							"_" + name_of_fiber+".fvp";
+					if(!DataExistedInFiberColumn(CSV,row,col,globalFile))
 					{
-						std::string input_fiber = (*CSV->getData())[row][fibercol];
-						/* If dti_tract_stat worked */
-						if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
-							input_fiber, outputname, fibersplane[j],
-							parameters, CoG)==0)
+						CSV->AddData(globalFile,row,col);
+						//nouveau vtk
+					}
+				}
+				else
+				{
+					//if there is a name
+					if(namecase.compare("")!=0)
+					{
+						int fibercol = HeaderExisted(CSV, fibers[j]);
+						if(fibercol!=-1)
 						{
-							if(FileExisted(outputname))
+							std::string input_fiber = (*CSV->getData())[row][fibercol];
+							/* If dti_tract_stat worked */
+							if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
+								input_fiber, outputname, fibersplane[j],
+								param[i], CoG)==0)
 							{
-								CSV->AddData(outputname,row,col);
+								
+								if(FileExisted(outputname))
+								{
+									if(!DataExistedInFiberColumn(CSV,row,col,globalFile))
+									{
+										globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase + 
+												"_" + name_of_fiber+".fvp";
+										CSV->AddData(globalFile,row,col);
+									}
+								}
+							}
+							else
+							{
+								std::cout<<"Fail during dti_tract_stat!"<< std::endl;
+								return false;
 							}
 						}
 						else
 						{
-							std::cout<<"Fail during dti_tract_stat!"<< std::endl;
+							std::cout<<"Header not found in csv file"<<std::endl;
 							return false;
 						}
 					}
 					else
-					{
-						std::cout<<"Header not found in csv file"<<std::endl;
-						return false;
-					}
+						CSV->AddData("no",row,col);
 				}
-				else
-					CSV->AddData("no",row,col);
 			}
-		}
 		
-		std::string inputname=AtlasDirectory+"/"+fibers[j];
-		outputname=OutputFolder+"/Fibers/"+header;
-		if(FileExisted(outputname))
-		{
-			ExistedFile = true;
-			if(!skipdata[1])
-				skipdata = MessageExistedFile(nogui, header, parent);
-		}
-		if(skipdata[2] == true)
-			return false;
-		else if(!skipdata[0] || !ExistedFile)
-		{
-			if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory, inputname, outputname, fibersplane[j], parameters, CoG)!=0)
+			std::string inputname=AtlasDirectory+"/"+fibers[j];
+			outputname=OutputFolder+"/Fibers/"+takeoffExtension(header)+"_"+param[i]+".fvp";
+			if(FileExisted(outputname))
 			{
-				std::cout<<"Fail during dti_tract_stat!"<<std::endl;
-				return false;
+				ExistedFile = true;
+				if(!skipdata[1])
+					skipdata = MessageExistedFile(nogui, header, parent);
 			}
+			if(skipdata[2] == true)
+				return false;
+			else if(!skipdata[0] || !ExistedFile)
+			{
+				if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory, inputname, outputname, fibersplane[j], param[i], CoG)!=0)
+				{
+					std::cout<<"Fail during dti_tract_stat!"<<std::endl;
+					return false;
+				}
+			}
+			
 		}
-		
 	}
 	
 	//save
@@ -747,7 +760,7 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int DataCol, int NameCol, bool transposeColRow, vstring fibers, bool& success)
 {
 	// variables
-	std::string fibername, filename, outputprofilefolder, fiberpath;
+	std::string fibername, filename, outputprofilefolder, fiberpath,globalDirectory;
 	std::vector<std::vector<v2string> > FiberProfiles;
 	std::vector< v2string > v3profiles;
 	vstring parameters;
@@ -756,9 +769,9 @@ std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::st
 	/* create the output folder where there will be all of the gathering data */
 	outputprofilefolder = "FiberProfiles";
 	CreateDirectoryForData(OutputFolder,outputprofilefolder);
+	globalDirectory=OutputFolder + "/Cases/" + (*CSV->getData())[1][NameCol];
+	LineInVector(getParamFromDirectory(globalDirectory,takeoffExtension(fibers[0])),parameters);
 	fiberpath=OutputFolder + "/Fibers/" + takeoffExtension(fibers[0]) + ".fvp";
-	LineInVector(getParamFromFile(fiberpath),parameters);
-	
 	outputprofilefolder = OutputFolder + "/" + outputprofilefolder;
 	
 	/* look for the header .fvp and create the folder for each fiber.fvp with the name of the fiber */
@@ -773,12 +786,12 @@ std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::st
 				for(unsigned int row=1;row<CSV->getRowSize();row++)
 				{
 					//read the profile information from the file and put it for the fiber and data
-					if(ReadProfileInformation((*CSV->getData())[row][col],profiles, parameters.size()))
+					if(ReadProfileInformation((*CSV->getData())[row][col],profiles, parameters))
 						v3profiles.push_back(profiles);
 					profiles.clear();
 				}
 				fiberpath=OutputFolder+"/Fibers/"+(*CSV->getData())[0][col];
-				if(ReadProfileInformation(fiberpath,profiles,parameters.size()))
+				if(ReadProfileInformation(fiberpath,profiles,parameters))
 				{
 					v3profiles.push_back(profiles);
 					profiles.clear();
@@ -804,7 +817,7 @@ std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::st
 				filename=outputprofilefolder+"/"+fibername+"/"+parameters[i]+"_"+fibername+".csv";
 				WriteProfile(CSV, filename, v3profiles, DataCol, NameCol, i+1, transposeColRow);
 			}
-			if(ReadFiberPtInformation(fiberpath,profiles,parameters.size()))
+			if(ReadFiberPtInformation(fiberpath,profiles,parameters))
 				FiberProfiles[FiberProfiles.size()-1].push_back(profiles);
 			profiles.clear();
 			v3profiles.clear();
@@ -818,116 +831,81 @@ std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::st
  * Read profile information from .fvp file
  ********************************************************************************/
 
-bool ReadProfileInformation(std::string filepath, v2string& finaldata, int nbofparameters)
+bool ReadProfileInformation(std::string globalFile, v2string& finaldata, vstring parameters)
 {
 	std::string buffer;
-	vstring parameterslines, parameters, line;
+	vstring parameterslines, line;
 	v2string data;
-	std::ifstream file(filepath.c_str(), std::ios::in); //open the file in reading
-	LineInVector(getParamFromFile(filepath.c_str()),parameters);
-	if(file)
+	globalFile=takeoffExtension(globalFile);
+	
+	for(int i=0; i<parameters.size(); i++)
 	{
-		parameterslines=getparameterslines(file);
-		getline(file,buffer);
-		if(!file.eof())
+		std::string filepath=globalFile+"_"+parameters[i]+".fvp";
+		std::ifstream file(filepath.c_str(), std::ios::in); //open the file in reading
+		
+		if(file)
 		{
-			data=getdata2(file, getnb_of_samples(parameterslines));
-			line=GetColumn(0,data);
-			finaldata.push_back(line);
-			
-			if(nbofparameters<8)
+			parameterslines=getparameterslines(file);
+			getline(file,buffer);
+			if(!file.eof())
 			{
+				data=getdata2(file, getnb_of_samples(parameterslines));
+				if(i==0)
+				{
+					line=GetColumn(0,data);
+					finaldata.push_back(line);
+				}
+				
 				line=GetColumn(2,data);
 				finaldata.push_back(line);
-			}	
-			
-			//Skip irrelevant text
-			getparameterslines(file);
-			getline(file,buffer);
-			
-			for(int i=1-(int)(nbofparameters/8); i<nbofparameters; i++)
-			{
-				//Avoid segmentation fault
-				if(!file.eof())
-					data=getdata2(file, getnb_of_samples(parameterslines));
-				else
-				{
-					std::cout<<"Size of parameter vector and size of data table don't match. Please compute data using DTI Tract Stat again."<<std::endl;
-					return false;
-				}
-				line=GetColumn(2, data);
-				finaldata.push_back(line);
-			
-				//Skip irrelevant text
-				getparameterslines(file);
-				getline(file,buffer);
+				
+				file.close();
 			}
-			file.close();
-			return true;
+			else
+			{
+				std::cout<<"Error reading file: "<<filepath<<" is empty."<<std::endl;
+				return false;
+			}
 		}
 		else
 		{
-			std::cout<<"Error reading file: "<<filepath<<" is empty."<<std::endl;
+			std::cout<<"Error opening the file : "<<filepath<<"!"<<std::endl;
 			return false;
 		}
 	}
-	else
-	{
-		std::cout<<"Error opening the file : "<<filepath<<"!"<<std::endl;
-		return false;
-	}
+	return true;
 }
 
-bool ReadFiberPtInformation(std::string filepath, v2string& fiberptdata, int nbofparameters)
+bool ReadFiberPtInformation(std::string globalFile, v2string& fiberptdata, vstring parameters)
 {
 	std::string buffer;
-	vstring parameterslines, parameters, line;
+	vstring parameterslines, line;
 	v2string data;
-	std::ifstream file(filepath.c_str(), std::ios::in); //open the file in reading
-	LineInVector(getParamFromFile(filepath.c_str()),parameters);
-	if(file)
+	globalFile=takeoffExtension(globalFile);
+	
+	for(int i=0; i<parameters.size(); i++)
 	{
-		parameterslines=getparameterslines(file);
-		getline(file,buffer);
-		data=getdata2(file, getnb_of_samples(parameterslines));
-		line=GetColumn(0,data);
-		fiberptdata.push_back(line);
-		
-		if(nbofparameters<8)
+		std::string filepath=globalFile+"_"+parameters[i]+".fvp";
+		std::ifstream file(filepath.c_str(), std::ios::in); //open the file in reading
+		if(file)
 		{
+			parameterslines=getparameterslines(file);
+			getline(file,buffer);
+			data=getdata2(file, getnb_of_samples(parameterslines));
+			line=GetColumn(0,data);
+			fiberptdata.push_back(line);
 			line=GetColumn(1,data);
 			fiberptdata.push_back(line);
-		}	
-		
-		//Skip irrelevant text
-		getparameterslines(file);
-		getline(file,buffer);
-		
-		for(int i=1-(int)(nbofparameters/8); i<nbofparameters; i++)
-		{
-			//Avoid segmentation fault
-			if(!file.eof())
-				data=getdata2(file, getnb_of_samples(parameterslines));
-			else
-			{
-				std::cout<<"Size of parameter vector and size of data table don't match.\rPlease compute data using DTI Tract Stat again."<<std::endl;
-				return false;
-			}
-			line=GetColumn(1, data);
-			fiberptdata.push_back(line);
-		
-			//Skip irrelevant text
-			getparameterslines(file);
-			getline(file,buffer);
+			
+			file.close();
 		}
-		file.close();
-		return true;
+		else
+		{
+			std::cout<<"Error opening the file : "<<filepath<<"!"<<std::endl;
+			return false;
+		}
 	}
-	else
-	{
-		std::cout<<"Error opening the file : "<<filepath<<"!"<<std::endl;
-		return false;
-	}
+	return true;
 }
 
 /********************************************************************************* 
@@ -1550,6 +1528,29 @@ std::string getParamFromFile(std::string filepath)
 	else
 		std::cout<<"Error Opening file to read parameters"<<std::endl;
 	return parameters;
+}
+
+std::string getParamFromDirectory(std::string directory, std::string fibername)
+{
+	std::string parameters="";
+	itksys::Directory Dir;
+	Dir.Load(directory.c_str());
+	unsigned long NumberOfFiles = Dir.GetNumberOfFilesInDirectory(directory.c_str());
+	
+	for(unsigned long i=0; i<NumberOfFiles; i++)
+	{
+		std::string filename=Dir.GetFile(i);
+		if(filename.rfind("fvp")!=std::string::npos && filename.rfind(fibername)!=std::string::npos)
+		{
+			std::string parameter=filename.substr(filename.find_last_of("_")+1,filename.find_last_of(".")-filename.find_last_of("_")-1);
+			if(parameter=="fa" || parameter=="md" || parameter=="fro" || parameter=="l1"||parameter=="l2"||parameter=="l3"||parameter=="rd"||parameter=="ga")
+				parameters+=parameter+",";
+			else
+				std::cout<<"Couldn't find parameter for : "<<filename<<std::endl;
+		}
+	}
+	
+	return parameters.substr(0,parameters.size()-1);
 }
 
 bool IsFile(std::string filename)

@@ -1663,7 +1663,13 @@ void DTIAtlasFiberAnalyzerguiwindow::setParamFromFile(std::string filepath)
 	m_NumberOfParameters=param.size();
 }
 
-	
+void DTIAtlasFiberAnalyzerguiwindow::setParamFromDirectory(std::string directory, std::string fibername)
+{
+	vstring param;
+	m_parameters=getParamFromDirectory(directory,fibername);
+	LineInVector(m_parameters, param);
+	m_NumberOfParameters=param.size();
+}
 
  /************************************************************************************
  * setFibers : Fill the m_Fibers string vector with selected fiber's names
@@ -1725,7 +1731,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ReadDataFilesNameInDirectory(vstring &dataf
 			{
 				filefiber=filefiber.substr(nameofcase.size()+1, filefiber.size()-nameofcase.size()+1);
 				extensionoffile = ExtensionofFile(filename);
-				if(extensionoffile.compare("fvp")==0 && filefiber.compare(0, filefiber.size(), fiber)==0)
+				if(extensionoffile.compare("fvp")==0 && filefiber.rfind(fiber)!=std::string::npos)
 					datafiles.push_back(filename);
 			}
 		}
@@ -1778,14 +1784,12 @@ bool DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 	
 	qv3double fiberdata;
 	QVector <QVector <double> > data, temp;
-	std::string filepath, casename, filename; 
+	std::string filepath, casename, filename,directory; 
 	
 	m_PlotError=false;
 	
 	//Clear all relevant variables
 	m_parameters.clear();
-	m_Cases.clear();
-	m_Fibers.clear();
 	m_casedata.clear();
 	m_atlasdata.clear();
 	m_statdata.clear();	
@@ -1793,8 +1797,8 @@ bool DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 	//Fill m_parameters, m_Cases, and m_Fibers vector
 	setCases();
 	setFibers();
-	filepath=m_OutputFolder + "/Fibers/" + m_Fibers[0] + ".fvp";
-	setParamFromFile(filepath);	//Filled from the atlas file
+	directory=m_OutputFolder + "/Cases/"+m_Cases[0];
+	setParamFromDirectory(directory,m_Fibers[0]);
 	
 	if(m_parameters.size()==0)
 	{
@@ -1910,13 +1914,13 @@ QVector< QVector<double> > DTIAtlasFiberAnalyzerguiwindow::TableConversion(v2str
 * getFiberInformations : Gets 6 first lines in a .fvp file 
  ************************************************************************************/
  
-vstring DTIAtlasFiberAnalyzerguiwindow::getFiberInformations(std::string fiber)
+vstring DTIAtlasFiberAnalyzerguiwindow::getFiberInformations(std::string fiber, std::string parameter)
 {
 	vstring parameterslines;
 	std::string buffer, filepath;
 
 //Open first .fvp file corresponding to string fiber (the case doesn't matter)
-	filepath=m_OutputFolder+"/Cases/"+m_Cases[0]+"/"+m_Cases[0]+"_"+fiber+".fvp";
+	filepath=m_OutputFolder+"/Cases/"+m_Cases[0]+"/"+m_Cases[0]+"_"+fiber+"_"+parameter+".fvp";
 	std::ifstream fvpfile(filepath.c_str(), std::ios::in);
 
 //Put first line in buffer

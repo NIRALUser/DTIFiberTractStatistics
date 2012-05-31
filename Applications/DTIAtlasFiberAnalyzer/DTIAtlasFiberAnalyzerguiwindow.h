@@ -37,7 +37,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		DTIAtlasFiberAnalyzerguiwindow(bool debug=false, QWidget * parent = 0, Qt::WFlags f = 0 );
 		vstring getCases(){return m_Cases;}
 		vstring getFibers(){return m_Fibers;}
-		vstring getFiberInformations(std::string fiber);
+		vstring getFiberInformations(std::string fiber, std::string parameter);
 		std::string getOutputFolder(){return m_OutputFolder;}
 		
 		
@@ -104,6 +104,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		void AddDataFromTableToCSV();
 		void checkBoxProfile(std::string parameters);
 		void setParamFromFile(std::string filepath);
+		void setParamFromDirectory(std::string directory,std::string fibername);
 		void setCases();
 		void setFibers();
 		void FillDataFilesList();
