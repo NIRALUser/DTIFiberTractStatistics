@@ -625,20 +625,18 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 						if(fibercol!=-1)
 						{
 							std::string input_fiber = (*CSV->getData())[row][fibercol];
+							globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase + 
+									"_" + name_of_fiber+".fvp";
 							/* If dti_tract_stat worked */
 							if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
-								input_fiber, outputname, fibersplane[j],
-								param[i], CoG)==0)
+								input_fiber, globalFile, fibersplane[j],
+								param[i], CoG,false)==0)
 							{
 								
 								if(FileExisted(outputname))
 								{
 									if(!DataExistedInFiberColumn(CSV,row,col,globalFile))
-									{
-										globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase + 
-												"_" + name_of_fiber+".fvp";
 										CSV->AddData(globalFile,row,col);
-									}
 								}
 							}
 							else
@@ -659,7 +657,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 			}
 		
 			std::string inputname=AtlasDirectory+"/"+fibers[j];
-			outputname=OutputFolder+"/Fibers/"+takeoffExtension(header)+"_"+param[i]+".fvp";
+			outputname=OutputFolder+"/Fibers/"+header;
 			if(FileExisted(outputname))
 			{
 				ExistedFile = true;
@@ -700,7 +698,8 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 							  std::string Output_fiber_file,
 							  std::string plane,
 							  std::string parameter,
-							  bool CoG)
+							  bool CoG,
+							  bool Parametrized)
 {
 	int state=0;
 	QProcess *process= new QProcess();
@@ -713,11 +712,14 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 		QString qs = Input_fiber_file.c_str();
 		arguments.append(QString("--input_fiber_file ") + qs);
 		//Output fiber file
-		qs =  Output_fiber_file.c_str();
+		qs =  (takeoffExtension(Output_fiber_file)+"_"+parameter+".fvp").c_str();
 		arguments.append(QString("--ouput_stats_file ") + qs);
 		
-		qs = (takeoffExtension(Output_fiber_file)+"_parametrized.vtk").c_str();
-		arguments.append(QString("--output_parametrized_fiber_file ") + qs);
+		if(Parametrized)
+		{
+			qs = (takeoffExtension(Output_fiber_file)+"_parametrized.vtk").c_str();
+			arguments.append(QString("--output_parametrized_fiber_file ") + qs);
+		}
 		
 		//Plane
 		if(/*(plane.substr(plane.find_last_of("_")+1,plane.size()-plane.find_last_of("_")+1)).compare("auto")!=0*/plane!="")
