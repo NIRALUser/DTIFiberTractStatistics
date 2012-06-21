@@ -183,12 +183,16 @@ void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, doubl
 	vtkIdType NumberOfPoints;
 	vtkIdType* Ids;
 	vtkDataArray* Scalars=m_PolyData->GetPointData()->GetScalars();
+	double* Bounds=new double[2];
 	for(int i=0; i<NbParameters; i++)
 	{
 		if(Min==-1)
-			Min=GetMinFromColumn(i+1);
+			Min=0;
+		Bounds[0]=GetMinFromColumn(i+1);
 		if(Max==-1)
-			Max=GetMaxFromColumn(i+1);
+			Max=100;
+		Bounds[1]=GetMaxFromColumn(i+1);
+		
 		vtkSmartPointer<vtkFloatArray> Parameter(vtkFloatArray::New());
 		vtkSmartPointer<vtkFloatArray> ParameterSlicer(vtkFloatArray::New());
 		Parameter->SetNumberOfComponents(m_PolyData->GetNumberOfPoints());
@@ -197,6 +201,7 @@ void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, doubl
 		{
 			for(int PointId=0; PointId<NumberOfPoints; PointId++)
 			{
+				
 				int FiberIndex=(int)Scalars->GetComponent(0,Ids[PointId]);
 				double Value;
 				if(m_Index)
@@ -205,10 +210,11 @@ void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, doubl
 					Value=atof(m_DataTable[i+1][FiberIndex].c_str());
 				}
 				else
-					Value=atof(m_DataTable[i][FiberIndex+1].c_str());
+					Value=atof(m_DataTable[i+1][FiberIndex+2].c_str());
 				Parameter->InsertComponent(0,Ids[PointId],Value);
-				Value=((Value-Min)/(Max-Min))*100;
+				Value=(int)(((Value-Bounds[0])/(Bounds[1]-Bounds[0]))*(Max-Min)+Min);
 				ParameterSlicer->InsertComponent(0,Ids[PointId],Value);
+				
 			}
 		}
 		Parameter->SetName(m_DataTable[i+1][0].c_str());
@@ -221,7 +227,7 @@ void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, doubl
 	writer->SetInput(m_PolyData);
 	writer->Update();
 	
-	
+	delete Bounds;
 }
 
 int Processing::GetRealIndex(int Index)

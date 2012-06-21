@@ -1545,7 +1545,7 @@ std::string getParamFromDirectory(std::string directory, std::string fibername)
 		if(filename.rfind("fvp")!=std::string::npos && filename.rfind(fibername)!=std::string::npos)
 		{
 			std::string parameter=filename.substr(filename.find_last_of("_")+1,filename.find_last_of(".")-filename.find_last_of("_")-1);
-			if(parameter=="fa" || parameter=="md" || parameter=="fro" || parameter=="l1"||parameter=="l2"||parameter=="l3"||parameter=="rd"||parameter=="ga")
+			if(parameter=="fa" || parameter=="md" || parameter=="fro" || parameter=="l1"||parameter=="l2"||parameter=="l3"||parameter=="rd"||parameter=="ga" || parameter=="ad")
 				parameters+=parameter+",";
 			else
 				std::cout<<"Couldn't find parameter for : "<<filename<<std::endl;
