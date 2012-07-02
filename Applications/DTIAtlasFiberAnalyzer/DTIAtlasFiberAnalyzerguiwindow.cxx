@@ -2321,7 +2321,7 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 							}
 							if(!found)
 							{
-								FiberSelectedName.erase(m_FiberSelectedname.begin()+i);
+								FiberSelectedName.erase(FiberSelectedName.begin()+i);
 								i--;
 							}
 						}
