@@ -62,5 +62,14 @@
 			<channel>input</channel>
 			<default>-1</default>
 		</float>
+		<float>
+			<name>p_value_alpha</name>
+			<flag>p</flag>
+			<longflag>--p_value_alpha</longflag>
+			<label>Alpha value for p-values</label>
+			<description>Everything larger than alpha will be non-significant</description>
+			<channel>input</channel>
+			<default>-1</default>
+		</float>
 	</parameters>
 </executable>

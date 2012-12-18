@@ -31,25 +31,30 @@ void Processing::ReadDataFromCSV(std::string Filename)
 	v2string TempTable;
 	vstring Line;
 	std::string Buffer;
-	std::cout<<"Reading CSV data..."<<std::endl;
+	std::cout<<"Reading CSV data ... "<< Filename << std::endl;
 	//Reading data
-	getline(File, Buffer);
+	getline(File,Buffer,'\n');
 	while(!File.eof())
 	{
+        //std::cout<< Buffer << std::endl;
 		Line=StringToVector(Buffer);
 		TempTable.push_back(Line);
-		getline(File, Buffer);
+		getline(File, Buffer,'\n');
 	}
+	std::cout<<"Reading done: "<< TempTable.size() << "x" << TempTable[0].size() << std::endl;
+	//std::cout<<"more:" <<  TempTable[0][0] << "," << TempTable[0][1] << std::endl;
 	
 	
 	
 	//Check if the table is written by column or by row.
-	if(!IsFloat(TempTable[0][1].c_str()))
+	if(!IsFloat(TempTable[0][1].c_str())) {
 		TransposeCol=true;
-	else if(!IsFloat(TempTable[1][0].c_str()))
+        std::cout << "transposing needed" << std::endl;
+	} else if(!IsFloat(TempTable[1][0].c_str())) {
 		TransposeCol=false;
-	else
+	} else {
 		std::cout<<"Error finding to transpose csv table or not."<<std::endl;
+    }
 	
 	//Checking if data were read correctly
 	if(TempTable.size()==0)
@@ -77,13 +82,21 @@ void Processing::ReadDataFromCSV(std::string Filename)
 	}
 	else
 		m_DataTable=TempTable;
+    
+    
+	// m_DataTable[0][0] => arclength title,  m_DataTable[0][1] << first arclength value etc
 	
 	if(m_DataTable[0][0]=="Index" || m_DataTable[0][0]=="Id")
 		m_Index=true;
 	else
 		m_Index=false;
 	
-	std::cout<<"CSV File read successfuly."<<std::endl;
+	if(m_DataTable[0][0]=="Arclength" || m_DataTable[0][0]=="arclength")
+		m_Arclength=true;
+	else
+		m_Arclength=false;
+    
+	std::cout<<"CSV File read successfuly. Index? "<< m_Index << ", Arclength? " << m_Arclength << std::endl;
 }
 
 /**********************************************************************************
@@ -151,47 +164,64 @@ void Processing::ReadDataFromVTK(std::string Filename)
 
 double Processing::GetMinFromColumn(int Column)
 {
-	double Min=10000;
+	double LocalMin=10000;
 	for(unsigned int i=1; i<m_DataTable[Column].size(); i++)
 	{
-		if(atof(m_DataTable[Column][i].c_str())<Min)
-			Min=atof(m_DataTable[Column][i].c_str());
+		if(atof(m_DataTable[Column][i].c_str())<LocalMin)
+			LocalMin=atof(m_DataTable[Column][i].c_str());
 	}
-	return Min;
+	return LocalMin;
 }
 
 double Processing::GetMaxFromColumn(int Column)
 {
-	double Max=-10000;
+	double LocalMax=-10000;
 	for(unsigned int i=0; i<m_DataTable[Column].size(); i++)
 	{
-		if(atof(m_DataTable[Column][i].c_str())>Max)
-			Max=atof(m_DataTable[Column][i].c_str());
+		if(atof(m_DataTable[Column][i].c_str())>LocalMax)
+			LocalMax=atof(m_DataTable[Column][i].c_str());
 	}
-	return Max;
+	return LocalMax;
 }
 
 /**********************************************************************************
 *WritingDataInVTK: Complete the VTK file with data from CSV file
+* Does NOT handle cropping of fibers at the moment, simply looks up fiber Index in vtkFiber
+*   and 
 ***********************************************************************************/
 
-void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, double Max)
+void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, double Max, double alpha)
 {
-	int NbParameters=m_DataTable.size()-1;
+	int NbParameters=m_DataTable.size();
 	
 	vtkCellArray* Lines=m_PolyData->GetLines();
 	vtkIdType NumberOfPoints;
 	vtkIdType* Ids;
-	vtkDataArray* Scalars=m_PolyData->GetPointData()->GetScalars();
+	vtkDataArray* Scalars;
+    if (m_Arclength)
+        Scalars=m_PolyData->GetPointData()->GetScalars("SamplingDistance2Origin");
+    else    
+        Scalars=m_PolyData->GetPointData()->GetScalars("FiberLocationIndex");
+    
+    if (Scalars == NULL) 
+    {
+        std::cout << "Scalars with Name FiberLocationIndex/SamplingDistance2Origin not found, using first found scalar in vtk file" << std::endl;
+        Scalars=m_PolyData->GetPointData()->GetScalars();
+    } else {
+        std::cout << "Scalars with Name FiberLocationIndex/SamplingDistance2Origin found" << std::endl;
+    }
+
 	double* Bounds=new double[2];
+    if(Min==-1)
+        Min=0;
+    if(Max==-1)
+        Max=100;
+    
 	for(int i=0; i<NbParameters; i++)
 	{
-		if(Min==-1)
-			Min=0;
-		Bounds[0]=GetMinFromColumn(i+1);
-		if(Max==-1)
-			Max=100;
-		Bounds[1]=GetMaxFromColumn(i+1);
+        
+        Bounds[0]=GetMinFromColumn(i);
+        Bounds[1]=GetMaxFromColumn(i);
 		
 		vtkSmartPointer<vtkFloatArray> Parameter(vtkFloatArray::New());
 		vtkSmartPointer<vtkFloatArray> ParameterSlicer(vtkFloatArray::New());
@@ -203,23 +233,41 @@ void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, doubl
 			{
 				
 				int FiberIndex=(int)Scalars->GetComponent(0,Ids[PointId]);
+                //std::cout << FiberIndex << ",";
 				double Value;
 				if(m_Index)
 				{
-					FiberIndex=GetRealIndex(FiberIndex);
-					Value=atof(m_DataTable[i+1][FiberIndex].c_str());
-				}
+					FiberIndex=GetRealIndex(FiberIndex); // look up index
+					Value=atof(m_DataTable[i][FiberIndex].c_str());
+				} 
+                else if (m_Arclength)
+                {
+					FiberIndex=ArclengthToIndex(FiberIndex); // look up index
+					Value=atof(m_DataTable[i][FiberIndex].c_str());
+                }
 				else
-					Value=atof(m_DataTable[i+1][FiberIndex+2].c_str());
+					Value=atof(m_DataTable[i][FiberIndex+2].c_str());
+                
 				Parameter->InsertComponent(0,Ids[PointId],Value);
-				Value=(int)(((Value-Bounds[0])/(Bounds[1]-Bounds[0]))*(Max-Min)+Min);
+                
+                if (alpha == -1 || i == 0) {
+                    // linearly interpolate from Min to Max
+                    Value=(int)(((Value-Bounds[0])/(Bounds[1]-Bounds[0]))*(Max-Min)+Min);
+                } else {
+                    // linearly interpolat 0..alpha from Min to Max
+                    if (Value > alpha) {
+                        Value = Max;
+                    } else {
+                        Value=(int)(Value/alpha*(Max-1-Min)+Min);
+                    }
+                }
 				ParameterSlicer->InsertComponent(0,Ids[PointId],Value);
 				
 			}
 		}
-		Parameter->SetName(m_DataTable[i+1][0].c_str());
+		Parameter->SetName(m_DataTable[i][0].c_str());
 		m_PolyData->GetPointData()->AddArray(Parameter);
-		ParameterSlicer->SetName((m_DataTable[i+1][0]+"_Slicer").c_str());
+		ParameterSlicer->SetName((m_DataTable[i][0]+"_Slicer").c_str());
 		m_PolyData->GetPointData()->AddArray(ParameterSlicer);
 	}
 	vtkSmartPointer<vtkPolyDataWriter> writer(vtkPolyDataWriter::New());
@@ -230,9 +278,19 @@ void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, doubl
 	delete Bounds;
 }
 
+int Processing::ArclengthToIndex(int Index)
+{
+	for(unsigned int i=1; i<m_DataTable[0].size() ; i++)
+	{
+		if(atoi(m_DataTable[0][i].c_str()) > Index)
+			return i;
+	}
+	return -1;
+}
+
 int Processing::GetRealIndex(int Index)
 {
-	for(unsigned int i=0; i<m_DataTable[0].size(); i++)
+	for(unsigned int i=1; i<m_DataTable[0].size(); i++)
 	{
 		if(atoi(m_DataTable[0][i].c_str())==Index)
 			return i;
