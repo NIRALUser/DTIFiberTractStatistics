@@ -64,13 +64,16 @@ macro(PACKAGE_NEEDS_VTKWITHQT LOCAL_CMAKE_BUILD_OPTIONS gen)
   OPTION(OPT_USE_SYSTEM_${packageToCheck} "Use the system's ${packageToCheck} library." OFF)
   #  MARK_AS_ADVANCED(OPT_USE_SYSTEM_${packageToCheck})
   if(OPT_USE_SYSTEM_VTK)
-    find_package(VTK 5.6 REQUIRED)
+    find_package(VTK 5.10 REQUIRED)
     include(${VTK_USE_FILE})
     set(VTK_DEPEND "") ## Set the external depandancy for VTK
   else()
-    set(proj vtk-5-6)
-    set(vtk_tag -r VTK-5-6)
+    set(proj vtk)
+    set(vtk_tag -r VTK-5-10)
     set(vtk_module VTK)
+
+set(proj VTK)
+set(vtk_tag v5.10.0)
 
     set(vtk_WRAP_TCL OFF)
     set(vtk_WRAP_PYTHON OFF)
@@ -100,11 +103,10 @@ macro(PACKAGE_NEEDS_VTKWITHQT LOCAL_CMAKE_BUILD_OPTIONS gen)
         -DVTK_REQUIRED_OBJCXX_FLAGS:STRING=
         )
     endif(APPLE)
-
+set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git CACHE STRING "" FORCE)
     ExternalProject_Add(${proj}
-      CVS_REPOSITORY ":pserver:anonymous:vtk@public.kitware.com:/cvsroot/VTK"
-      CVS_MODULE "${vtk_module}"
-      CVS_TAG ${vtk_tag}
+      GIT_TAG ${vtk_tag}
+      GIT_REPOSITORY ${${proj}_REPOSITORY}
       UPDATE_COMMAND ""
       SOURCE_DIR ${proj}
       BINARY_DIR ${proj}-build
@@ -141,8 +143,8 @@ macro(PACKAGE_NEEDS_VTK_NOGUI LOCAL_CMAKE_BUILD_OPTIONS gen)
     include(${VTK_USE_FILE})
     set(VTK_DEPEND "") ## Set the external depandancy for ITK
   else()
-    set(proj vtk-5-6)
-    set(vtk_tag -r VTK-5-6)
+    set(proj vtk)
+    set(vtk_tag -r VTK-5-10)
     set(vtk_module VTK)
 
     set(vtk_WRAP_TCL OFF)
@@ -164,11 +166,10 @@ macro(PACKAGE_NEEDS_VTK_NOGUI LOCAL_CMAKE_BUILD_OPTIONS gen)
         -DVTK_REQUIRED_OBJCXX_FLAGS:STRING=
         )
     endif(APPLE)
-
+set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git CACHE STRING "" FORCE)
     ExternalProject_Add(${proj}
-      CVS_REPOSITORY ":pserver:anonymous:vtk@public.kitware.com:/cvsroot/VTK"
-      CVS_MODULE "${vtk_module}"
-      CVS_TAG ${vtk_tag}
+      GIT_TAG ${vtk_tag}
+      GIT_REPOSITORY ${${proj}_REPOSITORY}
       UPDATE_COMMAND ""
       SOURCE_DIR ${proj}
       BINARY_DIR ${proj}-build
