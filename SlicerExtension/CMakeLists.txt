@@ -56,7 +56,7 @@ ExternalProject_Add(${proj}
   SVN_PASSWORD slicer
   SOURCE_DIR ${proj}
   BINARY_DIR ${proj}-build
-  SVN_REVISION -r 72
+  SVN_REVISION -r 73
   DEPENDS QWT
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
@@ -87,6 +87,7 @@ dtitractstat
 DTIAtlasFiberAnalyzer
 MergeStatWithFiber
 FiberCompare
+fiberprocess
 )
 
 foreach( tool ${ToolsList})
