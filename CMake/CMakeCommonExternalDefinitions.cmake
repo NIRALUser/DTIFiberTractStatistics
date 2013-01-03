@@ -25,17 +25,17 @@ macro(PACKAGE_NEEDS_ITK LOCAL_CMAKE_BUILD_OPTIONS gen)
     set(ITK_DEPEND "") ## Set the external depandancy for ITK
   else()
     set(proj Insight)
+    set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git CACHE STRING "" FORCE)
     ExternalProject_Add(${proj}
-      CVS_REPOSITORY ":pserver:anonymous:insight@public.kitware.com:/cvsroot/Insight"
-      CVS_MODULE "Insight"
-      CVS_TAG -r ITK-3-20
+      GIT_TAG v3.20.1
+      GIT_REPOSITORY ${${proj}_REPOSITORY}
       UPDATE_COMMAND ""
       SOURCE_DIR ${proj}
       BINARY_DIR ${proj}-build
       CMAKE_GENERATOR ${gen}
-      CMAKE_ARG
-        ${LOCAL_CMAKE_BUILD_OPTIONS}
+      CMAKE_ARGS
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DBUILD_TESTING:BOOL=OFF
         -DITK_USE_REVIEW:BOOL=ON
         -DITK_USE_REVIEW_STATISTICS:BOOL=ON
@@ -47,6 +47,7 @@ macro(PACKAGE_NEEDS_ITK LOCAL_CMAKE_BUILD_OPTIONS gen)
         -DITK_USE_CENTERED_PIXEL_COORDINATES_CONSISTENTLY:BOOL=ON
         -DITK_USE_TRANSFORM_IO_FACTORIES:BOOL=ON
         -DITK_LEGACY_REMOVE:BOOL=ON
+        -DBUILD_EXAMPLES:BOOL=OFF
         INSTALL_COMMAND ""
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}
     )
@@ -68,12 +69,9 @@ macro(PACKAGE_NEEDS_VTKWITHQT LOCAL_CMAKE_BUILD_OPTIONS gen)
     include(${VTK_USE_FILE})
     set(VTK_DEPEND "") ## Set the external depandancy for VTK
   else()
-    set(proj vtk)
-    set(vtk_tag -r VTK-5-10)
-    set(vtk_module VTK)
 
-set(proj VTK)
-set(vtk_tag v5.10.0)
+    set(proj VTK)
+    set(vtk_tag v5.10.0)
 
     set(vtk_WRAP_TCL OFF)
     set(vtk_WRAP_PYTHON OFF)
@@ -103,7 +101,7 @@ set(vtk_tag v5.10.0)
         -DVTK_REQUIRED_OBJCXX_FLAGS:STRING=
         )
     endif(APPLE)
-set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git CACHE STRING "" FORCE)
+    set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git CACHE STRING "" FORCE)
     ExternalProject_Add(${proj}
       GIT_TAG ${vtk_tag}
       GIT_REPOSITORY ${${proj}_REPOSITORY}
@@ -143,10 +141,8 @@ macro(PACKAGE_NEEDS_VTK_NOGUI LOCAL_CMAKE_BUILD_OPTIONS gen)
     include(${VTK_USE_FILE})
     set(VTK_DEPEND "") ## Set the external depandancy for ITK
   else()
-    set(proj vtk)
-    set(vtk_tag -r VTK-5-10)
-    set(vtk_module VTK)
-
+    set(proj VTK)
+    set(vtk_tag v5.10.0)
     set(vtk_WRAP_TCL OFF)
     set(vtk_WRAP_PYTHON OFF)
 
@@ -212,14 +208,15 @@ macro(PACKAGE_NEEDS_SlicerExecutionModel LOCAL_CMAKE_BUILD_OPTIONS gen)
     #### ALWAYS BUILD WITH STATIC LIBS
     set(proj SlicerExecutionModel)
     ExternalProject_Add(${proj}
-      SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Libs/SlicerExecutionModel"
+      GIT_REPOSITORY ${git_protocol}://github.com/Slicer/SlicerExecutionModel.git
+      GIT_TAG "5ac91a89bba50db8b4f5e32cadbcb4baadb1ffc0"
       SOURCE_DIR ${proj}
       BINARY_DIR ${proj}-build
       DEPENDS ${ITK_DEPEND}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
-        ${LOCAL_CMAKE_BUILD_OPTIONS}
         -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DITK_DIR:PATH=${ITK_DIR}
         INSTALL_COMMAND ""
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}
@@ -227,138 +224,9 @@ macro(PACKAGE_NEEDS_SlicerExecutionModel LOCAL_CMAKE_BUILD_OPTIONS gen)
     FORCE_BUILD_CHECK(${proj})
     set(GenerateCLP_DIR ${CMAKE_CURRENT_BINARY_DIR}/SlicerExecutionModel-build/GenerateCLP)
     set(GenerateCLP_DEPEND "${proj}")
+    set(SlicerExecutionModel_DIR ${CMAKE_CURRENT_BINARY_DIR}/SlicerExecutionModel-build )
     set(SlicerExecutionModel_DEPEND "${proj}")
   endif()
 endmacro()
 
-#-----------------------------------------------------------------------------
-# Get and build BRAINSCommonLib
-macro(PACKAGE_NEEDS_BRAINSCommonLib LOCAL_CMAKE_BUILD_OPTIONS gen)
-  set(packageToCheck BRAINSCommonLib)
-  OPTION(OPT_USE_SYSTEM_${packageToCheck} "Use the system's ${packageToCheck} library." OFF)
-  #  MARK_AS_ADVANCED(OPT_USE_SYSTEM_${packageToCheck})
-  if(OPT_USE_SYSTEM_BRAINSCommonLib)
-    find_package(BRAINSCommonLib NO_MODULE REQUIRED)
-    include(${BRAINSCommonLib_USE_FILE})
-    set(BRAINSCommonLib_DEPEND "")
-  else()
-    set(proj BRAINSCommonLib)
-    ExternalProject_Add(${proj}
-      SVN_REPOSITORY "https://www.nitrc.org/svn/brains/BRAINSCommonLib/trunk"
-      SVN_USERNAME slicerbot
-      SVN_PASSWORD slicer
-      SOURCE_DIR ${proj}
-      BINARY_DIR ${proj}-build
-      DEPENDS ${ITK_DEPEND}
-      CMAKE_GENERATOR ${gen}
-      CMAKE_ARGS
-        ${LOCAL_CMAKE_BUILD_OPTIONS}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-        -DITK_DIR:PATH=${ITK_DIR}
-        INSTALL_COMMAND ""
-        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}
-    )
-    FORCE_BUILD_CHECK(${proj})
-    set(BRAINSCommonLib_DIR ${CMAKE_CURRENT_BINARY_DIR}/BRAINSCommonLib-build)
-    set(BRAINSCommonLib_DEPEND "${proj}")
-  endif()
-endmacro()
 
-
-#Added by Clement
-
-#-----------------------------------------------------------------------------
-# Get and build BatchMake
-##  Build the BatchMake Once, and let all derived project use the same version
-macro(PACKAGE_NEEDS_BatchMake LOCAL_CMAKE_BUILD_OPTIONS gen)
-  set(packageToCheck BatchMake)
-  OPTION(OPT_USE_SYSTEM_${packageToCheck} "Use the system's ${packageToCheck} library." OFF)
-  #  MARK_AS_ADVANCED(OPT_USE_SYSTEM_${packageToCheck})
-  if(OPT_USE_SYSTEM_BatchMake)
-    find_package(BatchMake NO_MODULE REQUIRED)
-    include(${BatchMake_USE_FILE})
-    set(BatchMake_DEPEND "")
-  else()
-    #### ALWAYS BUILD WITH STATIC LIBS
-    set(proj BatchMake)
-    ExternalProject_Add(${proj}
-      CVS_REPOSITORY ":pserver:anoncvs@batchmake.org:/cvsroot/BatchMake"
-      CVS_MODULE "BatchMake"
-      CVS_TAG -r BatchMake-1-3
-      UPDATE_COMMAND ""
-      SOURCE_DIR ${proj}
-      BINARY_DIR ${proj}-build
-      DEPENDS ${ITK_DEPEND}
-      CMAKE_GENERATOR ${gen}
-      CMAKE_ARGS
-        ${LOCAL_CMAKE_BUILD_OPTIONS}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-        -DITK_DIR:PATH=${ITK_DIR}
-        INSTALL_COMMAND ""
-        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}
-    )
-    FORCE_BUILD_CHECK(${proj})
-    set(BatchMake_DIR ${CMAKE_CURRENT_BINARY_DIR}/BatchMake-build)
-    set(BatchMake_DEPEND "${proj}")
-  endif()
-endmacro()
-
-#-----------------------------------------------------------------------------
-# Get and build vtkITK
-##  Build the vtkITK Once, and let all derived project use the same version
-macro(PACKAGE_NEEDS_vtkITK LOCAL_CMAKE_BUILD_OPTIONS gen)
-  set(packageToCheck vtkITK)
-  OPTION(OPT_USE_SYSTEM_${packageToCheck} "Use the system's ${packageToCheck} library." OFF)
-  #  MARK_AS_ADVANCED(OPT_USE_SYSTEM_${packageToCheck})
-  if(OPT_USE_SYSTEM_vtkITK)
-    find_package(vtkITK NO_MODULE REQUIRED)
-    include_directories(${vtkITK_SOURCE_DIR} ${vtkITK_BINARY_DIR})
-    link_directories(${vtkITK_LIB_DIR})
-    set(vtkITK_DEPEND "")
-  else()
-    #### ALWAYS BUILD WITH STATIC LIBS
-    set(proj vtkITK)
-    ExternalProject_Add(${proj}
-      SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Libs/vtkITK"
-      SOURCE_DIR ${proj}
-      BINARY_DIR ${proj}-build
-      DEPENDS ${ITK_DEPEND} ${VTK_DEPEND}
-      CMAKE_GENERATOR ${gen}
-      CMAKE_ARGS
-        ${LOCAL_CMAKE_BUILD_OPTIONS}
-        -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-        -DITK_DIR:PATH=${ITK_DIR}
-        -DVTK_DIR:PATH=${VTK_DIR}
-        INSTALL_COMMAND ""
-        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}
-    )
-    FORCE_BUILD_CHECK(${proj})
-    set(vtkITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/vtkITK-build)
-    set(vtkITK_DEPEND "${proj}")
-  endif()
-endmacro()
-
-macro(PACKAGE_NEEDS_QWT LOCAL_CMAKE_BUILD_OPTIONS gen)
-	set(packageToCheck QWT)
-	OPTION(OPT_USE_SYSTEM_${packageToCheck} "Use the system's ${packageToCheck} library." ON)
-#  MARK_AS_ADVANCED(OPT_USE_SYSTEM_${packageToCheck})
-  	if(OPT_USE_SYSTEM_QWT)
-    	set(QWT_INCLUDE_DIR CACHE PATH "Qwt include directory")
-		if(NOT QWT_INCLUDE_DIR)
-  			message(FATAL_ERROR "QWT_INCLUDE_DIR should be set to a path like '/home/jchris/Projects/qwt-6.0.1-svn/include'")
-		endif()
-		include_directories(${QWT_INCLUDE_DIR})
-
-# Qwt libraries
-		set(QWT_LIBRARY CACHE FILEPATH "Qwt library")
-		if(NOT QWT_LIBRARY)
-  			message(FATAL_ERROR "QWT_LIBRARY should be set to a filepath like '/home/jchris/Projects/qwt-6.0.1-svn/lib/libqwt.so'")
-		endif()
-		set(QWT_MATHML_LIBRARY CACHE FILEPATH "Qwt library")
-		if(NOT QWT_MATHML_LIBRARY)
-  			message(FATAL_ERROR "QWT_MATHML_LIBRARY should be set to a filepath like '/home/jchris/Projects/qwt-6.0.1-svn/lib/libqwtmathml.so'")
-		endif()
-		set(qwt_libraries ${QWT_LIBRARY} ${QWT_MATHML_LIBRARY})
-		set(QWT_DEPEND "")
-	endif()
-endmacro()

@@ -10,24 +10,14 @@ ELSE(VTK_FOUND)
    MESSAGE(FATAL_ERROR, "VTK not found. Please set VTK_DIR.")
 ENDIF (VTK_FOUND)
 
-FIND_PACKAGE(GenerateCLP REQUIRED)
-IF (GenerateCLP_FOUND)
-  INCLUDE(${GenerateCLP_USE_FILE})
-ELSE(GenerateCLP_FOUND)
-   MESSAGE(FATAL_ERROR, "GenerateCLP not found. Please set GenerateCLP_DIR.")
-ENDIF (GenerateCLP_FOUND)
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE})
 
-INCLUDE_DIRECTORIES(
-  ${MergeStatWithFiber_BINARY_DIR}
-  ${MergeStatWithFiber_SOURCE_DIR}
-)
 
-SET(MergeStatWithFiber_source MergeStatWithFiber.cxx processing.cxx)
-SET(MergeStatWithFiber_header processing.h)
-
-GENERATECLP(MergeStatWithFiber.cxx MergeStatWithFiber.xml)
-add_executable( MergeStatWithFiber ${MergeStatWithFiber_source} ${MergeStatWithFiber_header})
-
-TARGET_LINK_LIBRARIES(MergeStatWithFiber
-  vtkHybrid
-)
+SEMMacroBuildCLI(
+    NAME MergeStatWithFiber
+    ADDITIONAL_SRCS processing.cxx processing.h
+    TARGET_LIBRARIES vtkHybrid
+    EXECUTABLE_ONLY
+    INCLUDE_DIRECTORIES ${MergeStatWithFiber_BINARY_DIR} ${MergeStatWithFiber_SOURCE_DIR}  ${VTK_INCLUDE_DIRS}
+    )

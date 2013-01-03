@@ -18,8 +18,8 @@ ELSE(VTK_FOUND)
   "VTK not found.  Please set VTK_DIR.")
 ENDIF(VTK_FOUND)
 
-find_package(GenerateCLP REQUIRED)
-include(${GenerateCLP_USE_FILE})
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE})
 
 SET(CXX_FILES
 dtitractstat.cxx
@@ -34,8 +34,11 @@ fiberprocessing.h
 regression.h
 )
 
-set(dtitractstat_SOURCE ${CXX_FILES})
-GENERATECLP(dtitractstat_SOURCE dtitractstat.xml)
+SEMMacroBuildCLI(
+    NAME dtitractstat
+    ADDITIONAL_SRCS ${CXX_FILES} ${H_FILES}
+    TARGET_LIBRARIES ITKCommon ITKIO  vtkIO
+    EXECUTABLE_ONLY
+    INCLUDE_DIRECTORIES ${DTIFiberTractStat_BINARY_DIR} ${DTIFiberTractStat_SOURCE_DIR}  ${VTK_INCLUDE_DIRS}
+    )
 
-ADD_EXECUTABLE(dtitractstatCLP ${CXX_FILES} ${H_FILES})
-TARGET_LINK_LIBRARIES(dtitractstatCLP ITKCommon ITKIO  vtkIO)

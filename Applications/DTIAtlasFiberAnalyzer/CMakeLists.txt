@@ -17,12 +17,8 @@ ELSE(VTK_FOUND)
    MESSAGE(FATAL_ERROR, "VTK not found. Please set VTK_DIR.")
 ENDIF (VTK_FOUND)
 
-FIND_PACKAGE(GenerateCLP REQUIRED)
-IF (GenerateCLP_FOUND)
-  INCLUDE(${GenerateCLP_USE_FILE})
-ELSE(GenerateCLP_FOUND)
-   MESSAGE(FATAL_ERROR, "GenerateCLP not found. Please set GenerateCLP_DIR.")
-ENDIF (GenerateCLP_FOUND)
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE})
 
 FIND_PACKAGE(Qt4 REQUIRED)
 IF(QT_USE_FILE)
@@ -64,14 +60,15 @@ INCLUDE_DIRECTORIES(
 QT4_WRAP_CPP(MOC_FILES DTIAtlasFiberAnalyzerguiwindow.h DTIPlotWindow.h)
 QT4_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
 
-SET(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzer.cxx DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx DTIPlotWindow.cxx ${MOC_FILES} ${UI_FILES})
+SET(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx DTIPlotWindow.cxx ${MOC_FILES} ${UI_FILES})
 
-GENERATECLP(DTIAtlasFiberAnalyzer.cxx DTIAtlasFiberAnalyzer.xml)
-add_executable( DTIAtlasFiberAnalyzer ${DTIAtlasFiberAnalyzer_source})
+set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} vtkHybrid ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 
-TARGET_LINK_LIBRARIES(DTIAtlasFiberAnalyzer
-  ${ITK_LIBRARIES}
-  vtkHybrid
-  ${QT_LIBRARIES}
-  ${QWT_LIBRARIES}
-)
+SEMMacroBuildCLI(
+    NAME DTIAtlasFiberAnalyzer
+    ADDITIONAL_SRCS ${DTIAtlasFiberAnalyzer_source}
+    TARGET_LIBRARIES ${DTIAtlasFiberAnalyzer_lib}
+    EXECUTABLE_ONLY
+    INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${DTIAtlasFiberAnalyzer_BINARY_DIR} ${DTIAtlasFiberAnalyzer_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
+    )
+

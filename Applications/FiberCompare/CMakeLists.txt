@@ -16,14 +16,12 @@ ELSE(VTK_FOUND)
    MESSAGE(FATAL_ERROR, "VTK not found. Please set VTK_DIR.")
 ENDIF (VTK_FOUND)
 
-FIND_PACKAGE(GenerateCLP REQUIRED)
-IF (GenerateCLP_FOUND)
-  INCLUDE(${GenerateCLP_USE_FILE})
-ELSE(GenerateCLP_FOUND)
-   MESSAGE(FATAL_ERROR, "GenerateCLP not found. Please set GenerateCLP_DIR.")
-ENDIF (GenerateCLP_FOUND)
+find_package(SlicerExecutionModel REQUIRED)
+include(${SlicerExecutionModel_USE_FILE})
 
-GENERATECLP(FiberCompare.cxx FiberCompare.xml)
-ADD_EXECUTABLE(FiberCompare FiberCompare.cxx)
-
-TARGET_LINK_LIBRARIES(FiberCompare ${ITK_LIBRARIES} vtkIO)
+SEMMacroBuildCLI(
+    NAME FiberCompare
+    TARGET_LIBRARIES ${ITK_LIBRARIES} vtkIO
+    EXECUTABLE_ONLY
+    INCLUDE_DIRECTORIES ${FiberCompare_BINARY_DIR} ${FiberCompare_SOURCE_DIR}  ${VTK_INCLUDE_DIRS}
+    )
