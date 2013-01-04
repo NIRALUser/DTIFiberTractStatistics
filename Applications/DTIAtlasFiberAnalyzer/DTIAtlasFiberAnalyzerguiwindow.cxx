@@ -1526,13 +1526,13 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		//Add the data to the CSV
 		AddDataFromTableToCSV();
 		//Find path for fiberprocess
-		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
+		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstat");
 		//if path not found
 		if(pathdti_tract_stat.empty()==true)
 		{
-			QMessageBox::information(this, "dtitractstatCLP", "Select the folder where dti_tract_stat is located .");
+			QMessageBox::information(this, "dtitractstat", "Select the folder where dtitractstat is located .");
 			pathdti_tract_stat = (QFileDialog::getExistingDirectory(this)).toStdString();
-			pathdti_tract_stat = pathdti_tract_stat +"/dtitractstatCLP";
+			pathdti_tract_stat = pathdti_tract_stat +"/dtitractstat";
 		}
 		if(pathdti_tract_stat.compare("")!=0)
 		{

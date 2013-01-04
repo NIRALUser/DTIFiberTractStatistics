@@ -92,7 +92,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,parameters,transposeColRow,true);
 		
 		/* Looking for dti_tract_stat */
-		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
+		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstat");
 		// enter the path for fiberprocess if it didn't find it
 		if(pathdti_tract_stat.empty()==true)
 		{
@@ -116,7 +116,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,parameters,transposeColRow,true);
 		
 		/* Looking for dti_tract_stat */
-		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstatCLP");
+		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstat");
 		// enter the path for fiberprocess if it didn't find it
 		if(pathdti_tract_stat.empty()==true)
 		{
