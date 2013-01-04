@@ -27,30 +27,30 @@
 			Command Line Parameters for DTIAtlasFiberAnalyzer, use only with the option nogui
 		</description>
 		
-		<string>
+		<file>
 			<name>datafile</name>
 			<longflag>datafile</longflag>
 			<flag>D</flag>
 			<description>File containing the Data parameters for DTIAtlasFiberAnalyzer</description>
 			<label>datafile</label>
-		</string>
+		</file>
 		
-		<string>
+		<file>
 			<name>analysisfile</name>
 			<longflag>analysisfile</longflag>
 			<flag>A</flag>
 			<description>File containing the Analysis parameters for DTIAtlasFiberAnalyzer</description>
 			<label>analysisfile</label>
-		</string>
+		</file>
 		
-		<string>
+		<file>
 			<name>loadCSV</name>
 			<longflag>loadCSV</longflag>
 			<flag>L</flag>
 			<description>Load a CSV file with this filename. Default: no file, the software takes the one from the parameters file.</description>
 			<label>loadCSV</label>
 			<default>no file</default>
-		</string>
+		</file>
 		
 		<boolean>
 			<name>debug</name>
