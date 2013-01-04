@@ -43,7 +43,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 	}
 	
 	//create the CSV file
-	if(!CSVFilename.empyt())
+	if(!CSVFilename.empty())
 		csvfile = CSVFilename;
 	CSVClass* CSVFile =  new CSVClass(csvfile,debug);
 	
