@@ -1,10 +1,7 @@
 <?xml version="1.2" encoding="utf-8"?>
 <executable>
-	<category>
-	</category>
-	<title>
-		FiberCompare
-	</title>
+	<category>Diffusion.FiberAnalysis</category>
+	<title>FiberCompare</title>
 	<description>
 		
 	</description>

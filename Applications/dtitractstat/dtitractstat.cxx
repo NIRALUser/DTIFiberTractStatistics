@@ -275,8 +275,11 @@ int main(int argc, char* argv[])
     }
   }
   //Write parametrized fiber by Yundi Shi
-  FP->Write_parametrized_fiber(input_fiber_file,output_parametrized_fiber_file,step_size,worldspace);
-  return 0;
+  if( !output_parametrized_fiber_file.empty() )
+  {
+    FP->Write_parametrized_fiber(input_fiber_file,output_parametrized_fiber_file,step_size,worldspace) ;
+  }
+  return 0 ;
 }
  
 

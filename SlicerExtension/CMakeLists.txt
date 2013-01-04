@@ -12,7 +12,7 @@ integrated in Slicer")
   set(EXTENSION_ICONURL
 "http://www.nitrc.org/project/screenshot.php?group_id=312&screenshot_id=575")
   set(EXTENSION_SCREENSHOTURLS
-"http://www.slicer.org/slicerWiki/images/thumb/b/b8/DTIEstim-B0-crop.png/193px-DTIEstim-B0-crop.png
+"http://www.nitrc.org/project/list_screenshots.php?group_id=403&screenshot_id=601
 http://www.slicer.org/slicerWiki/images/thumb/9/90/FiberTrack-fibers.png/138px-FiberTrack-fibers.png")
 endif()
 
@@ -56,7 +56,7 @@ ExternalProject_Add(${proj}
   SVN_PASSWORD slicer
   SOURCE_DIR ${proj}
   BINARY_DIR ${proj}-build
-  SVN_REVISION -r 78
+  SVN_REVISION -r 79
   DEPENDS QWT
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS

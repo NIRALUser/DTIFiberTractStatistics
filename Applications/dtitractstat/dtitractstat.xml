@@ -4,7 +4,7 @@
     Diffusion.FiberAnalysis
   </category>
   <title>
-    DTI Fiber tract statistics tol
+    DTI Fiber tract statistics tool
   </title>
   <description>
     This is a command line tool which allows the user to study the behavior of water diffusion (using DTI data) along the length of the white matter fiber-tracts.
