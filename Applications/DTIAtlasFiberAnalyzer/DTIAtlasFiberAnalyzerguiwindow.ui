@@ -218,7 +218,7 @@
         <string notr="true"/>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>4</number>
        </property>
        <property name="usesScrollButtons">
         <bool>true</bool>
@@ -1696,7 +1696,7 @@
          <property name="geometry">
           <rect>
            <x>180</x>
-           <y>170</y>
+           <y>140</y>
            <width>291</width>
            <height>91</height>
           </rect>
@@ -1788,7 +1788,7 @@
            <x>510</x>
            <y>140</y>
            <width>191</width>
-           <height>121</height>
+           <height>151</height>
           </rect>
          </property>
          <property name="styleSheet">
@@ -1860,6 +1860,54 @@
           </property>
          </widget>
         </widget>
+        <widget class="QFrame" name="loadparamframe_6">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>240</y>
+           <width>291</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <widget class="QLineEdit" name="pvalue">
+          <property name="geometry">
+           <rect>
+            <x>70</x>
+            <y>10</y>
+            <width>171</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="inputMask">
+           <string>0.000; </string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>51</width>
+            <height>18</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>p-value</string>
+          </property>
+         </widget>
+        </widget>
        </widget>
       </widget>
      </item>
@@ -1872,7 +1920,7 @@
      <x>0</x>
      <y>0</y>
      <width>1010</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

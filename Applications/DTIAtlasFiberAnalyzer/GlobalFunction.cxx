@@ -468,7 +468,7 @@ int CallFiberProcess(std::string pathFiberProcess,
 		arguments.append("--fiber_output " + qs);
 		//verbose
 		arguments.append("--verbose");
-		std::cout<<"Command Line :  "<< (arguments.join(" ")).toStdString() <<std::endl;
+		std::cout<<"Command Line :  "<< pathFiberProcess.c_str() << " " << (arguments.join(" ")).toStdString() <<std::endl;
 		state = process->execute( pathFiberProcess.c_str(), arguments);
 	}
 	else
@@ -743,7 +743,7 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 			qs = parameter.c_str();
 			arguments.append(QString("--parameter_list ") + qs);
 		}
-		std::cout<<"Command Line :  "<< (arguments.join(" ")).toStdString() <<std::endl;
+		std::cout<<"Command Line :  "<< pathdti_tract_stat.c_str() << " " << (arguments.join(" ")).toStdString() <<std::endl;
 		state = process->execute( pathdti_tract_stat.c_str(), arguments);
 		std::cout<<"End of Dti Tract Stat."<<std::endl;
 	}
@@ -1563,7 +1563,7 @@ bool IsFile(std::string filename)
 		return true;
 }
 
-int CallMergeStatWithFiber(std::string PathMergeStatWithFiber, std::string CSVFilename, std::string VTKFilename, std::string OutputFilename, std::string Min, std::string Max)
+int CallMergeStatWithFiber(std::string PathMergeStatWithFiber, std::string CSVFilename, std::string VTKFilename, std::string OutputFilename, std::string Min, std::string Max , std::string pvalue )
 {
 	int state=0;
 	QProcess* process= new QProcess();
@@ -1586,7 +1586,12 @@ int CallMergeStatWithFiber(std::string PathMergeStatWithFiber, std::string CSVFi
 		qs=Max.c_str();
 		arguments.append("-M "+qs);
 	}
-	std::cout<<"Command Line: "<<arguments.join(" ").toStdString()<<std::endl;
+        if( pvalue != "" )
+	{
+		qs=pvalue.c_str();
+		arguments.append("-p "+qs);
+	}
+	std::cout<<"Command Line: "<< PathMergeStatWithFiber.c_str() << " " << arguments.join(" ").toStdString()<<std::endl;
 	state=process->execute(PathMergeStatWithFiber.c_str(), arguments);
 	std::cout<<"End of MergeStatWithFiber."<<std::endl;
 	return state;

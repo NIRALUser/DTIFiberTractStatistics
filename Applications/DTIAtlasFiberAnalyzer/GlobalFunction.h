@@ -120,7 +120,7 @@ std::string getParamFromDirectory(std::string directory, std::string fibername);
 
 bool IsFile(std::string);
 
-int CallMergeStatWithFiber(std::string, std::string, std::string, std::string, std::string, std::string);
+int CallMergeStatWithFiber(std::string, std::string, std::string, std::string, std::string, std::string , std::string ) ;
 
 bool IsFloat(std::string);
 

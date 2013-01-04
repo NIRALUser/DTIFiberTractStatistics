@@ -115,6 +115,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(bool debug, QWidg
 	connect(this->actionSave_analysis_file, SIGNAL(triggered()), SLOT(SaveAnalysisAction()));
 	connect(this->actionOpen_data_file, SIGNAL(triggered()), SLOT(OpenDataFile()));
 	connect(this->actionOpen_analysis_file, SIGNAL(triggered()), SLOT(OpenAnalysisFile()));
+        this->pvalue->setText( "0.050" ) ;
 }
 
 /***************************************************
@@ -1991,7 +1992,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
 	}
 	if(PathMergeStatWithFiber.size()!=0)
 	{
-		if(CallMergeStatWithFiber(PathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString())!=0)
+		if(CallMergeStatWithFiber(PathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString() , pvalue->text().toStdString() ) != 0  )
 		{
 			std::cout<<"Fail during MergeStatWithFiber!"<<std::endl;
 			return false;
