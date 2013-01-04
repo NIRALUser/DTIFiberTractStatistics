@@ -33,6 +33,7 @@
 			<flag>D</flag>
 			<description>File containing the Data parameters for DTIAtlasFiberAnalyzer</description>
 			<label>datafile</label>
+			<default></default>
 		</file>
 		
 		<file>
@@ -41,6 +42,7 @@
 			<flag>A</flag>
 			<description>File containing the Analysis parameters for DTIAtlasFiberAnalyzer</description>
 			<label>analysisfile</label>
+			<default></default>
 		</file>
 		
 		<file>
@@ -49,7 +51,7 @@
 			<flag>L</flag>
 			<description>Load a CSV file with this filename. Default: no file, the software takes the one from the parameters file.</description>
 			<label>loadCSV</label>
-			<default>no file</default>
+			<default></default>
 		</file>
 		
 		<boolean>
