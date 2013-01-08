@@ -57,7 +57,7 @@ ExternalProject_Add(${proj}
   SVN_PASSWORD slicer
   SOURCE_DIR ${proj}
   BINARY_DIR ${proj}-build
-  SVN_REVISION -r 83
+  SVN_REVISION -r 84
   DEPENDS QWT
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
