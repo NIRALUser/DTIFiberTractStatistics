@@ -49,6 +49,7 @@ ExternalProject_Add(${proj}
 )
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/QWT/lib/ DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
 
+
 set(proj dti_tract_stat)
 ExternalProject_Add(${proj}
   SVN_REPOSITORY https://www.nitrc.org/svn/dti_tract_stat/trunk
