@@ -14,6 +14,9 @@ integrated in Slicer")
   set(EXTENSION_SCREENSHOTURLS
 "http://www.nitrc.org/project/screenshot.php?group_id=403&screenshot_id=601
 http://www.slicer.org/slicerWiki/images/thumb/9/90/FiberTrack-fibers.png/138px-FiberTrack-fibers.png")
+  set(EXTENSION_STATUS "Beta")
+  set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
+  set(EXTENSION_BUILD_SUBDIRECTORY dti_tract_stat-build )
 endif()
 
 #-----------------------------------------------------------------------------
@@ -25,7 +28,6 @@ if(NOT Slicer_SOURCE_DIR)
   include(${Slicer_USE_FILE})
 endif()
 
-enable_testing()
 
 include(ExternalProject)
 if(CMAKE_EXTRA_GENERATOR)
@@ -57,7 +59,7 @@ ExternalProject_Add(${proj}
   SVN_PASSWORD slicer
   SOURCE_DIR ${proj}
   BINARY_DIR ${proj}-build
-  SVN_REVISION -r 84
+  SVN_REVISION -r 85
   DEPENDS QWT
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
@@ -79,23 +81,16 @@ ExternalProject_Add(${proj}
     -DOPT_USE_SYSTEM_ITK:BOOL=ON
     -DOPT_USE_SYSTEM_SlicerExecutionModel:BOOL=ON
     -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
+    -DMIDAS_PACKAGE_EMAIL:STRING=${MIDAS_PACKAGE_EMAIL}
+    -DMIDAS_PACKAGE_API_KEY:STRING=${MIDAS_PACKAGE_API_KEY}
+    -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
+    -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
+    # Slicer
+    -DSlicer_DIR:PATH=${Slicer_DIR}
+    -DSlicer_USE_FILE:FILEPATH=${Slicer_USE_FILE}
+    -DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
+    -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
   INSTALL_COMMAND ""
 )
 
-set( ToolsList
-dtitractstat
-DTIAtlasFiberAnalyzer
-MergeStatWithFiber
-FiberCompare
-fiberprocess
-)
 
-foreach( tool ${ToolsList})
-  install(PROGRAMS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}/${tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
-endforeach()
-
-#-----------------------------------------------------------------------------
-if(NOT Slicer_SOURCE_DIR)
-  include(${Slicer_EXTENSION_CPACK})
-endif()

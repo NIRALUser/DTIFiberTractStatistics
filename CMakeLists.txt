@@ -144,3 +144,20 @@ IF(COMPILE_FIBERCOMPARE)
   )
   FORCE_BUILD_CHECK(${proj})  
 ENDIF(COMPILE_FIBERCOMPARE)
+
+if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  set( ToolsList
+  dtitractstat
+  DTIAtlasFiberAnalyzer
+  MergeStatWithFiber
+  FiberCompare
+  fiberprocess
+  ) 
+  set(Slicer_SKIP_PROJECT_COMMAND ON)
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  foreach( tool ${ToolsList})
+    install(PROGRAMS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}/${tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
+  endforeach()
+  include(${Slicer_EXTENSION_CPACK})
+endif()
