@@ -150,6 +150,7 @@ IF(COMPILE_FIBERCOMPARE)
 ENDIF(COMPILE_FIBERCOMPARE)
 
 
+#### Set paths for Testing subdirectory and find Slicer for packaging the extension
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
