@@ -1,0 +1,25 @@
+
+if(UNIX)
+
+  if(APPLE)
+    set(ENV{DYLD_LIBRARY_PATH} "@CMAKE_CURRENT_BINARY_DIR@/python-build/lib")
+  else()
+    set(ENV{LD_LIBRARY_PATH} "@CMAKE_CURRENT_BINARY_DIR@/python-build/lib")
+  endif()
+  if(NOT DEFINED PROCESSOR_COUNT)
+    # Linux:
+    set(cpuinfo_file "/proc/cpuinfo")
+    if(EXISTS "${cpuinfo_file}")
+      file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
+      list(LENGTH procs PROCESSOR_COUNT)
+    endif()
+    if(PROCESSOR_COUNT)
+      set(BUILD_FLAGS "-j${PROCESSOR_COUNT}")
+    endif()
+  endif()
+  execute_process(
+    COMMAND make ${BUILD_FLAGS}
+    WORKING_DIRECTORY "@CMAKE_CURRENT_BINARY_DIR@/@proj@-build"
+    )
+
+endif()
