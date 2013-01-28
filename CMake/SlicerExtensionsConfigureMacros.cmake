@@ -1,3 +1,4 @@
+###Declares a list that contains the name of all the variables set in SlicerConfig.cmake
 set( SlicerConfigVarList
 Slicer_USE_BatchMake
 Slicer_USE_MIDAS
@@ -123,10 +124,85 @@ Slicer_EXTERNAL_PROJECTS
 Slicer_EXTERNAL_PROJECTS_NO_USEFILE
 CMAKE_MODULE_PATH
 )
-# This block should be added after VTK and CTK are found.
-# Indeed, it will check if both VTK_QT_QMAKE_EXECUTABLE and CTK_QT_QMAKE_EXECUTABLE are valid.
-#include(${Slicer_CMAKE_DIR}/SlicerBlockFindQtAndCheckVersion.cmake)
 
-# --------------------------------------------------------------------------
-#include("/opt/Francois/bin/Slicer4/Slicer4-SuperBuild-Debug/Slicer-build/SlicerTargets.cmake")
+###Unset variables and saves them as ${var}_TMP to be able to run without any error:
+#find_package(slicer)
+#include(${Slicer_USE_FILE})
+#Typically used in SuperBuild.cmake before find_package(slicer)
+macro( unsetForSlicer )
+  set(options VERBOSE )
+  set(oneValueArgs )
+  set(multiValueArgs NAMES )
+  CMAKE_PARSE_ARGUMENTS(TMP
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+  foreach( var ${TMP_NAMES} )
+    if( TMP_VERBOSE )
+      message( "Unsetting "${var} - old value: ${${var}} )
+    endif()
+    set( ${var}_TMP ${${var}} )
+    unset( ${var} CACHE )
+    unset( ${var} )
+  endforeach()
+endmacro()
+
+
+###Reset variables that had been saved by "unsetForSlicer". Typically used in SuperBuild.cmake after
+#unsetForSlicer(ITK_DIR VTK_DIR)
+#find_package(slicer)
+#include(${Slicer_USE_FILE})
+macro( resetForSlicer )
+  set(options VERBOSE )
+  set(oneValueArgs )
+  set(multiValueArgs NAMES )
+  CMAKE_PARSE_ARGUMENTS(TMP
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+  foreach( var ${TMP_NAMES} )
+    if( "${${var}_TMP}" STREQUAL "" )
+      message( "Does not reset ${var}. ${var}_TMP was empty" )
+    else()
+      set( ${var} ${${var}_TMP} CACHE PATH "${var} PATH" FORCE )
+      unset( ${var}_TMP )
+      if( TMP_VERBOSE )
+        message( "resetting ${var} - new value: "${${var}} )
+      endif()
+    endif()
+  endforeach()
+endmacro()
+
+###unset all variables set by SlicerConfig.cmake except the ones explicitly specified
+macro( unsetAllForSlicerBut )
+  set(options VERBOSE )
+  set(oneValueArgs )
+  set(multiValueArgs NAMES )
+  CMAKE_PARSE_ARGUMENTS(TMP
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+  foreach( var ${TMP_NAMES} )
+    if( TMP_VERBOSE )
+      message( "Saving ${var} - value: ${${var}}" )
+    endif()
+    set( ${var}_TMP ${${var}} )
+  endforeach()
+  foreach( var ${SlicerConfigVarList} )
+    unset( ${var} CACHE )
+    unset( ${var} )
+  endforeach()
+  foreach( var ${TMP_NAMES} )
+    if( TMP_VERBOSE )
+      message( "Writing back ${var} - value: ${${var}_TMP}")
+    endif()
+    set( ${var} ${${var}_TMP} )
+  endforeach()
+endmacro()
 

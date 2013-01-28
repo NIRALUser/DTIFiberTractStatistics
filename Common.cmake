@@ -55,7 +55,7 @@ set(CMAKE_MODULE_PATH
 #------------------------------------------------------------------------------
 include(PreventInSourceBuilds)
 include(PreventInBuildInstalls)
-include( setSlicerConfigVarList )
+include(SlicerExtensionsConfigureMacros)
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)
 #-----------------------------------------------------------------------------
@@ -65,77 +65,6 @@ else()
   include(CMakeParseArguments)
 endif()
 
-
-macro( unsetForSlicer )
-  set(options VERBOSE )
-  set(oneValueArgs )
-  set(multiValueArgs NAMES )
-  CMAKE_PARSE_ARGUMENTS(TMP
-    "${options}"
-    "${oneValueArgs}"
-    "${multiValueArgs}"
-    ${ARGN}
-    )
-  foreach( var ${TMP_NAMES} )
-    if( TMP_VERBOSE )
-      message( "Unsetting "${var} - old value: ${${var}} )
-    endif()
-    set( ${var}_TMP ${${var}} )
-    unset( ${var} CACHE )
-    unset( ${var} )
-  endforeach()
-endmacro()
-
-macro( resetForSlicer )
-  set(options VERBOSE )
-  set(oneValueArgs )
-  set(multiValueArgs NAMES )
-  CMAKE_PARSE_ARGUMENTS(TMP
-    "${options}"
-    "${oneValueArgs}"
-    "${multiValueArgs}"
-    ${ARGN}
-    )
-  foreach( var ${TMP_NAMES} )
-    if( "${${var}_TMP}" STREQUAL "" )
-      message( "Does not reset ${var}. ${var}_TMP was empty" )
-    else()
-      set( ${var} ${${var}_TMP} CACHE PATH "${var} PATH" FORCE )
-      unset( ${var}_TMP )
-      if( TMP_VERBOSE )
-        message( "resetting ${var} - new value: "${${var}} )
-      endif()
-    endif()
-  endforeach()
-endmacro()
-
-macro( unsetAllForSlicerBut )
-  set(options VERBOSE )
-  set(oneValueArgs )
-  set(multiValueArgs NAMES )
-  CMAKE_PARSE_ARGUMENTS(TMP
-    "${options}"
-    "${oneValueArgs}"
-    "${multiValueArgs}"
-    ${ARGN}
-    )
-  foreach( var ${TMP_NAMES} )
-    if( TMP_VERBOSE )
-      message( "Saving ${var} - value: ${${var}}" )
-    endif()
-    set( ${var}_TMP ${${var}} )
-  endforeach()
-  foreach( var ${SlicerConfigVarList} )
-    unset( ${var} CACHE )
-    unset( ${var} )
-  endforeach()
-  foreach( var ${TMP_NAMES} )
-    if( TMP_VERBOSE )
-      message( "Writing back ${var} - value: ${${var}_TMP}")
-    endif()
-    set( ${var} ${${var}_TMP} )
-  endforeach()
-endmacro()
 
 
 include(SlicerMacroEmptyExternalProject)
