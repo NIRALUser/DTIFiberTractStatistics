@@ -23,11 +23,11 @@ endif()
 #-----------------------------------------------------------------------------
 # Extension option(s)
 #-----------------------------------------------------------------------------
-unsetForSlicer( VERBOSE NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE)
+unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE)
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
-unsetAllForSlicerBut( VERBOSE NAMES ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE )
-resetForSlicer( VERBOSE NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
+unsetAllForSlicerBut( NAMES ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE )
+resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
 
 
 #-----------------------------------------------------------------------------

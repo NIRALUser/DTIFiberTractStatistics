@@ -104,6 +104,9 @@ ENDIF(COMPILE_MERGERSTATWITHFIBER)
 
 OPTION(COMPILE_EXTERNAL_DTIPROCESS " Compile external DTIProcess package (for fiberprocess application)." OFF)
 IF(COMPILE_EXTERNAL_DTIPROCESS)
+  if( NOT DEFINED ITKV3_COMPATIBILITY OR NOT ${ITKV3_COMPATIBILITY}  )
+    message( WARNING "Choose ITKv4 compiled with ITKV3_COMPATIBILITY set to ON (or GenerateCLP compiled against such an ITK version). If not, you may have compilation errors" )
+  endif()
   set(proj DTIProcess)
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/branches/Slicer4Extension"
