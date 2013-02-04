@@ -12,7 +12,6 @@ SET(QWT_FOUND "NO")
 
 IF(QT4_FOUND)
     FIND_PATH(QWT_INCLUDE_DIR qwt.h
-    ${QWT_INCLUDE_DIR_GIVEN}
     /usr/local/qwt/include
     /usr/local/include
     /usr/include/qwt
@@ -22,7 +21,7 @@ IF(QT4_FOUND)
     SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
     FIND_LIBRARY(QWT_LIBRARY
         NAMES ${QWT_NAMES}
-        PATHS ${QWT_LIB_PATH} /usr/local/qwt/lib /usr/local/lib /usr/lib
+        PATHS ${QWT_LIBRARY_PATH} /usr/local/qwt/lib /usr/local/lib /usr/lib
     )
 
     IF (QWT_LIBRARY)

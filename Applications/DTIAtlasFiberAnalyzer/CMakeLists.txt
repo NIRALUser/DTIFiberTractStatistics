@@ -29,29 +29,34 @@ ELSE(QT_USE_FILE)
 ENDIF(QT_USE_FILE)
 
 # Qwt include directory
-FIND_PATH(QWT_INCLUDE_DIR qwt.h
-  /usr/local/qwt/include
-  /usr/local/include
-  /usr/include/qwt
-  /usr/include
-)
+if( NOT QWT_INCLUDE_DIR )
+  FIND_PATH(QWT_INCLUDE_DIR qwt.h
+    /usr/local/qwt/include
+    /usr/local/include
+    /usr/include/qwt
+    /usr/include
+  )
+endif()
+
 if(NOT QWT_INCLUDE_DIR)
   message(FATAL_ERROR "QWT_INCLUDE_DIR not found. It should be set to a path containing qwt.h, like '/Projects/qwt-6.0.1-svn/include'")
 endif()
-include_directories(${QWT_INCLUDE_DIR})
 
 # Qwt libraries
-SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
-FIND_LIBRARY(QWT_LIBRARY
-  NAMES ${QWT_NAMES}
-  PATHS /usr/local/qwt/lib /usr/local/lib /usr/lib
-)
+if( NOT QWT_LIBRARY )
+  SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
+  FIND_LIBRARY(QWT_LIBRARY
+    NAMES ${QWT_NAMES}
+    PATHS ${QWT_LIBRARY_PATH} /usr/local/qwt/lib /usr/local/lib /usr/lib
+  )
+endif()
 if(NOT QWT_LIBRARY)
   message(FATAL_ERROR "QWT_LIBRARY not found. It should be set to a filepath like '/Projects/qwt-6.0.1-svn/lib/libqwt.a'")
 endif()
 set(QWT_LIBRARIES ${QWT_LIBRARY})
 
-INCLUDE_DIRECTORIES(
+Include_directories(
+  ${QWT_INCLUDE_DIR}
   ${QT_INCLUDE_DIR}
   ${DTIAtlasFiberAnalyser_BINARY_DIR}
   ${DTIAtlasFiberAnalyser_SOURCE_DIR}
@@ -60,7 +65,7 @@ INCLUDE_DIRECTORIES(
 QT4_WRAP_CPP(MOC_FILES DTIAtlasFiberAnalyzerguiwindow.h DTIPlotWindow.h)
 QT4_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
 
-SET(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx DTIPlotWindow.cxx ${MOC_FILES} ${UI_FILES})
+set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx DTIPlotWindow.cxx ${MOC_FILES} ${UI_FILES})
 
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} vtkHybrid ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 
