@@ -5,19 +5,19 @@
 
 
 if( COMPILE_DTIATLASFIBERANALYZER )
-  add_test(NAME DTIAtlasFiberAnalyzerTest COMMAND ${DTIAtlasFiberAnalyzer_BUILD_DIR}/DTIAtlasFiberAnalyzer --help )
+  add_test(NAME DTIAtlasFiberAnalyzerTest COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:DTIAtlasFiberAnalyzer> --help )
 endif()
 
 if( COMPILE_FIBERCOMPARE )
-  add_test(NAME FiberCompareTest COMMAND ${FiberCompare_BUILD_DIR}/FiberCompare --help )
+  add_test(NAME FiberCompareTest COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:FiberCompare> --help )
 endif()
 if( COMPILE_MERGERSTATWITHFIBER )
-  add_test(NAME MergeStatWithFiberTest COMMAND ${MergeStatWithFiber_BUILD_DIR}/MergeStatWithFiber --help )
+  add_test(NAME MergeStatWithFiberTest COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:MergeStatWithFiber> --help )
 endif()
 if( COMPILE_DTITRACTSTAT )
-  add_test(NAME dtitractstatTest COMMAND ${dtitractstat_BUILD_DIR}/dtitractstat --help )
+  add_test(NAME dtitractstatTest COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:dtitractstat> --help )
 endif()
 if( COMPILE_EXTERNAL_DTIPROCESS )
-  add_test(NAME dtiprocessTest COMMAND ${dtiprocess_BUILD_DIR}/dtiprocess --help )
+  add_test(NAME dtiprocessTest COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:dtiprocess> --help )
 endif()
 
