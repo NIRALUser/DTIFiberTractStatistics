@@ -67,14 +67,18 @@ ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set( ToolsList
-  dtitractstat
-  DTIAtlasFiberAnalyzer
-  MergeStatWithFiber
-  FiberCompare
   fiberprocess
   ) 
   foreach( tool ${ToolsList})
-    install(PROGRAMS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}/${tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
+    find_program( path_to_tool 
+       NAMES ${tool}
+       PATHS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
+       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel 
+       NO_DEFAULT_PATH
+       NO_SYSTEM_ENVIRONMENT_PATH
+      )
+    message(WARNING "${path_to_tool}" )
+    install(PROGRAMS ${path_to_tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
   endforeach()
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
