@@ -20,4 +20,5 @@ SEMMacroBuildCLI(
     TARGET_LIBRARIES vtkHybrid
     EXECUTABLE_ONLY
     INCLUDE_DIRECTORIES ${MergeStatWithFiber_BINARY_DIR} ${MergeStatWithFiber_SOURCE_DIR}  ${VTK_INCLUDE_DIRS}
+    NO_INSTALL
     )
