@@ -44,10 +44,14 @@ endif()
 
 # Qwt libraries
 if( NOT QWT_LIBRARY )
+  if( EXTENSION_SUPERBUILD_BINARY_DIR )
+    set(NO_ENV_PATH "NO_DEFAULT_PATH")
+  endif()
   SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
   FIND_LIBRARY(QWT_LIBRARY
     NAMES ${QWT_NAMES}
     PATHS ${QWT_LIBRARY_PATH} /usr/local/qwt/lib /usr/local/lib /usr/lib
+    ${NO_ENV_PATH}
   )
 endif()
 if(NOT QWT_LIBRARY)
