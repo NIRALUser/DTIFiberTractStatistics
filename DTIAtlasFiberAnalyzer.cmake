@@ -5,10 +5,6 @@ set(MODULE_TITLE ${MODULE_NAME})
 set( ARCHIVE_DESTINATION lib/static )
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
-#IF(${CMAKE_SOURCE_DIR} STREQUAL ${DTIAtlasFiberAnalyzer_SOURCE_DIR})
-  set(LIBRARY_OUTPUT_PATH ${DTIAtlasFiberAnalyzer_BINARY_DIR}/lib CACHE PATH "Single output directory for building all libraries.")
-  set(EXECUTABLE_OUTPUT_PATH ${DTIAtlasFiberAnalyzer_BINARY_DIR}/bin CACHE PATH "Single output directory for building all executables.")
-#ENDIF(${CMAKE_SOURCE_DIR} STREQUAL ${DTIAtlasFiberAnalyzer_SOURCE_DIR})
 
 find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE})
@@ -41,14 +37,19 @@ ELSE(QT_USE_FILE)
    MESSAGE(FATAL_ERROR, "QT not found. Please set QT_DIR.")
 ENDIF(QT_USE_FILE)
 
-add_subdirectory( Applications )
-
 
 #### Set paths for Testing subdirectory and find Slicer for packaging the extension
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
 endif()
+
+if( Slicer_CLIMODULES_BIN_DIR )
+  set( install_dir ${Slicer_CLIMODULES_BIN_DIR} )
+endif()
+
+add_subdirectory( Applications )
+
 #  set( DTIAtlasFiberAnalyzer_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
 #  set( FiberCompare_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
 #  set( MergeStatWithFiber_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
@@ -67,18 +68,20 @@ ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set( ToolsList
-      ${CMAKE_CURRENT_BINARY_DIR}/bin/fiberprocess
+      ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/fiberprocess
   )
   foreach( tool ${ToolsList})
     install(PROGRAMS ${tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
   endforeach()
-  set( LibsList
-      ${CMAKE_CURRENT_BINARY_DIR}/bin/libDTIIO.so
-      ${CMAKE_CURRENT_BINARY_DIR}/bin/libfiberprocessLib.so
-  ) 
-  foreach( lib ${LibsList})
-    install(PROGRAMS ${lib} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/..) 
-  endforeach()
+  if( NOT APPLE )
+    set( LibsList
+        ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/libDTIIO.so
+        ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/libfiberprocessLib.so
+    ) 
+    foreach( lib ${LibsList})
+      install(PROGRAMS ${lib} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/..) 
+    endforeach()
+  endif()
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()
