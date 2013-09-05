@@ -2,7 +2,7 @@
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
 
-
+set( ARCHIVE_DESTINATION lib/static )
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 #IF(${CMAKE_SOURCE_DIR} STREQUAL ${DTIAtlasFiberAnalyzer_SOURCE_DIR})
@@ -48,18 +48,17 @@ add_subdirectory( Applications )
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-  set( DTIAtlasFiberAnalyzer_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
-  set( FiberCompare_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
-  set( MergeStatWithFiber_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
-  set( dtitractstat_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
-  set( dtiprocess_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
-else()
-  set( DTIAtlasFiberAnalyzer_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/DTIAtlasFiberAnalyzer-build/bin/ )
-  set( FiberCompare_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/FiberCompare-build/bin/ )
-  set( MergeStatWithFiber_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/MergeStatWithFiber-build/bin/ )
-  set( dtitractstat_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/dtitractstat-build/bin/ )
-  set( dtiprocess_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/DTIProcess-build/bin/ )
 endif()
+#  set( DTIAtlasFiberAnalyzer_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
+#  set( FiberCompare_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
+#  set( MergeStatWithFiber_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
+#  set( dtitractstat_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
+#  set( dtiprocess_BUILD_DIR ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY} )
+set( DTIAtlasFiberAnalyzer_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin/ )
+set( FiberCompare_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin/ )
+set( MergeStatWithFiber_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin/ )
+set( dtitractstat_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin/ )
+set( dtiprocess_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin/ )
 
 IF(BUILD_TESTING)
   include( CTest )
@@ -68,10 +67,17 @@ ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set( ToolsList
-      ${CMAKE_CURRENT_BINARY_DIR}/Applications/DTIProcess-build/bin/fiberprocess
-  ) 
+      ${CMAKE_CURRENT_BINARY_DIR}/bin/fiberprocess
+  )
   foreach( tool ${ToolsList})
     install(PROGRAMS ${tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
+  endforeach()
+  set( LibsList
+      ${CMAKE_CURRENT_BINARY_DIR}/bin/libDTIIO.so
+      ${CMAKE_CURRENT_BINARY_DIR}/bin/libfiberprocessLib.so
+  ) 
+  foreach( lib ${LibsList})
+    install(PROGRAMS ${lib} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/..) 
   endforeach()
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})

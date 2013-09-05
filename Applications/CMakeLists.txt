@@ -16,9 +16,18 @@ ENDIF(COMPILE_MERGERSTATWITHFIBER)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   if( APPLE )
-    set( RPATHVAR "-DCMAKE_EXE_LINKER_FLAGS:STRING=-Wl,-rpath,@loader_path/../../../../.." )
+    set( RPATHVAR "-DCMAKE_INSTALL_RPATH=@loader_path/../../../../.." )
+  elseif( UNIX )
+    set( RPATHVAR "-DCMAKE_INSTALL_RPATH=$ORIGIN:$ORIGIN/.." )
+  endif()
+else()
+  if( APPLE )
+    set( RPATHVAR "-DCMAKE_INSTALL_RPATH=@loader_path" )
+  elseif(UNIX)
+    set( RPATHVAR "-DCMAKE_INSTALL_RPATH=$ORIGIN" )
   endif()
 endif()
+
 
 OPTION(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fiberprocess application)." ON)
 IF(COMPILE_EXTERNAL_DTIPROCESS)
@@ -30,13 +39,14 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
     SVN_USERNAME slicerbot
     SVN_PASSWORD slicer
-    SVN_REVISION -r 198
+    SVN_REVISION -r 199
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       -DBUILD_dwiAtlas:BOOL=OFF
+      -DBUILD_TESTING:BOOL=OFF
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${RPATHVAR}
@@ -44,7 +54,9 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-    INSTALL_COMMAND ""
+      -DCMAKE_INSTALL_PREFIX=${EXECUTABLE_OUTPUT_PATH}
+      -DINSTALL_RUNTIME_DESTINATION:STRING=.
+      -DINSTALL_LIBRARY_DESTINATION:STRING=.
   )
 ENDIF(COMPILE_EXTERNAL_DTIPROCESS)
 
