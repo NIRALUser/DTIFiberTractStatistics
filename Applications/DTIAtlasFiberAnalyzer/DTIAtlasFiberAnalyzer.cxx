@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 		/* Set and show the window */
 		DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow(debug);
 		DTIAFAwindow.show();
+        DTIAFAwindow.raise();
 		return app.exec();
 	}
 	else
