@@ -2,12 +2,13 @@
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
 
+
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
-IF(${CMAKE_SOURCE_DIR} STREQUAL ${DTIAtlasFiberAnalyzer_SOURCE_DIR})
+#IF(${CMAKE_SOURCE_DIR} STREQUAL ${DTIAtlasFiberAnalyzer_SOURCE_DIR})
   set(LIBRARY_OUTPUT_PATH ${DTIAtlasFiberAnalyzer_BINARY_DIR}/lib CACHE PATH "Single output directory for building all libraries.")
   set(EXECUTABLE_OUTPUT_PATH ${DTIAtlasFiberAnalyzer_BINARY_DIR}/bin CACHE PATH "Single output directory for building all executables.")
-ENDIF(${CMAKE_SOURCE_DIR} STREQUAL ${DTIAtlasFiberAnalyzer_SOURCE_DIR})
+#ENDIF(${CMAKE_SOURCE_DIR} STREQUAL ${DTIAtlasFiberAnalyzer_SOURCE_DIR})
 
 find_package(SlicerExecutionModel REQUIRED)
 include(${SlicerExecutionModel_USE_FILE})
@@ -67,23 +68,11 @@ ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set( ToolsList
-  fiberprocess
+      ${CMAKE_CURRENT_BINARY_DIR}/Applications/DTIProcess-build/bin/fiberprocess
   ) 
   foreach( tool ${ToolsList})
-    find_program( path_to_tool 
-       NAMES ${tool}
-       PATHS ${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
-       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel 
-       NO_DEFAULT_PATH
-       NO_SYSTEM_ENVIRONMENT_PATH
-      )
-    install(PROGRAMS ${path_to_tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
+    install(PROGRAMS ${tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
   endforeach()
-  if(APPLE)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/lib DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/..)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/Frameworks DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/..)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/AppleCreateLinkLibs.sh DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../share)
-  endif(APPLE)
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()

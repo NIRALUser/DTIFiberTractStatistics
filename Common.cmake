@@ -4,8 +4,6 @@ enable_language(C)
 enable_language(CXX)
 
 
-
-set(Slicer_SKIP_PROJECT_COMMAND ON)
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
 set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/DTIAtlasFiberAnalyzer")
