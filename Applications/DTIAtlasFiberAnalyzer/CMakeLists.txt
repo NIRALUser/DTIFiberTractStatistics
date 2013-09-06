@@ -78,11 +78,11 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
     include(${GenerateCLP_USE_FILE})
     generateclp(Launcher_CLP DTIAtlasFiberAnalyzer.xml )
     add_executable( DTIAtlasFiberAnalyzerLauncher Launcher.cxx ${Launcher_CLP} )
-  endif()
-  set( SETRUNTIMEDESTINATION INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
-  install(TARGETS DTIAtlasFiberAnalyzerLauncher
+    install(TARGETS DTIAtlasFiberAnalyzerLauncher
       RUNTIME DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} COMPONENT RuntimeLibraries
       )
+    set( SETRUNTIMEDESTINATION INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
+  endif()
 endif()
 
 SEMMacroBuildCLI(
