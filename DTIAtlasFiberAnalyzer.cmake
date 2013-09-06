@@ -37,6 +37,9 @@ ELSE(QT_USE_FILE)
    MESSAGE(FATAL_ERROR, "QT not found. Please set QT_DIR.")
 ENDIF(QT_USE_FILE)
 
+if( WIN32 )
+  set( extension ".exe" )
+endif()
 
 #### Set paths for Testing subdirectory and find Slicer for packaging the extension
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
@@ -65,15 +68,14 @@ IF(BUILD_TESTING)
   include( CTest )
   ADD_SUBDIRECTORY(Testing)
 ENDIF(BUILD_TESTING)
-
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set( ToolsList
-      ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/fiberprocess
+      ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/fiberprocess${extension}
   )
   foreach( tool ${ToolsList})
     install(PROGRAMS ${tool} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}) 
   endforeach()
-  if( NOT APPLE )
+  if( UNIX AND NOT APPLE )
     set( LibsList
         ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/libDTIIO.so
         ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/libfiberprocessLib.so

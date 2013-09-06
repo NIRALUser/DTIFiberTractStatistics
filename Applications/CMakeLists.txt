@@ -28,6 +28,9 @@ else()
   endif()
 endif()
 
+if( WIN32 )
+  set(STATIC "-DEXECUTABLES_ONLY:BOOL=TRUE" )
+endif()
 
 OPTION(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fiberprocess application)." ON)
 IF(COMPILE_EXTERNAL_DTIPROCESS)
@@ -50,6 +53,7 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${RPATHVAR}
+      ${STATIC}
       -DCMAKE_INSTALL_NAME_DIR:STRING=@rpath/${install_dir}
       -DDTIProcess_SUPERBUILD:BOOL=FALSE
       -DITK_DIR:PATH=${ITK_DIR}

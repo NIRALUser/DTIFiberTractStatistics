@@ -73,6 +73,18 @@ set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx
 
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} vtkHybrid ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 
+if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  if( WIN32 OR APPLE )
+    include(${GenerateCLP_USE_FILE})
+    generateclp(Launcher_CLP DTIAtlasFiberAnalyzer.xml )
+    add_executable( DTIAtlasFiberAnalyzerLauncher Launcher.cxx ${Launcher_CLP} )
+  endif()
+  set( SETRUNTIMEDESTINATION INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
+  install(TARGETS DTIAtlasFiberAnalyzerLauncher
+      RUNTIME DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} COMPONENT RuntimeLibraries
+      )
+endif()
+
 SEMMacroBuildCLI(
     NAME DTIAtlasFiberAnalyzer
     ADDITIONAL_SRCS ${DTIAtlasFiberAnalyzer_source}
@@ -80,5 +92,6 @@ SEMMacroBuildCLI(
     EXECUTABLE_ONLY
     INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${DTIAtlasFiberAnalyzer_BINARY_DIR} ${DTIAtlasFiberAnalyzer_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS}
     INSTALL_ARCHIVE_DESTINATION ${ARCHIVE_DESTINATION}
+    ${SETRUNTIMEDESTINATION}
     )
 

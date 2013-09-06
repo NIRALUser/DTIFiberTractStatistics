@@ -18,6 +18,6 @@ if( COMPILE_DTITRACTSTAT )
   add_test(NAME dtitractstatTest COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:dtitractstat> --help )
 endif()
 if( COMPILE_EXTERNAL_DTIPROCESS )
-  add_test(NAME fiberprocessTest COMMAND ${Slicer_LAUNCH_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/../${install_dir}/fiberprocess --help )
+  add_test(NAME fiberprocessTest COMMAND ${Slicer_LAUNCH_COMMAND} ${CMAKE_CURRENT_BINARY_DIR}/../${install_dir}/fiberprocess${extension} --help )
 endif()
 
