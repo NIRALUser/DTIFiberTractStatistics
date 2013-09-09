@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 			std::cout<<"DTI Atlas Fiber Analyser WITH GUI"<<std::endl;
 		QApplication app(argc, argv);
 		/* Set and show the window */
-		DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow(debug);
+        DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow( argv[ 0 ] , debug ) ;
 		DTIAFAwindow.show();
         DTIAFAwindow.raise();
 		return app.exec();

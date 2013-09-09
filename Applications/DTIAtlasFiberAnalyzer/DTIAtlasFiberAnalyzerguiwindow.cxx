@@ -6,7 +6,7 @@
 /********************************************************************************* 
  * Constructor
  ********************************************************************************/
-DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(bool debug, QWidget * parent , Qt::WFlags f  ): QMainWindow(parent, f)
+DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( char path[] , bool debug, QWidget * parent , Qt::WFlags f  ): QMainWindow(parent, f)
 {
 	setupUi(this);
 	
@@ -22,7 +22,10 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(bool debug, QWidg
 	m_currentRow = -1;
 	m_currentColumn = -1;
 	m_transposeColRow = false;
-	
+    m_PathToExecutable = itksys::SystemTools::CollapseFullPath( path ) ;
+    size_t found = m_PathToExecutable.find_last_of("/\\");
+    m_PathToExecutable = m_PathToExecutable.substr( 0 , found ) ;
+
 	RB_HField->setEnabled(true);
 	RB_DField->setEnabled(true);
 	nextstep->setEnabled(false);
@@ -404,10 +407,16 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserCSVFilename()
 
 void DTIAtlasFiberAnalyzerguiwindow::EnterCsvFileName()
 {
-	/* Mouse Event when running */
-	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+    if( !itksys::SystemTools::FileExists(csvfilename->text().toStdString().c_str() , true ) )
+    {
+        csvfilename->setText( "" ) ;
+        return ;
+    }
+    /* Mouse Event when running */
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	/* Clear the CSV */
-	if(m_CSV !=NULL)
+    if(m_CSV !=NULL)
 		clearCSV();
 	//Clear the number of column
 	m_DataCol = -1;
@@ -844,8 +853,10 @@ void DTIAtlasFiberAnalyzerguiwindow::SetDataColumn()
 		//Fill it with "no data" if there is no data
 		for(int i=0;i<CSVtable->rowCount();i++)
 		{
-			if((CSVtable->item(i,m_DataCol))->text().compare("")==0 ||
-						 (CSVtable->item(i,m_DataCol))->text().compare("no")==0)
+            if( !CSVtable->item(i,m_DataCol)
+             || !(CSVtable->item(i,m_DataCol))->text().compare("")
+             || !(CSVtable->item(i,m_DataCol))->text().compare("no")
+              )
 			{
 				QTableWidgetItem *item=  new QTableWidgetItem;
 				QString str("no data");
@@ -890,8 +901,10 @@ void DTIAtlasFiberAnalyzerguiwindow::SetDeformationColumn()
 		//Fill it with "no deformation" if there is no data
 		for(int i=0;i<CSVtable->rowCount();i++)
 		{
-			if((CSVtable->item(i,m_DeformationCol))->text().compare("")==0 ||
-						 (CSVtable->item(i,m_DeformationCol))->text().compare("no")==0)
+            if( !CSVtable->item(i,m_DeformationCol)
+             || !(CSVtable->item(i,m_DeformationCol))->text().compare("")
+             || !(CSVtable->item(i,m_DeformationCol))->text().compare("no")
+              )
 			{
 				QTableWidgetItem *item=  new QTableWidgetItem;
 				QString str("no deformation");
@@ -912,7 +925,7 @@ void DTIAtlasFiberAnalyzerguiwindow::SetDeformationColumn()
 /* Set Name for cases column number */
 void DTIAtlasFiberAnalyzerguiwindow::SetNameColumn()
 {
-	if(ColumnNameCases->text().toInt() - 1 < CSVtable->columnCount() && ColumnNameCases->text().toInt()!=0
+    if(ColumnNameCases->text().toInt() - 1 < CSVtable->columnCount() && ColumnNameCases->text().toInt()!=0
 		  && ColumnNameCases->text().toInt()>0)
 	{
 		// decolor the last column
@@ -934,9 +947,11 @@ void DTIAtlasFiberAnalyzerguiwindow::SetNameColumn()
 		ColorCol(3);
 		//Fill it with "no deformation" if there is no data
 		for(int i=0;i<CSVtable->rowCount();i++)
-		{
-			if((CSVtable->item(i,m_NameCol))->text().compare("")==0 ||
-						 (CSVtable->item(i,m_NameCol))->text().compare("no")==0)
+        {
+            if( !CSVtable->item(i,m_NameCol)
+             || !(CSVtable->item(i,m_NameCol))->text().compare("")
+             || !(CSVtable->item(i,m_NameCol))->text().compare("no")
+              )
 			{
 				QTableWidgetItem *item=  new QTableWidgetItem;
 				QString str("no name");
@@ -1459,9 +1474,15 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
 		AddDataFromTableToCSV();
 		
 		//Find path for fiberprocess
-		pathFiberProcess= itksys::SystemTools::FindProgram("fiberprocess");
+        std::vector< std::string > listDir ;
+        listDir.push_back( m_PathToExecutable ) ;
+        pathFiberProcess = itksys::SystemTools::FindProgram( "fiberprocess" , listDir , true ) ;
+        if( pathFiberProcess.empty() )
+        {
+            pathFiberProcess= itksys::SystemTools::FindProgram( "fiberprocess" ) ;
+        }
 		//if path not found
-		if(pathFiberProcess.empty()==true)
+        if( pathFiberProcess.empty() )
 		{
 			ret = QMessageBox::information(this, "fiberprocess","Select the folder where fiberprocess* is saved .");
 			pathFiberProcess = (QFileDialog::getExistingDirectory(this)).toStdString();
@@ -1523,13 +1544,18 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 			m_transposeColRow = false;
 		else if(CaseOnArc->isChecked())
 			m_transposeColRow = true;
-		
 		//Add the data to the CSV
 		AddDataFromTableToCSV();
 		//Find path for fiberprocess
-		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstat");
+        std::vector< std::string > listDir ;
+        listDir.push_back( m_PathToExecutable ) ;
+        pathdti_tract_stat= itksys::SystemTools::FindProgram( "dtitractstat" , listDir , true ) ;
+        if( pathdti_tract_stat.empty() )
+        {
+            pathdti_tract_stat= itksys::SystemTools::FindProgram( "dtitractstat" ) ;
+        }
 		//if path not found
-		if(pathdti_tract_stat.empty()==true)
+        if( pathdti_tract_stat.empty() )
 		{
 			QMessageBox::information(this, "dtitractstat", "Select the folder where dtitractstat is located .");
 			pathdti_tract_stat = (QFileDialog::getExistingDirectory(this)).toStdString();
@@ -1538,7 +1564,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		if(pathdti_tract_stat.compare("")!=0)
 		{
 			//Apply dti tract stat on CSV data
-			if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_DeformationCol, m_NameCol, m_transposeColRow, false, CoG, this))
+            if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_DeformationCol, m_NameCol, m_transposeColRow, false, CoG, FiberSampling->value() , checkRodent->isChecked() , this))
 			{
 				std::cout<<"dtitractstat has been canceled"<<std::endl;
 				QApplication::restoreOverrideCursor();
@@ -1548,7 +1574,8 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 			{
 				setFibers();
 				m_FiberProfile=GatheringFiberProfile(m_CSV, m_OutputFolder, m_DataCol, m_NameCol, m_transposeColRow, m_FiberSelectedname,success);
-				if(!success||m_FiberProfile.size()<0)
+                //if(!success||m_FiberProfile.size()<0)???vector.size is always>0???
+                if(!success || m_FiberProfile.size() == 0)
 				{
 					QMessageBox::warning(this, "Warning", "Error gathering fiber profile\r Please recompute dtitractstat.");
 					QApplication::restoreOverrideCursor();
@@ -1982,9 +2009,14 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPOutputFilename()
 bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-	
-	std::string PathMergeStatWithFiber = itksys::SystemTools::FindProgram("MergeStatWithFiber");
-	if(PathMergeStatWithFiber.size()==0)
+    std::vector< std::string > listDir ;
+    listDir.push_back( m_PathToExecutable ) ;
+    std::string PathMergeStatWithFiber = itksys::SystemTools::FindProgram("MergeStatWithFiber" , listDir , true ) ;
+    if( PathMergeStatWithFiber.empty() )
+    {
+        PathMergeStatWithFiber = itksys::SystemTools::FindProgram("MergeStatWithFiber" ) ;
+    }
+    if( PathMergeStatWithFiber.empty() )
 	{
 		QMessageBox::warning(this, "MergeStatWithFiber", "Select the folder where MergeStatWithFiber is located.");
 		PathMergeStatWithFiber=QFileDialog::getExistingDirectory(this).toStdString();

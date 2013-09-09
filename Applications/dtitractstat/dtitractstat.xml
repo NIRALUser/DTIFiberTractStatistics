@@ -86,6 +86,13 @@
       <channel>input</channel>
       <default>1</default>
     </double>
+    <boolean>
+      <name>processing_rodent</name>
+      <longflag>--rodent</longflag>
+      <label>Processing rodent images</label>
+      <description>Specify that rodent images are being processed. The step size will not be changed if smaller than 0.1</description>
+      <default>false</default>    
+    </boolean>
     <integer>
       <name>window</name>
       <longflag>--window</longflag>

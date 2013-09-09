@@ -26,6 +26,7 @@
 #include "CSVClass.h"
 #include "DTIPlotWindow.h"
 
+
 class PlotWindow;
 typedef std::vector<std::string> vstring;
 typedef QVector<QVector<QVector<double> > > qv3double;
@@ -34,7 +35,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 {
 	Q_OBJECT
 	public:
-		DTIAtlasFiberAnalyzerguiwindow(bool debug=false, QWidget * parent = 0, Qt::WFlags f = 0 );
+        DTIAtlasFiberAnalyzerguiwindow( char argv[] , bool debug=false, QWidget * parent = 0, Qt::WFlags f = 0 );
 		vstring getCases(){return m_Cases;}
 		vstring getFibers(){return m_Fibers;}
 		vstring getFiberInformations(std::string fiber, std::string parameter);
@@ -164,6 +165,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 		QVector<qv3double> m_statdata;
 		vstring m_parameterslines;
 		bool m_PlotError;
+        std::string m_PathToExecutable ;
 };
 
 #endif

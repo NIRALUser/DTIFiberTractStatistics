@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
       bandwidthOn = true;
     }
   //Check for step size and bandwidth > 0
-  if (step_size<0.1)
+  if (step_size<0.1 && !processing_rodent )
     {
       cout<<"Step size is too small...making step size = 0.1\n";
       step_size=0.1;
