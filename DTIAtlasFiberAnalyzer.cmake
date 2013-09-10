@@ -3,6 +3,9 @@ set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
 
 set( ARCHIVE_DESTINATION lib/static )
+set( LIBRARY_DESTINATION lib )
+set( RUNTIME_DESTINATION bin )
+
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 
