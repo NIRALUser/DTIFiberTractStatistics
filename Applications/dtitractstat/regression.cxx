@@ -30,20 +30,18 @@ regression::~regression()
 {
 }
 
-void regression::regression_main(std::string output_file,int param,std::string param_str, std::vector< std::vector<double> > length, itk::Vector<double, 3> origin, itk::Vector<double, 3> normal, bool stepsizeOn, double step_size, bool bandwidthOn, double bandwidth, bool statOn, int stat, bool noisemodelOn, int noise_model, bool qpercOn, double q_perc, int all_flag, bool windowOn, int window, std::string output_viz_file,bool worldspace)
+void regression::regression_main(std::string output_file, std::string param_str, std::vector< std::vector<double> > length, double step_size, double bandwidth, int stat, int noise_model, double q_perc, int all_flag, bool windowOn, int window, std::string output_viz_file,bool worldspace)
 {
   ofstream fp_output_file;
   //sorting the list based on arc length
   int length_size = length.size();
   std::cout<<"size of length is "<<length_size;
-  std::vector< std::vector<double> > length_sorted = sort_length(length,length_size);
+  std::sort(length.begin(), length.end(), sortFunction ) ;
 
   //Writing header information to output file
   if (all_flag==-1 || all_flag==1)
   {
     fp_output_file.open(output_file.c_str(),ios::app);
-    fp_output_file<<"Cut Plane Origin: "<<origin[0]<<" "<<origin[1]<<" "<<origin[2]<<"\n";
-    fp_output_file<<"Cut Plane Normal: "<<normal[0]<<" "<<normal[1]<<" "<<normal[2]<<"\n";
     if (noise_model == 1 && stat!=1)
       fp_output_file<<"Noise Model: Beta\t";
     else if (noise_model == 1 && stat==1)
@@ -76,7 +74,7 @@ void regression::regression_main(std::string output_file,int param,std::string p
       //Calling Regression_Beta_Gaussian function	for Beta (1)
       //DEBUG
       //std::cout<<"writing result for the parameter "<<param_str<<std::endl;
-      Regression_Beta_Gaussian(output_file, length_sorted, step_size, bandwidth, noise_model, stat, all_flag, windowOn, window, output_viz_file);
+      Regression_Beta_Gaussian(output_file, length, step_size, bandwidth, noise_model, stat, all_flag, windowOn, window, output_viz_file);
       cout<<"REGRESSION FUNCTION CALLED WITH BETA NOISE MODEL: Regression_Beta_Gaussian, stat (Quantile,Mean,Mode):"<<stat<< endl;
     }
     else if (noise_model == 2 && stat!=1)
@@ -84,13 +82,13 @@ void regression::regression_main(std::string output_file,int param,std::string p
       //Calling Regression_Beta_Gaussian function	for Gaussian (2)
       //DEBUG
       //std::cout<<"writing result for the parameter "<<param_str<<std::endl;
-      Regression_Beta_Gaussian(output_file, length_sorted, step_size, bandwidth, noise_model, stat, all_flag, windowOn, window, output_viz_file);
+      Regression_Beta_Gaussian(output_file, length, step_size, bandwidth, noise_model, stat, all_flag, windowOn, window, output_viz_file);
       cout<<"REGRESSION FUNCTION CALLED WITH GAUSSIAN NOISE MODEL: Regression_Beta_Gaussian, stat(Quantile,Mean,Mode):"<< stat<<endl;
     }
     else if (stat == 1)
     {	
       //Calling Regression_Quantile function	
-      Regression_Quantile(output_file, length_sorted, step_size, bandwidth, q_perc, all_flag);
+      Regression_Quantile(output_file, length, step_size, bandwidth, q_perc, all_flag);
       cout<<"REGRESSION FUNCTION CALLED, with Gaussian weights : Regression_Quantile, q_perc:"<<q_perc<< endl;
     }
     else	
@@ -101,30 +99,16 @@ void regression::regression_main(std::string output_file,int param,std::string p
   }
   else
   {
-    Regression_Beta_Gaussian(output_file, length_sorted, step_size, bandwidth, 2, 2, all_flag, windowOn, window, output_viz_file);	
+    Regression_Beta_Gaussian(output_file, length, step_size, bandwidth, 2, 2, all_flag, windowOn, window, output_viz_file);
     cout<<"REGRESSION FUNCTION CALLED WITH GAUSSIAN NOISE MODEL, Stat: Mean, for Param # : "<<all_flag<<endl;
   }
 }
 
-std::vector< std::vector<double> > regression::sort_length(std::vector< std::vector<double> > length, int l_counter)
+bool regression::sortFunction(std::vector< double > i , std::vector< double > j )
 {
-  for (int i=0; i<l_counter-1; i++) 
-  {
-    for (int j=0; j<l_counter-1-i; j++)
-    {
-      if (length[j+1][0] < length[j][0]) 
-      {  /* compare the two neighbors */
-	double tmp_length = length[j][0];         /* swap a[j] and a[j+1]      */
-	double tmp_param = length[j][1];
-	length[j][0] = length[j+1][0];
-	length[j][1] = length[j+1][1];
-	length[j+1][0] = tmp_length;
-	length[j+1][1] = tmp_param;
-      }
-    }
-  }
-  return (length);
+  return ( i[ 0 ] < j[ 0 ] ) ;
 }
+
 
 void regression::Regression_Quantile(std::string output_file, std::vector< std::vector<double> > length, double step_size, double bandwidth, double q_perc, int all_flag)
 {
@@ -135,7 +119,7 @@ void regression::Regression_Quantile(std::string output_file, std::vector< std::
   int l_counter = length.size();
   double min_length = length[0][0]; 
   double max_length=length[l_counter-1][0];			//since length[][] is sorted 
-  int reg_counter = ceil((max_length - min_length+1)/step_size);	//note: min_length is negative
+  int reg_counter = ceil((max_length - min_length)/step_size);	//note: min_length is negative. We want the last sampled point to be before the last actual fiber point
   double** regression_result_quan=new double*[reg_counter];			//will hold the arc length and result of the quantile 
   for(int x=0; x<reg_counter; x++)
 	  regression_result_quan[x]=new double[2];
@@ -285,7 +269,7 @@ void regression::Regression_Beta_Gaussian(std::string output_file, std::vector< 
   int l_counter = length.size();
   double min_length = length[0][0]; 
   double max_length=length[l_counter-1][0];	//since length[][] is sorted 
-  int reg_counter = ceil((max_length - min_length +1)/step_size);	//note: min_length is negative
+  int reg_counter = ceil((max_length - min_length )/step_size );	//note: min_length is negative. We want the last sampled point to be before the last actual fiber point
 
   //getting minimum and maximum of the parameter for Beta regression
   double min= find_min(length, l_counter);

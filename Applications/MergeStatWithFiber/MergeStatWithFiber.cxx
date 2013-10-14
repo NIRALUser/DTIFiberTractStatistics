@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 	Processing* process=new Processing;
 	process->ReadDataFromCSV(csv_input);
 	process->ReadDataFromVTK(vtk_input);
-	process->WritingDataInVTK(output_vtk_file, interpolation_min, interpolation_max, p_value_alpha);
+  process->WritingDataInVTK(output_vtk_file, interpolation_min, interpolation_max, p_value_alpha,inverse_rescale_p_value);
 	
 	
 }

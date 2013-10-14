@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-
+#include <algorithm>
 #include "processing.h"
 
 
@@ -85,13 +85,13 @@ void Processing::ReadDataFromCSV(std::string Filename)
     
     
 	// m_DataTable[0][0] => arclength title,  m_DataTable[0][1] << first arclength value etc
-	
-	if(m_DataTable[0][0]=="Index" || m_DataTable[0][0]=="Id")
+    std::string columnName = m_DataTable[0][0] ;
+    std::transform(columnName.begin(), columnName.end(), columnName.begin(), ::tolower);
+    if( columnName == "index" || columnName == "id" )
 		m_Index=true;
 	else
 		m_Index=false;
-	
-	if(m_DataTable[0][0]=="Arclength" || m_DataTable[0][0]=="arclength")
+    if( columnName == "arclength" )
 		m_Arclength=true;
 	else
 		m_Arclength=false;
@@ -190,7 +190,7 @@ double Processing::GetMaxFromColumn(int Column)
 *   and 
 ***********************************************************************************/
 
-void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, double Max, double alpha)
+void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, double Max, double alpha , inverse_rescale_p_value )
 {
 	int NbParameters=m_DataTable.size();
 	
@@ -211,89 +211,119 @@ void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, doubl
         std::cout << "Scalars with Name FiberLocationIndex/SamplingDistance2Origin found" << std::endl;
     }
 
-	double* Bounds=new double[2];
+  double* Bounds=new double[2];
     if(Min==-1)
         Min=0;
     if(Max==-1)
         Max=100;
     
-	for(int i=0; i<NbParameters; i++)
-	{
-        
-        Bounds[0]=GetMinFromColumn(i);
-        Bounds[1]=GetMaxFromColumn(i);
-		
+  for(int i=0; i<NbParameters; i++)
+  {
+    Bounds[0]=GetMinFromColumn(i);
+    Bounds[1]=GetMaxFromColumn(i);
 		vtkSmartPointer<vtkFloatArray> Parameter(vtkFloatArray::New());
 		vtkSmartPointer<vtkFloatArray> ParameterSlicer(vtkFloatArray::New());
-		Parameter->SetNumberOfComponents(m_PolyData->GetNumberOfPoints());
-		Lines->InitTraversal();
-		for(int FiberId=0; Lines->GetNextCell(NumberOfPoints,Ids); FiberId++)
-		{
-			for(int PointId=0; PointId<NumberOfPoints; PointId++)
-			{
-				
-				int FiberIndex=(int)Scalars->GetComponent(0,Ids[PointId]);
-                //std::cout << FiberIndex << ",";
-				double Value;
-				if(m_Index)
-				{
-					FiberIndex=GetRealIndex(FiberIndex); // look up index
-					Value=atof(m_DataTable[i][FiberIndex].c_str());
-				} 
-                else if (m_Arclength)
-                {
-					FiberIndex=ArclengthToIndex(FiberIndex); // look up index
-					Value=atof(m_DataTable[i][FiberIndex].c_str());
-                }
-				else
-					Value=atof(m_DataTable[i][FiberIndex+2].c_str());
-                
-				Parameter->InsertComponent(0,Ids[PointId],Value);
-                
-                if (alpha == -1 || i == 0) {
-                    // linearly interpolate from Min to Max
-                    Value=(int)(((Value-Bounds[0])/(Bounds[1]-Bounds[0]))*(Max-Min)+Min);
-                } else {
-                    // linearly interpolat 0..alpha from Min to Max
-                    if (Value > alpha) {
-                        Value = Max;
-                    } else {
-                        Value=(int)(Value/alpha*(Max-1-Min)+Min);
-                    }
-                }
-				ParameterSlicer->InsertComponent(0,Ids[PointId],Value);
-				
-			}
-		}
-		Parameter->SetName(m_DataTable[i][0].c_str());
-		m_PolyData->GetPointData()->AddArray(Parameter);
-		ParameterSlicer->SetName((m_DataTable[i][0]+"_Slicer").c_str());
-		m_PolyData->GetPointData()->AddArray(ParameterSlicer);
-	}
-	vtkSmartPointer<vtkPolyDataWriter> writer(vtkPolyDataWriter::New());
-	writer->SetFileName(output_vtk_file.c_str());
-	writer->SetInput(m_PolyData);
-	writer->Update();
-	
-	delete Bounds;
+    // This line changes the dimension along which the data is written
+    // Without it, it writes along dimension 2 (eg: 1 70397)
+    // With it, it writes along dimension 1 (eg: 70397 1)
+    //Parameter->SetNumberOfComponents(m_PolyData->GetNumberOfPoints());
+    Lines->InitTraversal();
+    for(int FiberId=0; Lines->GetNextCell(NumberOfPoints,Ids); FiberId++)
+    {
+      for(int PointId=0; PointId<NumberOfPoints; PointId++)
+      {
+        float FiberIndex_f = Scalars->GetComponent(0,Ids[PointId]);
+        double Value;
+        int FiberIndex ;
+        if(m_Index)
+        {
+          FiberIndex=GetRealIndex((int)FiberIndex_f); // look up index
+          Value=atof(m_DataTable[i][FiberIndex].c_str());
+        }
+        else if (m_Arclength)
+        {
+          FiberIndex=ArclengthToIndex(FiberIndex_f); // look up index
+          Value=atof(m_DataTable[i][FiberIndex].c_str());
+        }
+        else
+          Value=atof(m_DataTable[i][(int)FiberIndex_f+2].c_str());
+
+        Parameter->InsertComponent(0,Ids[PointId],Value);
+
+        if (alpha == -1 || i == 0)
+        {
+          // linearly rescales from Min to Max
+          Value=(int)(((Value-Bounds[0])/(Bounds[1]-Bounds[0]))*(Max-Min)+Min) ;
+        }
+        else
+        {
+          if( inverse_rescale_p_value )
+          {
+            // linearly rescales 0..alpha from Max to Min
+            if (Value > alpha)
+            {
+              Value = Min;
+            }
+            else
+            {
+              Value=(int)(Value/alpha*(Min-Max)+Max);
+            }
+          }
+          {
+            // linearly rescales 0..alpha from Min to Max
+            if (Value > alpha)
+            {
+              Value = Max;
+            }
+            else
+            {
+              Value=(int)(Value/alpha*(Max-1-Min)+Min);//why is there a "-1"?
+            }
+          }
+        }
+        ParameterSlicer->InsertComponent(0,Ids[PointId],Value);
+      }
+    }
+    Parameter->SetName(m_DataTable[i][0].c_str());
+    m_PolyData->GetPointData()->AddArray(Parameter);
+    ParameterSlicer->SetName((m_DataTable[i][0]+"_Slicer").c_str());
+    m_PolyData->GetPointData()->AddArray(ParameterSlicer);
+  }
+  vtkSmartPointer<vtkPolyDataWriter> writer(vtkPolyDataWriter::New());
+  writer->SetFileName(output_vtk_file.c_str());
+  writer->SetInput(m_PolyData);
+  writer->Update();
+
+  delete Bounds;
 }
 
-int Processing::ArclengthToIndex(int Index)
+//Should probably replace by a dichotomic search or anything more efficient
+//than looking through the whole list that is sorted
+int Processing::ArclengthToIndex(float Index)
 {
-	for(unsigned int i=1; i<m_DataTable[0].size() ; i++)
-	{
-		if(atoi(m_DataTable[0][i].c_str()) > Index)
-			return i;
-	}
-	return -1;
+  float min_dist = std::numeric_limits<float>::max() ;
+  size_t pos = 0 ;
+  float previous_value =-100000 ;
+  for(size_t i = 1 ; i < m_DataTable[ 0 ].size() ; i++ )
+  {
+    float csvValue = atof(m_DataTable[0][i].c_str()) ;
+    float dist = (csvValue -Index)*(csvValue -Index) ;
+    if( min_dist > dist )
+    {
+      min_dist = dist ;
+      pos = i ;
+    }
+    previous_value = csvValue ;
+  }
+  return pos ;
 }
 
 int Processing::GetRealIndex(int Index)
 {
-	for(unsigned int i=1; i<m_DataTable[0].size(); i++)
-	{
-		if(atoi(m_DataTable[0][i].c_str())==Index)
-			return i;
-	}
-	return -1;
+  for(unsigned int i=1; i<m_DataTable[0].size(); i++)
+  {
+    if(atoi(m_DataTable[0][i].c_str())==Index)
+      return i;
+  }
+  return -1;
 }

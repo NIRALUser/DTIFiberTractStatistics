@@ -720,7 +720,8 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 		if(Parametrized)
 		{
 			qs = (takeoffExtension(Output_fiber_file)+"_parametrized.vtk").c_str();
-			arguments.append(QString("--output_parametrized_fiber_file ") + qs);
+//			arguments.append(QString("--output_parametrized_fiber_file ") + qs);
+      arguments.append(QString("--output_original_fibers_parametrized ") + qs);
 		}
 		
 		//Plane

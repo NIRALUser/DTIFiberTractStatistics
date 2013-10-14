@@ -9,7 +9,7 @@
   <description>
     This is a command line tool which allows the user to study the behavior of water diffusion (using DTI data) along the length of the white matter fiber-tracts.
   </description>
-  <version>1.0</version>
+  <version>1.1</version>
   <documentation-url>
     http://www.nitrc.org/projects/dti_tract_stat/
   </documentation-url>
@@ -45,6 +45,15 @@
       <longflag>--output_parametrized_fiber_file</longflag>
       <label>Output Parametrized Fiber File</label>
       <description>Ouput parametrized fiber file</description>
+      <channel>output</channel>
+      <default></default>
+    </file>
+    <file>
+      <name>output_original_fibers_parametrized</name>
+      <flag>d</flag>
+      <longflag>--output_original_fibers_parametrized</longflag>
+      <label>Output Original Fibers with Arclength to plane</label>
+      <description>Output Original Fibers with Arclength to plane</description>
       <channel>output</channel>
       <default></default>
     </file>
@@ -113,7 +122,7 @@
       <name>parameter_list</name>
       <longflag>--parameter_list</longflag>
       <label>scalar diffusion properties that are calculated</label>
-      <description>the list of scalar diffusion properties that are calculated. It can be one or multiple of the following: fa,md,ad,l2,l3,fro,rd,ga</description>
+      <description>the list of scalar diffusion properties that are calculated. It can be one or multiple of the following: fa,md,ad(=l1),l2,l3,fro,rd,ga</description>
       <default>fa,md,ad,l2,l3,fro,rd,ga</default>
     </string-vector>
     <string-enumeration>

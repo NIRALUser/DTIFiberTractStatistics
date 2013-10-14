@@ -23,14 +23,23 @@ endif()
 #-----------------------------------------------------------------------------
 # Extension option(s)
 #-----------------------------------------------------------------------------
-unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE)
-find_package(Slicer REQUIRED)
-include(${Slicer_USE_FILE})
-unsetAllForSlicerBut( NAMES ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE )
-resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
-if( APPLE )
-  set( CMAKE_EXE_LINKER_FLAGS -Wl,-rpath,@loader_path/../../../../../)
+if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
+  unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE QtTesting_DIR)
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  unsetAllForSlicerBut( NAMES ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE )
+  resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
+  if( APPLE )
+    set( CMAKE_EXE_LINKER_FLAGS -Wl,-rpath,@loader_path/../../../../../)
+  endif()
+  set( USE_SYSTEM_ITK CACHE "Build using an externally defined version of ITK" ON )
+  set( USE_SYSTEM_VTK CACHE "Build using an externally defined version of VTK" ON )
+  set( USE_SYSTEM_SlicerExecutionModel CACHE "Build using an externally defined version of SlicerExecutionModel" ON )
 endif()
+
+option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
+option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
+option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 
 #-----------------------------------------------------------------------------
 # Superbuild option(s)
@@ -54,7 +63,10 @@ CMAKE_DEPENDENT_OPTION(
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES QWT)
+set(ITK_VERSION_MAJOR 4)
+set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
+
+set(${LOCAL_PROJECT_NAME}_DEPENDENCIES QWT ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel)
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
@@ -212,13 +224,13 @@ ExternalProject_Add(${proj}
     -DMIDAS_PACKAGE_API_KEY:STRING=${MIDAS_PACKAGE_API_KEY}
     -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
     -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
-    -DDTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION:BOOL=OFF
+    -DDTIAtlasFiberAnalyzer_SuperBuild:BOOL=OFF
      ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
      ${COMMON_EXTERNAL_PROJECT_ARGS}
     # Slicer
     -DSlicer_DIR:PATH=${Slicer_DIR}
-    -DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
-    -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
+#    -DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
+#    -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
 )
 
 ## Force rebuilding of the main subproject every time building from super structure

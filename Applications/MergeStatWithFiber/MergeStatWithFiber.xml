@@ -9,7 +9,7 @@
 	<description>
 		This command line complete a vtk file with arc_length and associated parameters such as FA, MD, ...
 	</description>
-	<version>1.0</version>
+  <version>1.1</version>
 	<documentation-url></documentation-url>
 	<license></license>
 	<contributor>
@@ -71,5 +71,13 @@
 			<channel>input</channel>
 			<default>-1</default>
 		</float>
+    <boolean>
+      <name>inverse_rescale_p_value</name>
+      <flag>i</flag>
+      <longflag>inverse_rescale_p_value</longflag>
+      <label>Inverse alpha value for p-values</label>
+      <description>Rescales p-values setting alpha to min and 0 to max</description>
+      <default>false</default>
+    </boolean>
 	</parameters>
 </executable>

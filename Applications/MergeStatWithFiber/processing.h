@@ -15,7 +15,7 @@
 #include <vtkObject.h>
 #include <vtkCellArray.h>
 #include <vtkFieldData.h>
-
+#include <limits>
 
 typedef std::vector<std::string> vstring;
 typedef std::vector<vstring> v2string;
@@ -29,13 +29,13 @@ class Processing{
 		bool IsFloat(std::string);
 		void ReadDataFromCSV(std::string Filename);
 		void ReadDataFromVTK(std::string Filename);
-		void WritingDataInVTK(std::string output_vtk_file, double Min, double Max, double alpha);
+    void WritingDataInVTK(std::string output_vtk_file, double Min, double Max, double alpha , bool inverse_rescale_p_value) ;
 		vstring StringToVector(std::string line);
 		vstring GetColumn(v2string data, int column);
 		double GetMaxFromColumn(int Column);
 		double GetMinFromColumn(int Column);
         int GetRealIndex(int Index);
-        int ArclengthToIndex(int Index);
+        int ArclengthToIndex(float Index);
 		
 	private:
 		v2string m_DataTable;

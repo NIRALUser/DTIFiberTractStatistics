@@ -24,13 +24,10 @@ else()
   if( APPLE )
     set( RPATHVAR "-DCMAKE_EXE_LINKER_FLAGS:STRING=-Wl,-rpath,@loader_path" )
   elseif(UNIX)
-    set( RPATHVAR "-DCMAKE_INSTALL_RPATH=$ORIGIN" )
+    set( RPATHVAR "-DCMAKE_INSTALL_RPATH=$ORIGIN/lib" )
   endif()
 endif()
 
-if( WIN32 )
-  set(STATIC "-DEXECUTABLES_ONLY:BOOL=TRUE" )
-endif()
 
 OPTION(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fiberprocess application)." ON)
 IF(COMPILE_EXTERNAL_DTIPROCESS)
@@ -53,7 +50,7 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${RPATHVAR}
-      ${STATIC}
+      -DEXECUTABLES_ONLY:BOOL=TRUE
       -DCMAKE_INSTALL_NAME_DIR:STRING=@rpath/${install_dir}
       -DDTIProcess_SUPERBUILD:BOOL=FALSE
       -DITK_DIR:PATH=${ITK_DIR}
