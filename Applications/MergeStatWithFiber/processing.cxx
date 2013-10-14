@@ -190,7 +190,7 @@ double Processing::GetMaxFromColumn(int Column)
 *   and 
 ***********************************************************************************/
 
-void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, double Max, double alpha , inverse_rescale_p_value )
+void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, double Max, double alpha , bool inverse_rescale_p_value )
 {
 	int NbParameters=m_DataTable.size();
 	
