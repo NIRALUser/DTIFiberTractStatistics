@@ -5,18 +5,16 @@ enable_language(CXX)
 
 
 #-----------------------------------------------------------------------------
-if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
-  set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
-  set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/DTIAtlasFiberAnalyzer")
-  set(EXTENSION_CATEGORY "Diffusion")
-  set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
-  set(EXTENSION_DESCRIPTION "This extension provides the tool DTIAtlasFiberAnalyzer integrated in Slicer")
-  set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=312&screenshot_id=575")
-  set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/screenshot.php?group_id=403&screenshot_id=601 http://www.slicer.org/slicerWiki/images/thumb/9/90/FiberTrack-fibers.png/138px-FiberTrack-fibers.png")
-  set(EXTENSION_STATUS "Beta")
-  set(EXTENSION_DEPENDS "DTIProcess") # Specified as a space separated list or 'NA' if any
-  set(EXTENSION_BUILD_SUBDIRECTORY dti_tract_stat-build )
-endif()
+set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
+set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/DTIAtlasFiberAnalyzer")
+set(EXTENSION_CATEGORY "Diffusion")
+set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
+set(EXTENSION_DESCRIPTION "This extension provides the tool DTIAtlasFiberAnalyzer integrated in Slicer")
+set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=312&screenshot_id=575")
+set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/screenshot.php?group_id=403&screenshot_id=601 http://www.slicer.org/slicerWiki/images/thumb/9/90/FiberTrack-fibers.png/138px-FiberTrack-fibers.png")
+set(EXTENSION_STATUS "Beta")
+set(EXTENSION_DEPENDS "DTIProcess") # Specified as a space separated list or 'NA' if any
+set(EXTENSION_BUILD_SUBDIRECTORY dti_tract_stat-build )
 
 find_package(Git REQUIRED)
 
