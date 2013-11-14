@@ -35,6 +35,9 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_ITK CACHE "Build using an externally defined version of ITK" ON )
   set( USE_SYSTEM_VTK CACHE "Build using an externally defined version of VTK" ON )
   set( USE_SYSTEM_SlicerExecutionModel CACHE "Build using an externally defined version of SlicerExecutionModel" ON )
+  set( EXTENSION_SUPERBUILD_BINARY_DIR_VALUE EXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR} )
+else()
+  set( EXTENSION_SUPERBUILD_BINARY_DIR_VALUE "" )
 endif()
 
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
@@ -223,14 +226,12 @@ ExternalProject_Add(${proj}
     -DMIDAS_PACKAGE_EMAIL:STRING=${MIDAS_PACKAGE_EMAIL}
     -DMIDAS_PACKAGE_API_KEY:STRING=${MIDAS_PACKAGE_API_KEY}
     -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
-    -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
     -DDTIAtlasFiberAnalyzer_SuperBuild:BOOL=OFF
+    ${EXTENSION_SUPERBUILD_BINARY_DIR_VALUE}
      ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
      ${COMMON_EXTERNAL_PROJECT_ARGS}
     # Slicer
     -DSlicer_DIR:PATH=${Slicer_DIR}
-#    -DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
-#    -DSlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION:PATH=${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}
 )
 
 ## Force rebuilding of the main subproject every time building from super structure
