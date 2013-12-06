@@ -78,17 +78,13 @@ set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} vtkHybrid ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  if( WIN32 OR APPLE )
-    include(${GenerateCLP_USE_FILE})
-    generateclp(Launcher_CLP DTIAtlasFiberAnalyzer.xml )
-    add_executable( DTIAtlasFiberAnalyzerLauncher Launcher.cxx ${Launcher_CLP} )
-    install(TARGETS DTIAtlasFiberAnalyzerLauncher
-      RUNTIME DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} COMPONENT RuntimeLibraries
-      )
-    set( SETRUNTIMEDESTINATION INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
-  endif()
-else()
-  set(SETRUNTIMEDESTINATION INSTALL_RUNTIME_DESTINATION ${RUNTIME_DESTINATION})
+  include(${GenerateCLP_USE_FILE})
+  generateclp(Launcher_CLP DTIAtlasFiberAnalyzer.xml )
+  add_executable( DTIAtlasFiberAnalyzerLauncher Launcher.cxx ${Launcher_CLP} )
+  install(TARGETS DTIAtlasFiberAnalyzerLauncher
+    RUNTIME DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} COMPONENT RuntimeLibraries
+    )
+  set( SETRUNTIMEDESTINATION INSTALL_RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
 endif()
 
 

@@ -368,10 +368,17 @@ int fiberprocessing::ParametrizesHalfFiber( DTIPointListType &pointlist ,
   DTIPointListType::iterator pit_first ;
   double distance_min ;
   distance_min = Find_First_Point( pointlist , increment , pit_first ) ;
+#if WIN32
+  if( _isnan( distance_min ) )
+  {
+    return 1 ;
+  }
+#else
   if( std::isnan( distance_min ) )
   {
     return 1 ;
   }
+#endif
   itk::Point<double, 3> p1 = SpatialPosition( (*pit_first).GetPosition() ) ;
   AddValueParametrization( pit_first , p1 , distance_min ) ;//distance_min is a signed distance. No need to multiply it by "displacement"
   ComputeArcLength( pit_first , endit , p1 , increment , displacement , distance_min ) ;
