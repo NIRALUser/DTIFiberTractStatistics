@@ -29,20 +29,19 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   include(${Slicer_USE_FILE})
   unsetAllForSlicerBut( NAMES ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE )
   resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
-  if( APPLE )
-    set( CMAKE_EXE_LINKER_FLAGS -Wl,-rpath,@loader_path/../../../../../)
-  endif()
-  set( USE_SYSTEM_ITK CACHE "Build using an externally defined version of ITK" ON )
-  set( USE_SYSTEM_VTK CACHE "Build using an externally defined version of VTK" ON )
-  set( USE_SYSTEM_SlicerExecutionModel CACHE "Build using an externally defined version of SlicerExecutionModel" ON )
-  set( EXTENSION_SUPERBUILD_BINARY_DIR_VALUE EXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR} )
+  set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
+  set( USE_SYSTEM_ITK ON CACHE BOOL "Build using an externally defined version of ITK" FORCE )
+  set( USE_SYSTEM_VTK ON CACHE BOOL "Build using an externally defined version of VTK" FORCE )
+  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Build using an externally defined version of SlicerExecutionModel" FORCE )
+  set( SUPERBUILD_NOT_EXTENSION FALSE )
 else()
-  set( EXTENSION_SUPERBUILD_BINARY_DIR_VALUE "" )
+  set( SUPERBUILD_NOT_EXTENSION TRUE )
 endif()
 
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
+option(USE_SYSTEM_QWT "Build using an externally defined version of QWT" OFF)
 
 #-----------------------------------------------------------------------------
 # Superbuild option(s)
@@ -61,7 +60,7 @@ CMAKE_DEPENDENT_OPTION(
   "BUILD_STYLE_UTILS" OFF
   )
 
-
+option(EXECUTABLES_ONLY "Build the tools and the tools' libraries statically" ON)
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
@@ -128,6 +127,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   CMAKE_C_FLAGS:STRING
   CMAKE_SHARED_LINKER_FLAGS:STRING
   CMAKE_MODULE_LINKER_FLAGS:STRING
+  CMAKE_EXE_LINKER_FLAGS:STRING
   CMAKE_GENERATOR:STRING
   CMAKE_EXTRA_GENERATOR:STRING
   CMAKE_INSTALL_PREFIX:PATH
@@ -138,9 +138,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   CTEST_NEW_FORMAT:BOOL
   MEMORYCHECK_COMMAND_OPTIONS:STRING
   MEMORYCHECK_COMMAND:PATH
-  CMAKE_SHARED_LINKER_FLAGS:STRING
-  CMAKE_EXE_LINKER_FLAGS:STRING
-  CMAKE_MODULE_LINKER_FLAGS:STRING
   SITE:STRING
   BUILDNAME:STRING
   Subversion_SVN_EXECUTABLE:FILEPATH
@@ -157,6 +154,8 @@ endif()
 
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
+set(extProjName ${LOCAL_PROJECT_NAME})
+set(proj        ${LOCAL_PROJECT_NAME})
 SlicerMacroCheckExternalProjectDependency(${LOCAL_PROJECT_NAME})
 
 #-----------------------------------------------------------------------------
@@ -183,7 +182,15 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   VTK_DIR:PATH
   GenerateCLP_DIR:PATH
   SlicerExecutionModel_DIR:PATH
+  QWT_LIBRARY_PATH:FILEPATH
+  QWT_INCLUDE_DIR:PATH
+  EXTENSION_SUPERBUILD_BINARY_DIR:PATH
+  SUPERBUILD_NOT_EXTENSION:BOOL
   CMAKE_MODULE_PATH:PATH
+  EXTENSION_NAME:STRING
+  MIDAS_PACKAGE_EMAIL:STRING
+  MIDAS_PACKAGE_API_KEY:STRING
+  Slicer_DIR:PATH
   )
 
 _expand_external_project_vars()
@@ -216,22 +223,15 @@ ExternalProject_Add(${proj}
   DEPENDS ${${LOCAL_PROJECT_NAME}_DEPENDENCIES}
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
-    -DQWT_LIBRARY_PATH:FILEPATH=${QWT_LIBRARY_PATH}
-    -DQWT_INCLUDE_DIR:PATH=${QWT_INCLUDE_DIR}
     -DCOMPILE_EXTERNAL_DTIPROCESS:BOOL=ON
     -DCOMPILE_MERGERSTATWITHFIBER:BOOL=ON
     -DCOMPILE_FIBERCOMPARE:BOOL=ON
     -DCOMPILE_DTITRACTSTAT:BOOL=ON
     -DCOMPILE_DTIATLASFIBERANALYZER:BOOL=ON
-    -DMIDAS_PACKAGE_EMAIL:STRING=${MIDAS_PACKAGE_EMAIL}
-    -DMIDAS_PACKAGE_API_KEY:STRING=${MIDAS_PACKAGE_API_KEY}
-    -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
     -DDTIAtlasFiberAnalyzer_SuperBuild:BOOL=OFF
-    ${EXTENSION_SUPERBUILD_BINARY_DIR_VALUE}
      ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
      ${COMMON_EXTERNAL_PROJECT_ARGS}
-    # Slicer
-    -DSlicer_DIR:PATH=${Slicer_DIR}
+    -DEXECUTABLES_ONLY:BOOL=${EXECUTABLES_ONLY}
 )
 
 ## Force rebuilding of the main subproject every time building from super structure

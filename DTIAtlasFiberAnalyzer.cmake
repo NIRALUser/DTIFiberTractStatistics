@@ -54,6 +54,19 @@ if( WIN32 )
   set( extension ".exe" )
 endif()
 
+option(EXECUTABLES_ONLY "Build only executables (CLI)" OFF)
+if( ${EXECUTABLES_ONLY} )
+
+  set( STATIC "EXECUTABLE_ONLY" )
+
+  set( STATIC_LIB "STATIC" )
+
+else()
+
+  set( STATIC_LIB "SHARED" )
+
+endif()
+
 
 if( Slicer_CLIMODULES_BIN_DIR )
   set( install_dir ${Slicer_CLIMODULES_BIN_DIR} )
@@ -85,15 +98,6 @@ set( ToolsList
 foreach( tool ${ToolsList})
   install(PROGRAMS ${tool} DESTINATION ${RUNTIME_DESTINATION})
 endforeach()
-#if( UNIX AND NOT APPLE )
-#  set( LibsList
-#       ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/libDTIIO.so
-#      ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/libfiberprocessLib.so
-#  )
-#  foreach( lib ${LibsList})
-#    install(PROGRAMS ${lib} DESTINATION ${RUNTIME_DESTINATION}/lib)
-#  endforeach()
-#endif()
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
