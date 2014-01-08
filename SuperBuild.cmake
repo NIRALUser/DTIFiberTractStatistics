@@ -26,7 +26,12 @@ endif()
 if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE QtTesting_DIR)
   find_package(Slicer REQUIRED)
-  include(${Slicer_USE_FILE})
+  #When the following line is commented out, EXTENSION_SUPERBUILD_BINARY_DIR is not defined anymore.
+  #Instead, we define the variable EXTENSION to let the inner build directory know that we are 
+  #building FiberViewerLight as an extension
+  #We also remove 'EXTENSION_SUPERBUILD_BINARY_DIR:PATH' from 'list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS'
+  #include(${Slicer_USE_FILE})
+  set(EXTENSION TRUE)
   unsetAllForSlicerBut( NAMES ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE )
   resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
   set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
@@ -184,7 +189,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   SlicerExecutionModel_DIR:PATH
   QWT_LIBRARY_PATH:FILEPATH
   QWT_INCLUDE_DIR:PATH
-  EXTENSION_SUPERBUILD_BINARY_DIR:PATH
+  EXTENSION:BOOL
   SUPERBUILD_NOT_EXTENSION:BOOL
   CMAKE_MODULE_PATH:PATH
   EXTENSION_NAME:STRING

@@ -3,12 +3,12 @@ set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
 
 #### Set paths for Testing subdirectory and find Slicer for packaging the extension
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( EXTENSION )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
 endif()
 
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( EXTENSION )
   set( ARCHIVE_DESTINATION lib/static )
   set( LIBRARY_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
   set( RUNTIME_DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} )
@@ -51,7 +51,7 @@ ELSE(QT_USE_FILE)
 ENDIF(QT_USE_FILE)
 
 if( WIN32 )
-  set( extension ".exe" )
+  set( fileextension ".exe" )
 endif()
 
 option(EXECUTABLES_ONLY "Build only executables (CLI)" OFF)
@@ -93,12 +93,12 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 set( ToolsList
-    ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/fiberprocess${extension}
+    ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/fiberprocess${fileextension}
 )
 foreach( tool ${ToolsList})
   install(PROGRAMS ${tool} DESTINATION ${RUNTIME_DESTINATION})
 endforeach()
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( EXTENSION )
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()

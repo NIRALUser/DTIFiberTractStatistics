@@ -43,8 +43,8 @@ if(NOT QWT_INCLUDE_DIR)
 endif()
 
 # Qwt libraries
-if( NOT QWT_LIBRARY )
-  if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( NOT QWT_LIBRARY OR QWT_LIBRARY_PATH )
+  if( EXTENSION OR SUPERBUILD_NOT_EXTENSION )
     set(NO_ENV_PATH "NO_DEFAULT_PATH")
   endif()
   SET(QWT_NAMES ${QWT_NAMES} qwt libqwt)
@@ -77,7 +77,7 @@ set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx
 
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} vtkHybrid ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( EXTENSION )
   include(${GenerateCLP_USE_FILE})
   generateclp(Launcher_CLP DTIAtlasFiberAnalyzer.xml )
   add_executable( DTIAtlasFiberAnalyzerLauncher Launcher.cxx ${Launcher_CLP} )
