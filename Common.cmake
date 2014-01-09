@@ -3,6 +3,43 @@ include(CMakeDependentOption)
 enable_language(C)
 enable_language(CXX)
 
+#-----------------------------------------------------------------------------
+# Prerequisites
+#-----------------------------------------------------------------------------
+find_package(Subversion)
+if(NOT Subversion_FOUND)
+  message(WARNING "SVN may be needed to download external dependencies. Install SVN and try to re-configure")
+endif()
+
+find_package(Git)
+if(NOT GIT_FOUND)
+  message(WARNING "Git may be needed to download external dependencies: Install Git and try to re-configure")
+endif()
+
+option(USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
+if(NOT USE_GIT_PROTOCOL)
+  set(git_protocol "http")
+else(NOT USE_GIT_PROTOCOL)
+  set(git_protocol "git")
+endif()
+
+# Platform check
+#-----------------------------------------------------------------------------
+
+set(PLATFORM_CHECK true)
+
+if(PLATFORM_CHECK)
+  # See CMake/Modules/Platform/Darwin.cmake)
+  #   6.x == Mac OSX 10.2 (Jaguar)
+  #   7.x == Mac OSX 10.3 (Panther)
+  #   8.x == Mac OSX 10.4 (Tiger)
+  #   9.x == Mac OSX 10.5 (Leopard)
+  #  10.x == Mac OSX 10.6 (Snow Leopard)
+  if (DARWIN_MAJOR_VERSION LESS "9")
+    message(FATAL_ERROR "Only Mac OSX >= 10.5 are supported !")
+  endif()
+endif()
+
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
@@ -16,28 +53,7 @@ set(EXTENSION_STATUS "Beta")
 set(EXTENSION_DEPENDS "DTIProcess") # Specified as a space separated list or 'NA' if any
 set(EXTENSION_BUILD_SUBDIRECTORY dti_tract_stat-build )
 
-find_package(Git REQUIRED)
-
 option( BUILD_TESTING   "Build the testing tree" ON )
-
-
-option(USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
-set(git_protocol "git")
-if(NOT USE_GIT_PROTOCOL)
-  set(git_protocol "http")
-else(NOT USE_GIT_PROTOCOL)
-  set(git_protocol "git")
-endif()
-
-
-# With CMake 2.8.9 or later, the UPDATE_COMMAND is required for updates to occur.
-# For earlier versions, we nullify the update state to prevent updates and
-# undesirable rebuild.
-if(CMAKE_VERSION VERSION_LESS 2.8.9)
-  set(cmakeversion_external_update UPDATE_COMMAND "")
-else()
-  set(cmakeversion_external_update LOG_UPDATE 1)
-endif()
  
 #-----------------------------------------------------------------------------
 # Update CMake module path

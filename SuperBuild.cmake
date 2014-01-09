@@ -1,39 +1,15 @@
-cmake_minimum_required(VERSION 2.8.7)
-
 set(LOCAL_PROJECT_NAME DTIAtlasFiberAnalyzer)
 
 set( ${LOCAL_PROJECT_NAME}_USE_QT ON )
-# Platform check
-#-----------------------------------------------------------------------------
 
-set(PLATFORM_CHECK true)
-
-if(PLATFORM_CHECK)
-  # See CMake/Modules/Platform/Darwin.cmake)
-  #   6.x == Mac OSX 10.2 (Jaguar)
-  #   7.x == Mac OSX 10.3 (Panther)
-  #   8.x == Mac OSX 10.4 (Tiger)
-  #   9.x == Mac OSX 10.5 (Leopard)
-  #  10.x == Mac OSX 10.6 (Snow Leopard)
-  if (DARWIN_MAJOR_VERSION LESS "9")
-    message(FATAL_ERROR "Only Mac OSX >= 10.5 are supported !")
-  endif()
-endif()
 
 #-----------------------------------------------------------------------------
 # Extension option(s)
 #-----------------------------------------------------------------------------
 if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
-  unsetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE QtTesting_DIR)
   find_package(Slicer REQUIRED)
-  #When the following line is commented out, EXTENSION_SUPERBUILD_BINARY_DIR is not defined anymore.
-  #Instead, we define the variable EXTENSION to let the inner build directory know that we are 
-  #building FiberViewerLight as an extension
-  #We also remove 'EXTENSION_SUPERBUILD_BINARY_DIR:PATH' from 'list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS'
-  #include(${Slicer_USE_FILE})
   set(EXTENSION TRUE)
-  unsetAllForSlicerBut( NAMES ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE )
-  resetForSlicer( NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER )
+  set( Slicer_USE_PYTHONQT FALSE )
   set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
   set( USE_SYSTEM_ITK ON CACHE BOOL "Build using an externally defined version of ITK" FORCE )
   set( USE_SYSTEM_VTK ON CACHE BOOL "Build using an externally defined version of VTK" FORCE )
@@ -146,6 +122,8 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   SITE:STRING
   BUILDNAME:STRING
   Subversion_SVN_EXECUTABLE:FILEPATH
+  GIT_EXECUTABLE:FILEPATH
+  USE_GIT_PROTOCOL:BOOL
   )
 
 if(${LOCAL_PROJECT_NAME}_USE_QT)

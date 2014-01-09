@@ -1,7 +1,16 @@
 #-----------------------------------------------------------------------------
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
-
+#-----------------------------------------------------------------------------
+###Unset those variables which may have been set by the first pass of CMake configuration
+###with SuperBuild set to ON
+unset( USE_SYSTEM_ITK CACHE )
+unset( USE_SYSTEM_VTK CACHE )
+unset( USE_SYSTEM_SlicerExecutionModel CACHE )
+unset( USE_SYSTEM_QWT CACHE )
+unset( VTK_GIT_TAG CACHE )
+unset( VTK_REPOSITORY CACHE )
+#-----------------------------------------------------------------------------
 #### Set paths for Testing subdirectory and find Slicer for packaging the extension
 if( EXTENSION )
   find_package(Slicer REQUIRED)

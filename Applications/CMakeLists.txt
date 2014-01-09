@@ -28,7 +28,7 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
     SVN_USERNAME slicerbot
     SVN_PASSWORD slicer
-    SVN_REVISION -r 207
+    SVN_REVISION -r 211
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}
