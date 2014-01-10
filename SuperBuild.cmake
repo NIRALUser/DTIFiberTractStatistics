@@ -215,6 +215,7 @@ ExternalProject_Add(${proj}
      ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
      ${COMMON_EXTERNAL_PROJECT_ARGS}
     -DEXECUTABLES_ONLY:BOOL=${EXECUTABLES_ONLY}
+    -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}
 )
 
 ## Force rebuilding of the main subproject every time building from super structure
