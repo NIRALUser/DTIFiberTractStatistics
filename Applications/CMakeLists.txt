@@ -21,14 +21,20 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
     message( WARNING "Choose ITKv4 compiled with ITKV3_COMPATIBILITY set to ON (or GenerateCLP compiled against such an ITK version). If not, you may have compilation errors" )
   endif()
   if( EXTENSION )
-    set(DTIProcessVarExt -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=ON -DSlicer_DIR:PATH=${Slicer_DIR} )
+    set(DTIProcessVarExt 
+        -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=ON
+        -DSlicer_DIR:PATH=${Slicer_DIR}
+        -DSubversion_SVN_EXECUTABLE:FILEPATH=${Subversion_SVN_EXECUTABLE}
+        -DGIT_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
+        -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
+       )
   endif()
   set(proj DTIProcess)
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
     SVN_USERNAME slicerbot
     SVN_PASSWORD slicer
-    SVN_REVISION -r 211
+    SVN_REVISION -r 214
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}
