@@ -1,32 +1,4 @@
 Project(DTIAtlasFiberAnalyzer)
-set(LOCAL_PROJECT_NAME DTIAtlasFiberAnalyzer)
-
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-
-FIND_PACKAGE(ITK REQUIRED)
-IF (ITK_FOUND)
-   INCLUDE(${USE_ITK_FILE})
-ELSE(ITK_FOUND)
-   MESSAGE(FATAL_ERROR, "ITK not found. Please set ITK_DIR.")
-ENDIF (ITK_FOUND)
-
-FIND_PACKAGE(VTK REQUIRED)
-IF (VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
-ELSE(VTK_FOUND)
-   MESSAGE(FATAL_ERROR, "VTK not found. Please set VTK_DIR.")
-ENDIF (VTK_FOUND)
-
-find_package(SlicerExecutionModel REQUIRED)
-include(${SlicerExecutionModel_USE_FILE})
-
-FIND_PACKAGE(Qt4 REQUIRED)
-IF(QT_USE_FILE)
-  INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
-  INCLUDE(${QT_USE_FILE})
-ELSE(QT_USE_FILE)
-   MESSAGE(FATAL_ERROR, "QT not found. Please set QT_DIR.")
-ENDIF(QT_USE_FILE)
 
 # Qwt include directory
 if( NOT QWT_INCLUDE_DIR )
@@ -59,16 +31,7 @@ if(NOT QWT_LIBRARY)
 endif()
 set(QWT_LIBRARIES ${QWT_LIBRARY})
 
-Include_directories(
-  ${QWT_INCLUDE_DIR}
-  ${QT_INCLUDE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${DTIAtlasFiberAnalyser_BINARY_DIR}
-  ${DTIAtlasFiberAnalyser_SOURCE_DIR}
-)
-
-
+Include_directories( ${QWT_INCLUDE_DIR} )
 
 QT4_WRAP_CPP(MOC_FILES DTIAtlasFiberAnalyzerguiwindow.h DTIPlotWindow.h)
 QT4_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
@@ -78,7 +41,6 @@ set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} vtkHybrid ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 
 if( EXTENSION )
-  include(${GenerateCLP_USE_FILE})
   generateclp(Launcher_CLP DTIAtlasFiberAnalyzer.xml )
   add_executable( DTIAtlasFiberAnalyzerLauncher Launcher.cxx ${Launcher_CLP} )
   install(TARGETS DTIAtlasFiberAnalyzerLauncher
@@ -95,7 +57,6 @@ SEMMacroBuildCLI(
     ADDITIONAL_SRCS ${DTIAtlasFiberAnalyzer_source}
     TARGET_LIBRARIES ${DTIAtlasFiberAnalyzer_lib}
     ${STATIC}
-    INCLUDE_DIRECTORIES ${QT_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${QWT_INCLUDE_DIR} ${VTK_INCLUDE_DIRS} ${DTIAtlasFiberAnalyser_BINARY_DIR} ${DTIAtlasFiberAnalyser_SOURCE_DIR}
     INSTALL_ARCHIVE_DESTINATION ${ARCHIVE_DESTINATION}
     INSTALL_LIBRARY_DESTINATION ${LIBRARY_DESTINATION}
     ${SETRUNTIMEDESTINATION}
