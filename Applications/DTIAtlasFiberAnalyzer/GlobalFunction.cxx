@@ -1,4 +1,10 @@
 #include "GlobalFunction.h"
+#include "DTIAtlasFiberAnalyzerguiwindow.h"
+
+/* itksys */
+#include <itksys/Process.h>
+#include <itksys/SystemTools.hxx>
+#include <itksys/Directory.hxx>
 
 /* QT librairies */
 #include <QProcess>
@@ -180,7 +186,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 	skipdata.push_back(false);
 	skipdata.push_back(false);
 	bool ExistedFile,DataAdded;
-	std::string outputname, name_of_fiber,header, namecase, nameoffile,outputcasefolder;
+	std::string outputname, name_of_fiber,header, namecase, nameoffile, gzoutputname, outputcasefolder;
 	
 	/* create the output folder where there will be all of the case output fibers and informations */
 	outputcasefolder = "Cases";
@@ -190,10 +196,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 	for(unsigned int j=0;j<fibers.size();j++)
 	{
 		DataAdded = false;
-// 		name_of_fiber = takeoffExtension(fibers[j]);
 		name_of_fiber=fibers[j];
-		//Add the name of the fiber at the place 0 for the header
-// 		header = name_of_fiber + ".vtk";
 		header = name_of_fiber;
 		name_of_fiber = takeoffExtension(fibers[j]);
 		col = HeaderExisted(CSV,header);
@@ -211,7 +214,8 @@ bool Applyfiberprocess(CSVClass* CSV,
 			outputname = OutputFolder + "/" + outputcasefolder + "/" + namecase + "/" + 
 					namecase + "_" + name_of_fiber + ".vtk";
 			nameoffile = namecase + "_" + name_of_fiber + ".vtk";
-			if(FileExisted(outputname))
+			gzoutputname = outputname + ".gz";
+			if(FileExisted(outputname) || FileExisted(gzoutputname))
 			{
 				ExistedFile = true;
 				if(!skipdata[1])
@@ -243,7 +247,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 							if(CallFiberProcess(pathFiberProcess, AtlasFiberDir, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j], namecase)==0)
 							{
 								//Check if the output exist
-								if(FileExisted(outputname))
+								if(FileExisted(outputname) || FileExisted(gzoutputname))
 									CSV->AddData(outputname,row,col);
 							}
 							else
@@ -258,7 +262,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 								namecase)==0)
 							{
 								//Check if the output exist
-								if(FileExisted(outputname))
+								if(FileExisted(outputname) || FileExisted(gzoutputname))
 									CSV->AddData(outputname,row,col);
 							}
 							else
@@ -468,6 +472,8 @@ int CallFiberProcess(std::string pathFiberProcess,
 		arguments.append("--fiber_output " + qs);
 		//verbose
 		arguments.append("--verbose");
+		// save fiber properties separately for QC visualizations
+		arguments.append("--saveProperties");
 		std::cout<<"Command Line :  "<< pathFiberProcess.c_str() << " " << (arguments.join(" ")).toStdString() <<std::endl;
 		state = process->execute( pathFiberProcess.c_str(), arguments);
 	}
@@ -554,11 +560,12 @@ std::string ExtensionofFile(std::string filename)
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-								 std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
-                                 int DataCol, int DefCol, int NameCol, bool transposeColRow, bool nogui, bool CoG, double sampling , bool rodent , QWidget *parent)
+			 std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
+                         int DataCol, int DefCol, int NameCol, bool transposeColRow, bool nogui, bool CoG, double sampling , bool rodent , QWidget *parent)
 {
 	int col=-1;
-	bool ExistedFile,DataAdded;
+	bool DataAdded = false;
+	bool ExistedFile = false;
 	std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false, 2  cancel
 	skipdata.push_back(false);
 	skipdata.push_back(false);
@@ -568,7 +575,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 	LineInVector(parameters, param);
 	
 	
-	for(int i=0; i<param.size(); i++)
+	for(int i=0; i< ((int) param.size()); i++)
 	{
 		/* Loop for all the fibers */
 		for(unsigned int j=0;j<fibers.size();j++)
@@ -779,7 +786,7 @@ std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::st
 	/* create the output folder where there will be all of the gathering data */
 	outputprofilefolder = "FiberProfiles";
 	CreateDirectoryForData(OutputFolder,outputprofilefolder);
-	globalDirectory=OutputFolder + "/Cases/" + (*CSV->getData())[1][NameCol];
+	globalDirectory=OutputFolder + "/Cases/" + NameOfCase(CSV, 1, NameCol, DataCol);
 	LineInVector(getParamFromDirectory(globalDirectory,takeoffExtension(fibers[0])),parameters);
 	fiberpath=OutputFolder + "/Fibers/" + takeoffExtension(fibers[0]) + ".fvp";
 	outputprofilefolder = OutputFolder + "/" + outputprofilefolder;
@@ -848,7 +855,7 @@ bool ReadProfileInformation(std::string globalFile, v2string& finaldata, vstring
 	v2string data;
 	globalFile=takeoffExtension(globalFile);
 	
-	for(int i=0; i<parameters.size(); i++)
+	for(int i=0; i < ((int) parameters.size()); i++)
 	{
 		std::string filepath=globalFile+"_"+parameters[i]+".fvp";
 		std::ifstream file(filepath.c_str(), std::ios::in); //open the file in reading
@@ -893,7 +900,7 @@ bool ReadFiberPtInformation(std::string globalFile, v2string& fiberptdata, vstri
 	v2string data;
 	globalFile=takeoffExtension(globalFile);
 	
-	for(int i=0; i<parameters.size(); i++)
+	for(int i=0; i< ((int) parameters.size()); i++)
 	{
 		std::string filepath=globalFile+"_"+parameters[i]+".fvp";
 		std::ifstream file(filepath.c_str(), std::ios::in); //open the file in reading
@@ -1363,7 +1370,7 @@ long double getStd(QVector <double> data, double mean)
 {
 	long double std=0;
 	for(int i=0; i<data.size(); i++)
-		std+=powl(data[i]-mean,2);
+	  std+= (data[i]-mean) * (data[i]-mean);
 	std/=data.size();
 	std=sqrtl(std);
 	return std;

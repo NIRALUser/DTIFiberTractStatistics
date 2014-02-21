@@ -1,7 +1,6 @@
 #ifndef _DTIATLASFIBERANALYZERGUIWINDOW_H_
 #define _DTIATLASFIBERANALYZERGUIWINDOW_H_
 
-
 #include<algorithm>
 
 //QT librairies
@@ -24,12 +23,10 @@
 //Specific librairies
 #include "ui_DTIAtlasFiberAnalyzerguiwindow.h"
 #include "CSVClass.h"
+#include "GlobalFunction.h"
 #include "DTIPlotWindow.h"
 
-
 class PlotWindow;
-typedef std::vector<std::string> vstring;
-typedef QVector<QVector<QVector<double> > > qv3double;
 
 class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow 
 {

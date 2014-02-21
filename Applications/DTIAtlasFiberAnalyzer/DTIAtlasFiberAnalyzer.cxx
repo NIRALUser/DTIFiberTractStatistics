@@ -9,6 +9,7 @@
 
 #include "DTIAtlasFiberAnalyzerCLP.h"
 #include "GlobalFunction.h"
+#include "DTIAtlasFiberAnalyzerguiwindow.h"
 #include <QApplication>
 
 

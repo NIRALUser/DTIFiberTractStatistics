@@ -1,5 +1,6 @@
-#include "DTIAtlasFiberAnalyzerguiwindow.h"
+
 #include "GlobalFunction.h"
+#include "DTIAtlasFiberAnalyzerguiwindow.h"
 
 #include <sstream>
 
@@ -1793,7 +1794,7 @@ void DTIAtlasFiberAnalyzerguiwindow::FillDataFilesList()
 }
 
 /************************************************************************************
- * OpenPlotWindow : Get and calculate every data samples and call PlotWindow class
+ * OpenPlotWindow : Get and calculate every data sample and call PlotWindow class
  * 	Data should be stored in a 4D vector as following :
  * 		1st dimension correspond to each fiber.
  * 		2nd dimension correspond to each data table. For case data, each case have 
@@ -1802,6 +1803,7 @@ void DTIAtlasFiberAnalyzerguiwindow::FillDataFilesList()
  * 			For Stat data there are 3 tables: Cross Mean, Cross Mean+Cross Std, 
  * 			Cross Mean-Cross Std.
  * 		3rd and 4th dimensions correspond to lines and columns of data samples.
+ * THIS data structure does not take care correctly of multiple fiber properties
  ************************************************************************************/
 
 bool DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
@@ -1812,7 +1814,8 @@ bool DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 	
 	qv3double fiberdata;
 	QVector <QVector <double> > data, temp;
-	std::string filepath, casename, filename,directory; 
+	//std::string filepath, filename; 
+	std::string casename,directory;
 	
 	m_PlotError=false;
 	
@@ -1839,8 +1842,8 @@ bool DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 	{
 		for(unsigned int j=0; j<m_Cases.size(); j++)
 		{
-			filename=m_Cases[j]+"_"+m_Fibers[i]+".fvp";
-			filepath=m_OutputFolder+"/Cases/"+m_Cases[j]+"/"+filename;
+		  //filename=m_Cases[j]+"_"+m_Fibers[i]+".fvp";
+		  //filepath=m_OutputFolder+"/Cases/"+m_Cases[j]+"/"+filename;
 			data=TableConversion(m_FiberProfile[i][j]);
 			if(m_PlotError)
 			{
@@ -1850,7 +1853,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 			}
 			
 			fiberdata.push_back(data);
-			
+			//std::cout << data.size() << "," << data[0].size() << "," << data[0][0] << "," << data[1][0] << std::endl;
 			//Filling m_casedata with data samples + std
 			temp=getStdData(data, 1);
 			fiberdata.push_back(temp);
@@ -1861,8 +1864,8 @@ bool DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 		m_casedata.push_back(fiberdata);
 		fiberdata.clear();
 		
-		filename=m_Fibers[i];
-		filepath=m_OutputFolder+"/Fibers/" + filename + ".fvp";
+		//filename=m_Fibers[i];
+		//filepath=m_OutputFolder+"/Fibers/" + filename + ".fvp";
 		data=TableConversion(m_FiberProfile[i][m_FiberProfile[i].size()-2]);
 		
 		if(m_PlotError)

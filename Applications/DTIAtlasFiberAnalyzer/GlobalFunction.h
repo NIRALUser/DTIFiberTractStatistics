@@ -1,10 +1,13 @@
 #ifndef _GLOBALFUNCTION_H_
 #define _GLOBALFUNCTION_H_
 
+#include <QWidget>
+#include <QVector>
 /* Specific librairies */
-#include "DTIAtlasFiberAnalyzerguiwindow.h"
+#include "CSVClass.h"
 
-typedef QVector<QVector<QVector<double> > > qv3double;
+typedef QVector<QVector<double> > qv2double;
+typedef QVector<qv2double> qv3double;
 
 /* Functions defined in, exported from Globalfunc.cxx */
 /* Call when there is nogui */

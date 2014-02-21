@@ -28,12 +28,9 @@
 #include <fstream>
 #include <sstream>
 #include "GlobalFunction.h"
+#include "CSVClass.h"
 #include "DTIAtlasFiberAnalyzerguiwindow.h"
 
-typedef QVector<QVector<double> > qv2double;
-typedef QVector<qv2double> qv3double;
-typedef std::vector<std::string> vstring;
-typedef std::vector<vstring> v2string;
 class DTIAtlasFiberAnalyzerguiwindow;
 
 /********************************************************************************
