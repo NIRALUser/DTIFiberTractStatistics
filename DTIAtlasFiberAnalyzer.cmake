@@ -83,9 +83,12 @@ IF(BUILD_TESTING)
   ADD_SUBDIRECTORY(Testing)
 ENDIF(BUILD_TESTING)
 
-set( ToolsList
+if( COMPILE_EXTERNAL_DTIPROCESS )
+  set( ToolsList
     ${CMAKE_CURRENT_BINARY_DIR}/${install_dir}/fiberprocess${fileextension}
-)
+  )
+endif()
+
 if( EXECUTABLES_ONLY )
   foreach( tool ${ToolsList})
     install(PROGRAMS ${tool} DESTINATION ${RUNTIME_DESTINATION})
