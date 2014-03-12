@@ -9,13 +9,13 @@
   <description>
     This is a command line tool which allows the user to study the behavior of water diffusion (using DTI data) along the length of the white matter fiber-tracts.
   </description>
-  <version>1.1</version>
+  <version>1.2</version>
   <documentation-url>
     http://www.nitrc.org/projects/dti_tract_stat/
   </documentation-url>
   <license></license>
   <contributor>
-    Anuja Sharma, Yundi Shi, Sylvain Gouttard, Martin Styner, Guido Gerig
+    Anuja Sharma, Yundi Shi, Sylvain Gouttard, Francois Budin, Martin Styner, Guido Gerig
   </contributor>
   <acknowledgements>
     This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health

@@ -213,7 +213,7 @@ bool fiberprocessing::Siequals(std::string a, std::string b)
 
 std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_fiber(std::string param_name)
 {
-  const char* parameter_std_list[] = {"fa", "md", "ad", "l2" , "l3", "fro" , "rd" ,"ga"};
+  const char* parameter_std_list[] = {"fa", "md", "l1", "l2" , "l3", "fro" , "rd" ,"ga"};
   int parameter_index = 0; //which parameter was called
   if (param_name == "all")
     {
@@ -323,7 +323,7 @@ void fiberprocessing::AddValueParametrization( DTIPointListType::iterator &pit ,
   all[all_size].push_back( distance );
   all[all_size].push_back((*pit).GetField(DTIPointType::FA));
   all[all_size].push_back((*pit).GetField("MD"));
-  all[all_size].push_back((*pit).GetField("AD"));
+  all[all_size].push_back((*pit).GetField("l1"));
   all[all_size].push_back((*pit).GetField("l2"));
   all[all_size].push_back((*pit).GetField("l3"));
   all[all_size].push_back((*pit).GetField("FRO"));
