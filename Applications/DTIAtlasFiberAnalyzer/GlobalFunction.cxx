@@ -12,7 +12,7 @@
 /********************************************************************************* 
  * Command Line function
  ********************************************************************************/
-bool CommandLine(std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug)
+bool CommandLine(std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers )
 {
 	//variables
 	std::string pathFiberProcess, pathdti_tract_stat, OutputFolder, AtlasFiberDir, parameters, csvfile;
@@ -95,7 +95,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 			std::cin>>pathFiberProcess;
 		}
 		//Call fiberprocess
-		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,parameters,transposeColRow,true);
+		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
 		
 		/* Looking for dti_tract_stat */
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstat");
@@ -106,7 +106,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 			std::cin>>pathdti_tract_stat;
 		}
 		//Call dti_tract_stat
-        Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, SelectedFibers, Selectedfibersplane,parameters, DataCol, DefCol, NameCol, transposeColRow, true, 1 , false , CoG);
+        Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, SelectedFibers, Selectedfibersplane,parameters, DataCol, NameCol, true , CoG , sampling , rodent , removeCleanFibers ) ;
 	}
 	else
 	{
@@ -119,7 +119,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 			std::cin>>pathFiberProcess;
 		}
 		//Call fiberprocess
-		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,parameters,transposeColRow,true);
+		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,true);
 		
 		/* Looking for dti_tract_stat */
 		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstat");
@@ -130,7 +130,7 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 			std::cin>>pathdti_tract_stat;
 		}
 		//Call dti_tract_stat
-        Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, fibers, fibersplane,parameters, DataCol, DefCol, NameCol,transposeColRow,true, 1 , false , CoG);
+        Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, fibers, fibersplane,parameters, DataCol, NameCol, true , CoG , sampling , rodent , removeCleanFibers ) ;
 	}
 	
 	//calcul the number of parameters
@@ -175,8 +175,6 @@ bool Applyfiberprocess(CSVClass* CSV,
 							  bool FieldType,
 							  int NameCol,
 							  vstring fibers,
-							  std::string parameters,
-							  bool transposeColRow,
 							  bool nogui,
 							  QWidget* parent)
 {
@@ -244,7 +242,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 						if(DefCol!=-1)
 						{
 							/* If fiberprocess worked */
-							if(CallFiberProcess(pathFiberProcess, AtlasFiberDir, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j], namecase)==0)
+							if(CallFiberProcess(pathFiberProcess, AtlasFiberDir, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j] ) == 0 )
 							{
 								//Check if the output exist
 								if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -258,8 +256,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 							/* If fiberprocess worked */
 							if(CallFiberProcess(pathFiberProcess, AtlasFiberDir,
 								outputname, 
-								(*CSV->getData())[row][DataCol],"no",FieldType,fibers[j],
-								namecase)==0)
+								(*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
 							{
 								//Check if the output exist
 								if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -439,8 +436,7 @@ int CallFiberProcess(std::string pathFiberProcess,
 							std::string Data,
 							std::string DeformationField,
 							bool FieldType,
-							std::string Fiber,
-							std::string nameofcase)
+							std::string Fiber)
 {
 	int state=0;
 	QProcess *process= new QProcess();
@@ -487,7 +483,6 @@ int CallFiberProcess(std::string pathFiberProcess,
  ********************************************************************************/
 void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::string AtlasFiberDir)
 {
-	bool noplane;
 	itksys::Directory AtlasDirectory;
 	AtlasDirectory.Load(AtlasFiberDir.c_str());
 	unsigned long NumberOfFiles = AtlasDirectory.GetNumberOfFilesInDirectory(AtlasFiberDir.c_str());
@@ -561,7 +556,7 @@ std::string ExtensionofFile(std::string filename)
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
 			 std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
-                         int DataCol, int DefCol, int NameCol, bool transposeColRow, bool nogui, bool CoG, double sampling , bool rodent , QWidget *parent)
+                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , QWidget *parent)
 {
 	int col=-1;
 	bool DataAdded = false;
@@ -573,7 +568,6 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 	CreateDirectoryForData(OutputFolder,"Fibers");
 	vstring param;
 	LineInVector(parameters, param);
-	
 	
 	for(int i=0; i< ((int) param.size()); i++)
 	{
@@ -637,7 +631,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 							/* If dti_tract_stat worked */
 							if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
 								input_fiber, globalFile, fibersplane[j],
-                                param[i], CoG, sampling , rodent , false)==0)
+                                param[i], CoG, sampling , rodent , removeCleanFibers , false ) == 0 )
 							{
 								
 								if(FileExisted(outputname))
@@ -665,20 +659,29 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 		
 			std::string inputname=AtlasDirectory+"/"+fibers[j];
 			outputname=OutputFolder+"/Fibers/"+header;
-			if(FileExisted(outputname))
+			if( FileExisted( outputname ) )
 			{
-				ExistedFile = true;
-				if(!skipdata[1])
-					skipdata = MessageExistedFile(nogui, header, parent);
+				ExistedFile = true ;
+				if( !skipdata[ 1 ] )
+        {
+          skipdata = MessageExistedFile(nogui, header, parent);
+        }
 			}
-			if(skipdata[2] == true)
-				return false;
-			else if(!skipdata[0] || !ExistedFile)
+			if( skipdata[ 2 ] == true )
+      {
+				return false ;
+      }
+			else if( !skipdata[ 0 ] || !ExistedFile )
 			{
-                if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory, inputname, outputname, fibersplane[j], param[i], CoG , sampling , rodent )!=0)
+        bool removeCleanFibersAtlas = false ;
+        if( removeCleanFibers && i != 0 )
+        {
+          removeCleanFibersAtlas = true ;
+        }
+        if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , CoG , sampling , rodent , removeCleanFibersAtlas ) != 0 )
 				{
-					std::cout<<"Fail during dti_tract_stat!"<<std::endl;
-					return false;
+					std::cout << "Fail during dti_tract_stat!" << std::endl ;
+					return false ;
 				}
 			}
 			
@@ -706,8 +709,9 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 							  std::string plane,
 							  std::string parameter,
 							  bool CoG,
-                              double sampling,
-                              bool rodent,
+                double sampling,
+                bool rodent,
+                bool clean ,
 							  bool Parametrized)
 {
 	int state=0;
@@ -730,7 +734,10 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
 //			arguments.append(QString("--output_parametrized_fiber_file ") + qs);
       arguments.append(QString("--output_original_fibers_parametrized ") + qs);
 		}
-		
+		if( clean )
+		{
+      arguments.append(QString("--remove_clean_fiber") ) ;
+		}
 		//Plane
         if(plane!="")
 		{

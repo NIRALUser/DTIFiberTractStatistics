@@ -6,7 +6,7 @@
 		Compute statistics on DTI Fiber Tracts. \n Writing a data parameter file : \n The file need a special key in the first line which is : "Data parameters for DTIAtlasFiberAnalyzer : ". \n Each line after the first line need a key and then the value. \n For the CSV file, write the key : "CSVFile : " and the path of your file. \n For the Data column, write the key : "Data Column : " and the number of the column in the CSV File. \n For the Deformation Field column, write the key : "Defomation Field Column : " and the number of the column in the CSV File. \n If you don't put this line, the software will use no deformations field. \n For the Case column, write the key : "Case Column : " and the number of the column in the CSV File. \n If you don't put this line, the software will use the name of the T1 image. \n For the Output folder, write the key : "Output Folder : " and the path of your file. \n Writting an analysis file : \n The file need a special key in the first line which is : "Analysis parameters for DTIAtlasFiberAnalyzer : ". \n Each line after the first line need a key and then the value. \n For the Atlas folder, write the key : "Atlas Fiber Folder : " and path to the folder. \n To choose the selected fibers use the key : "Selected Fibers : " followed by the name of each fibers separated by a coma. \n As for the fibers, you can choose selected planes thanks to the key : "Selected Planes : ". \n To specify which parameters you want to use, write the key : "Profile parameter : " followed by each parameters separated by a coma (fa,md,fro,ad,l2,l3,ga,rd). \n Then with the key : "Col and Row : " followed by "Case in row" or "Case in column" you can select the layout of the datasheet. \n Finally, "Auto Plane Origin : " followed either by "median" or "cog" will define the way to calculate an eventual auto plane origin. \n
 	</description>
 	<contributor>Jean-Baptiste Berger, Benjamin Yvernault, Francois Budin</contributor>
-	<version>1.5</version>
+	<version>1.51</version>
 	<parameters>
 		<boolean>
 			<name>nogui</name>
@@ -15,10 +15,7 @@
 			<label>nogui</label>
 			<default>false</default>
 		</boolean>
-		
 	</parameters>
-		
-	
 	<parameters>
 		<label>
 			DTIAtlasFiberAnalyzer Command Line Parameters
@@ -26,7 +23,6 @@
 		<description>
 			Command Line Parameters for DTIAtlasFiberAnalyzer, use only with the option nogui
 		</description>
-		
 		<file>
 			<name>datafile</name>
 			<longflag>datafile</longflag>
@@ -35,7 +31,6 @@
 			<label>datafile</label>
 			<default></default>
 		</file>
-		
 		<file>
 			<name>analysisfile</name>
 			<longflag>analysisfile</longflag>
@@ -44,7 +39,6 @@
 			<label>analysisfile</label>
 			<default></default>
 		</file>
-		
 		<file>
 			<name>loadCSV</name>
 			<longflag>loadCSV</longflag>
@@ -53,15 +47,33 @@
 			<label>loadCSV</label>
 			<default></default>
 		</file>
-		
 		<boolean>
 			<name>debug</name>
 			<longflag>debug</longflag>
 			<description>debug for computer scientist DEFAULT=false</description>
 			<label>debug</label>
 			<default>false</default>
+		</boolean>		
+		<boolean>
+			<name>rodent</name>
+			<longflag>rodent</longflag>
+			<description>Allows to set a small sampling step. Appropriate to process rodent images</description>
+			<label>Rodent</label>
+			<default>false</default>
 		</boolean>
-		
-        </parameters>
-	
+		<boolean>
+			<name>removeCleanFibers</name>
+			<longflag>removeCleanFibers</longflag>
+			<description>Remove clean fiber files computed by dtitractstat.</description>
+			<label>Remove Clean Fibers</label>
+			<default>true</default>
+		</boolean>
+		<double>
+			<name>sampling</name>
+			<longflag>fiberSamplingStep</longflag>
+			<description>Fiber sampling step (dtitractstat)</description>
+			<label>Fiber sampling step</label>
+			<default>1.0</default>
+		</double>
+  </parameters>
 </executable>

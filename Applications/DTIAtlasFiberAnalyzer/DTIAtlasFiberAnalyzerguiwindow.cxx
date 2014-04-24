@@ -1493,7 +1493,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
 		if(pathFiberProcess.compare("")!=0)
 		{
 			//Apply fiberprocess on CSV data
-			if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, m_parameters,m_transposeColRow, false, this))
+			if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
 			{
 				std::cout<<"fiberprocess has been canceled"<<std::endl;
 				QApplication::restoreOverrideCursor();
@@ -1565,7 +1565,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 		if(pathdti_tract_stat.compare("")!=0)
 		{
 			//Apply dti tract stat on CSV data
-            if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_DeformationCol, m_NameCol, m_transposeColRow, false, CoG, FiberSampling->value() , checkRodent->isChecked() , this))
+            if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , this))
 			{
 				std::cout<<"dtitractstat has been canceled"<<std::endl;
 				QApplication::restoreOverrideCursor();
@@ -2094,12 +2094,11 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadDataFile(std::string filename)
 {
 	
 	bool loaded = false, DataColDone=false, NameColDone=false, DefColDone=false;
-	std::string str;
 	
 	if(filename.size()!=0)
 	{
 		std::ifstream file(filename.c_str() , std::ios::in);  // open in reading
-		std::string str,buf1,NameCol, DefCol, DataCol;
+		std::string buf1,NameCol, DefCol, DataCol;
 		
 		if(file)  // if open
 		{
@@ -2241,14 +2240,14 @@ void DTIAtlasFiberAnalyzerguiwindow::OpenAnalysisFile()
 void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 {
 	bool AtlasDone=false, SelectedFiberDone=false, SelectedPlaneDone=false;
-	std::string ListOfFiber, str, ListOfPlane;
+	std::string ListOfFiber, ListOfPlane;
 	std::vector<int> plane;
 	std::vector<std::string> FiberSelectedName;
 	
 	if(filename.size()!=0)
 	{
 		std::ifstream file(filename.c_str() , std::ios::in);  // open in reading
-		std::string str,buf1;
+		std::string buf1;
 		
 		if(file)  // if open
 		{
