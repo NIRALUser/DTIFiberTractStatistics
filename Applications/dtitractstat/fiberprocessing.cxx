@@ -39,7 +39,8 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
                                             bool worldspace ,
                                             std::string auto_plane_origin ,
                                             bool useNonCrossingFibers ,
-                                            double bandwidth
+                                            double bandwidth ,
+                                            bool removeCleanFibers
                                           )
 {
   m_Bandwidth = 2.0 * bandwidth ;//-1/+1
@@ -88,6 +89,10 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
     //We need to read the new file containing only the fibers crossing the plane
     //(since all the filtering was done on the VTK and we work on the spatial object "group")
     group = readFiberFile(input_file);
+    if( removeCleanFibers )
+    {
+      remove( input_file.c_str() ) ;
+    }
   }
   
   arc_length_parametrization( group ) ;

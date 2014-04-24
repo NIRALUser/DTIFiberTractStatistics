@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
   int all_flag = -1;
   std::cout<<"there are "<<param<<" parameters"<<std::endl;
 
-  FP->fiberprocessing_main(input_fiber_file, output_stats_file, planeautoOn, plane_file, worldspace, auto_plane_origin, useNonCrossingFibers , bandwidth );
+  FP->fiberprocessing_main(input_fiber_file, output_stats_file, planeautoOn, plane_file, worldspace, auto_plane_origin, useNonCrossingFibers , bandwidth , removeCleanFibers );
 
   if (param == 8){
     all_flag=1;

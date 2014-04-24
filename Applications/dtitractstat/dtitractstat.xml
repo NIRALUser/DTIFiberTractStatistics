@@ -9,7 +9,7 @@
   <description>
     This is a command line tool which allows the user to study the behavior of water diffusion (using DTI data) along the length of the white matter fiber-tracts.
   </description>
-  <version>1.2</version>
+  <version>1.21</version>
   <documentation-url>
     http://www.nitrc.org/projects/dti_tract_stat/
   </documentation-url>
@@ -158,6 +158,13 @@
 		 <label>Use non crossing fibers</label>
 		 <description>Use every fibers even if they do not cross the plane</description>
 		 <default>0</default>
-    </boolean>
+   </boolean>
+	 <boolean>
+		 <name>removeCleanFibers</name>
+		 <longflag>--remove_clean_fiber</longflag>
+		 <label>Remove Clean Fibers</label>
+		 <description>Remove clean fiber files that have been saved on the hard drive during the computation</description>
+		 <default>0</default>
+   </boolean>
   </parameters>
 </executable>
