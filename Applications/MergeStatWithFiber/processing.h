@@ -27,7 +27,7 @@ class Processing{
 		~Processing();
 		
 		bool IsFloat(std::string);
-		void ReadDataFromCSV(std::string Filename);
+		int ReadDataFromCSV(std::string Filename);
 		void ReadDataFromVTK(std::string Filename);
     void WritingDataInVTK(std::string output_vtk_file, double Min, double Max, double alpha , bool inverse_rescale_p_value) ;
 		vstring StringToVector(std::string line);

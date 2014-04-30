@@ -24,7 +24,7 @@ bool Processing::IsFloat(std::string Str)
 *ReadDataFromCSV: Look on the CSV file, read the data and put it in m_DataTable
 ***********************************************************************************/
 
-void Processing::ReadDataFromCSV(std::string Filename)
+int Processing::ReadDataFromCSV(std::string Filename)
 {
 	bool TransposeCol;
 	std::ifstream File(Filename.c_str(), std::ios::in);
@@ -47,25 +47,31 @@ void Processing::ReadDataFromCSV(std::string Filename)
 	
 	
 	//Check if the table is written by column or by row.
-	if(!IsFloat(TempTable[0][1].c_str())) {
+	if(!IsFloat(TempTable[0][1].c_str()))
+  {
 		TransposeCol=true;
-        std::cout << "transposing needed" << std::endl;
-	} else if(!IsFloat(TempTable[1][0].c_str())) {
+    std::cout << "transposing needed" << std::endl;
+	}
+  else if(!IsFloat(TempTable[1][0].c_str()))
+  {
 		TransposeCol=false;
-	} else {
+	}
+  else
+  {
 		std::cout<<"Error finding to transpose csv table or not."<<std::endl;
-    }
+    return 1 ;
+  }
 	
 	//Checking if data were read correctly
 	if(TempTable.size()==0)
 	{
 		std::cout<<"Error reading the CSV file. No data were obtained."<<std::endl;
-		return;
+		return 1 ;
 	}
 	else if(TempTable[0].size()==0)
 	{
 		std::cout<<"Error reading the CSV file. No data were obtained."<<std::endl;
-		return;
+		return 1 ;
 	}
 	
 	m_DataTable.clear();
@@ -81,22 +87,33 @@ void Processing::ReadDataFromCSV(std::string Filename)
 		}		
 	}
 	else
-		m_DataTable=TempTable;
+  {
+		m_DataTable=TempTable ;
+  }
     
     
 	// m_DataTable[0][0] => arclength title,  m_DataTable[0][1] << first arclength value etc
-    std::string columnName = m_DataTable[0][0] ;
-    std::transform(columnName.begin(), columnName.end(), columnName.begin(), ::tolower);
-    if( columnName == "index" || columnName == "id" )
-		m_Index=true;
+  std::string columnName = m_DataTable[0][0] ;
+  std::transform(columnName.begin(), columnName.end(), columnName.begin(), ::tolower);
+  if( columnName == "index" || columnName == "id" )
+  {
+		m_Index = true ;
+  }
 	else
-		m_Index=false;
-    if( columnName == "arclength" )
-		m_Arclength=true;
+  {
+		m_Index = false ;
+  }
+  if( columnName == "arclength" )
+  {
+		m_Arclength = true ;
+  }
 	else
-		m_Arclength=false;
+  {
+		m_Arclength = false ;
+  }
     
 	std::cout<<"CSV File read successfuly. Index? "<< m_Index << ", Arclength? " << m_Arclength << std::endl;
+  return 0 ;
 }
 
 /**********************************************************************************

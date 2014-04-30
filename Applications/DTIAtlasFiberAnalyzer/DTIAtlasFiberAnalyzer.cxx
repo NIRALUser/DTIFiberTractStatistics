@@ -11,19 +11,35 @@
 #include "GlobalFunction.h"
 #include "DTIAtlasFiberAnalyzerguiwindow.h"
 #include <QApplication>
+#include <itksys/SystemTools.hxx>
+#include <itksys/Directory.hxx>
 
 
 int main(int argc, char *argv[])
 {
 	PARSE_ARGS;
-	
+  //Verify that arg0 contains a '/' or a '\'. Otherwise find executable in PATH
+  std::string path = argv[ 0 ] ;
+  std::string pathToExecutable ;
+  size_t found = path.find_last_of("/\\") ;
+  if( found != std::string::npos )
+  {
+    pathToExecutable = itksys::SystemTools::CollapseFullPath( argv[ 0 ] ) ;
+  }
+  else
+  {
+    pathToExecutable = itksys::SystemTools::FindProgram( argv[ 0 ] ) ;
+  }
+  found = pathToExecutable.find_last_of("/\\");
+  pathToExecutable = pathToExecutable.substr( 0 , found ) ;
+
 	if(!nogui)
 	{
 		if(debug)
 			std::cout<<"DTI Atlas Fiber Analyser WITH GUI"<<std::endl;
 		QApplication app(argc, argv);
 		/* Set and show the window */
-        DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow( argv[ 0 ] , debug ) ;
+    DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow( pathToExecutable , debug ) ;
 		DTIAFAwindow.show();
         DTIAFAwindow.raise();
 		return app.exec();
@@ -33,7 +49,7 @@ int main(int argc, char *argv[])
 		if(debug)
 			std::cout<<"DTI Atlas Fiber Analyser WITHOUT GUI"<<std::endl;
 		
-		if(!CommandLine(loadCSV, datafile, analysisfile, debug , sampling , rodent , removeCleanFibers ))
+		if(!CommandLine( pathToExecutable , loadCSV, datafile, analysisfile, debug , sampling , rodent , removeCleanFibers ))
 			std::cout<<"Stop DTIAtlasFiberAnalyzer ..."<<std::endl;
 		
 		return 0;

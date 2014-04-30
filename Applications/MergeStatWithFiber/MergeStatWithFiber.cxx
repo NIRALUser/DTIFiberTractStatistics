@@ -84,9 +84,12 @@ int main(int argc, char* argv[])
 	
 	//Processing function
 	Processing* process=new Processing;
-	process->ReadDataFromCSV(csv_input);
+	if( process->ReadDataFromCSV(csv_input) )
+  {
+    return -1 ;
+  }
 	process->ReadDataFromVTK(vtk_input);
   process->WritingDataInVTK(output_vtk_file, interpolation_min, interpolation_max, p_value_alpha,inverse_rescale_p_value);
 	
-	
+	return 0 ;
 }

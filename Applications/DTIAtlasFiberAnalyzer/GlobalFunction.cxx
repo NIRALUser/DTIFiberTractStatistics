@@ -9,10 +9,33 @@
 /* QT librairies */
 #include <QProcess>
 
+
+void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable )
+{
+  //Find path for executable
+  std::vector< std::string > listDir ;
+  listDir.push_back( pathToCurrentExecutable ) ;
+  #ifdef SlicerExtension
+  listDir.push_back( pathToCurrentExecutable + "/../ExternalBin" ) ;
+  listDir.push_back( pathToCurrentExecutable + "/../cli-modules" ) ;
+  #endif
+  pathToExecutable = itksys::SystemTools::FindProgram( name , listDir , true ) ;
+  if( pathToExecutable.empty() )
+  {
+    pathToExecutable= itksys::SystemTools::FindProgram( name ) ;
+  }
+  //if path not found
+  if(pathToExecutable.empty()==true)
+  {
+    std::cout << "Give the path for " << pathToExecutable << " : " << std::endl ;
+    std::cin >> pathToExecutable ;
+  }
+}
+
 /********************************************************************************* 
  * Command Line function
  ********************************************************************************/
-bool CommandLine(std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers )
+bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers )
 {
 	//variables
 	std::string pathFiberProcess, pathdti_tract_stat, OutputFolder, AtlasFiberDir, parameters, csvfile;
@@ -87,48 +110,24 @@ bool CommandLine(std::string CSVFilename, std::string datafile, std::string anal
 	if(!SelectedFibers.empty())
 	{
 		//Find path for fiberprocess
-		pathFiberProcess= itksys::SystemTools::FindProgram("fiberprocess");
-		// enter the path for fiberprocess if it didn't find it
-		if(pathFiberProcess.empty()==true)
-		{
-			std::cout<<"Give the path for fiberprocess : "<<std::endl;
-			std::cin>>pathFiberProcess;
-		}
+		FindExecutable( "fiberprocess" , pathCurrentToExecutable , pathFiberProcess ) ;
 		//Call fiberprocess
 		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
 		
 		/* Looking for dti_tract_stat */
-		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstat");
-		// enter the path for fiberprocess if it didn't find it
-		if(pathdti_tract_stat.empty()==true)
-		{
-			std::cout<<"Give the path for dtitractstat : "<<std::endl;
-			std::cin>>pathdti_tract_stat;
-		}
+		FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
 		//Call dti_tract_stat
         Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, SelectedFibers, Selectedfibersplane,parameters, DataCol, NameCol, true , CoG , sampling , rodent , removeCleanFibers ) ;
 	}
 	else
 	{
 		//Find path for fiberprocess
-		pathFiberProcess= itksys::SystemTools::FindProgram("fiberprocess");
-		// enter the path for fiberprocess if it didn't find it
-		if(pathFiberProcess.empty()==true)
-		{
-			std::cout<<"Give the path for fiberprocess : "<<std::endl;
-			std::cin>>pathFiberProcess;
-		}
+		FindExecutable( "fiberprocess" , pathCurrentToExecutable , pathFiberProcess ) ;
 		//Call fiberprocess
 		Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,true);
 		
 		/* Looking for dti_tract_stat */
-		pathdti_tract_stat= itksys::SystemTools::FindProgram("dtitractstat");
-		// enter the path for fiberprocess if it didn't find it
-		if(pathdti_tract_stat.empty()==true)
-		{
-			std::cout<<"Give the path for dtitractstat : "<<std::endl;
-			std::cin>>pathdti_tract_stat;
-		}
+		FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
 		//Call dti_tract_stat
         Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, fibers, fibersplane,parameters, DataCol, NameCol, true , CoG , sampling , rodent , removeCleanFibers ) ;
 	}

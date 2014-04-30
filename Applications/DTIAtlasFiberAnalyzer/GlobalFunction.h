@@ -11,7 +11,7 @@ typedef QVector<qv2double> qv3double;
 
 /* Functions defined in, exported from Globalfunc.cxx */
 /* Call when there is nogui */
-bool CommandLine(std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers );
+bool CommandLine( std::string pathToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers );
 		 
 /* Create a Directory */
 bool CreateDirectoryForData(std::string outputfolder, std::string name);
@@ -80,6 +80,9 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 
 /* Calcul the number of profiles parameters : FA,MD ... */
 int CalculNumberOfProfileParam(std::string parameters);
+
+/* Finds path on system to a program, looking first in the current executable directory as well as in "current executable/../ExternalBin" and then in the system PATH*/
+void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable ) ;
 
 /* look for a plane associated to fiber */
 std::vector<int> PlaneAssociatedToFiber(std::string fibername, vstring fibersplane);

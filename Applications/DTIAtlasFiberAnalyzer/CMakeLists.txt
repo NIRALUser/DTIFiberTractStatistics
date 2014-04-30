@@ -41,6 +41,7 @@ set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} vtkHybrid ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 
 if( EXTENSION )
+  ADD_DEFINITIONS(-DSlicerExtension)
   generateclp(Launcher_CLP DTIAtlasFiberAnalyzer.xml )
   add_executable( DTIAtlasFiberAnalyzerLauncher Launcher.cxx ${Launcher_CLP} )
   install(TARGETS DTIAtlasFiberAnalyzerLauncher

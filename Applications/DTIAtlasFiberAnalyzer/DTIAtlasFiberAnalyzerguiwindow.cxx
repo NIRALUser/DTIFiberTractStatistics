@@ -7,7 +7,7 @@
 /********************************************************************************* 
  * Constructor
  ********************************************************************************/
-DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( char path[] , bool debug, QWidget * parent , Qt::WFlags f  ): QMainWindow(parent, f)
+DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string pathToCurrentExecutable , bool debug, QWidget * parent , Qt::WFlags f  ): QMainWindow(parent, f)
 {
 	setupUi(this);
 	
@@ -23,10 +23,6 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( char path[] , bo
 	m_currentRow = -1;
 	m_currentColumn = -1;
 	m_transposeColRow = false;
-    m_PathToExecutable = itksys::SystemTools::CollapseFullPath( path ) ;
-    size_t found = m_PathToExecutable.find_last_of("/\\");
-    m_PathToExecutable = m_PathToExecutable.substr( 0 , found ) ;
-
 	RB_HField->setEnabled(true);
 	RB_DField->setEnabled(true);
 	nextstep->setEnabled(false);
@@ -34,6 +30,8 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( char path[] , bo
 	Apply->setVisible(false);
 	this->setMouseTracking(true);
 	
+  m_PathToCurrentExecutable = pathToCurrentExecutable ;
+  m_DialogDir = QDir::currentPath() ;
 	/* set the main layout */
 	/* ScrollArea */
 	QScrollArea *const scroll(new QScrollArea);
@@ -160,7 +158,9 @@ void DTIAtlasFiberAnalyzerguiwindow::NextStep()
 			while(!nofile)
 			{
 				if(!FileExisted(m_csvfilename))
+        {
 					nofile = true;
+        }
 				else
 				{
 					std::stringstream SNumber2;
@@ -212,9 +212,13 @@ void DTIAtlasFiberAnalyzerguiwindow::ApplySlot()
 {
 	//Apply function depends on which step you are.
 	if(m_numberstep==1)
+  {
 		Computefiberprocess();
+  }
 	else if(m_numberstep==2)
+  {
 		Computedti_tract_stat();
+  }
 	
 	//After computation we can go to next step
 	nextstep->setEnabled(true);
@@ -224,7 +228,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ApplySlot()
  *TabChanged: Slot used when user changed tab
  *********************************************************************************/
 
-void DTIAtlasFiberAnalyzerguiwindow::TabChanged(int index)
+void DTIAtlasFiberAnalyzerguiwindow::TabChanged(int /*UNUSED index*/)
 {
 	//change current step
 	m_numberstep=PrincipalWidget->currentIndex();
@@ -247,9 +251,13 @@ void DTIAtlasFiberAnalyzerguiwindow::CheckNextStep()
 		
 		//if an output folder, a datacolumn is precised and a csv existed Next becomes enabled
 		if(outputfolder->text().compare("")!=0 && m_CSV!=NULL && m_DataCol!=-1)
+    {
 			nextstep->setEnabled(true);
+    }
 		else
+    {
 			nextstep->setEnabled(false);
+    }
 		AutomatedComputation->setEnabled(true);
 	}
 	if(m_numberstep==1)
@@ -260,9 +268,13 @@ void DTIAtlasFiberAnalyzerguiwindow::CheckNextStep()
 		nextstep->setVisible(false);
 		//if there is an atlas folder and at least one fiber is selected Apply becomes enabled
 		if(m_AtlasFiberDir.size()!=0 && m_FiberSelectedname.size()!=0)
+    {
 			Apply->setEnabled(true);
+    }
 		else
+    {
 			Apply->setEnabled(false);
+    }
 		AutomatedComputation->setEnabled(true);
 	}
 	if(m_numberstep==2)
@@ -274,9 +286,13 @@ void DTIAtlasFiberAnalyzerguiwindow::CheckNextStep()
 		setParam();
 		//if there is at least one parameter Apply becomes enabled
 		if(m_NumberOfParameters==0)
+    {
 			Apply->setEnabled(false);
+    }
 		else
+    {
 			Apply->setEnabled(true);
+    }
 		AutomatedComputation->setEnabled(true);
 	}
 	if(m_numberstep==3)
@@ -297,9 +313,13 @@ void DTIAtlasFiberAnalyzerguiwindow::CheckNextStep()
 		previousstep->setEnabled(false);
 		AutomatedComputation->setEnabled(false);
 		if(DTIPoutputfilename->text().toStdString().compare("")==0 || !IsFile(DTIPoutputfilename->text().toStdString()) || DTIPcsvfilename->text().toStdString().compare("")==0 || DTIPvtkfilename->text().toStdString().compare("")==0)
+    {
 			DTIPcomputes->setEnabled(false);
+    }
 		else
+    {
 			DTIPcomputes->setEnabled(true);
+    }
 	}
 		
 }
@@ -365,19 +385,32 @@ void DTIAtlasFiberAnalyzerguiwindow::AutoCompute()
 				{
 					NextStep();
 					if(!Computefiberprocess())
+          {
 						return;
+          }
 				}
-			
 				NextStep();
 				if(!Computedti_tract_stat())
+        {
 					return;
+        }
 			}
-		
 			NextStep();
 			if(!OpenPlotWindow())
+      {
 				return;
+      }
 		}
 	}
+}
+
+void DTIAtlasFiberAnalyzerguiwindow::SetNewDialogDirFromFileName( QString filename )
+{
+  if( filename != "" )
+  {
+    QFileInfo fi( filename ) ;
+    m_DialogDir = fi.dir().absolutePath() ;
+  }
 }
 
 /***************************************************
@@ -395,7 +428,8 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserCSVFilename()
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	
 	QString filename,type;
-	filename = QFileDialog::getOpenFileName(this, "Open CSV File", "/", "Text (*.csv *.txt)",&type);
+	filename = QFileDialog::getOpenFileName(this, "Open CSV File", m_DialogDir , "Text (*.csv *.txt)",&type);
+  SetNewDialogDirFromFileName( filename ) ;
 	csvfilename->setText(filename);
 	EnterCsvFileName();
 	
@@ -418,7 +452,9 @@ void DTIAtlasFiberAnalyzerguiwindow::EnterCsvFileName()
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	/* Clear the CSV */
     if(m_CSV !=NULL)
-		clearCSV();
+    {
+		  clearCSV();
+    }
 	//Clear the number of column
 	m_DataCol = -1;
 	m_DeformationCol = -1;
@@ -472,11 +508,17 @@ void DTIAtlasFiberAnalyzerguiwindow::FillCSVFileOnQTable()
 		CSVtable->setHorizontalHeaderItem(j,header);
 		//Color the header
 		if(j==static_cast<unsigned int>(m_DataCol))
+    {
 			ColorCol(1);
+    }
 		if(j==static_cast<unsigned int>(m_DeformationCol))
+    {
 			ColorCol(2);
+    }
 		if(j==static_cast<unsigned int>(m_NameCol))
+    {
 			ColorCol(3);
+    }
 	}
 	
 	//fill the tab
@@ -509,7 +551,9 @@ void DTIAtlasFiberAnalyzerguiwindow::applyNewCSV()
 	ColumnNameCases->clear();
 	/* Clear the CSV */
 	if(m_CSV !=NULL)
+  {
 		clearCSV();
+  }
 	//clear the lineEdit
 	csvfilename->clear();
 	std::cout<<std::endl;
@@ -574,7 +618,9 @@ void DTIAtlasFiberAnalyzerguiwindow::ClearDataInformation()
 	m_numberstep = 0;
 	//Disable every tab except the first one
 	for(int i=1; i<4; i++)
+  {
 		PrincipalWidget->setTabEnabled (m_numberstep + i,false);
+  }
 	m_DataCol = -1;
 	m_DeformationCol = -1;
 	m_NameCol = -1;
@@ -635,7 +681,9 @@ std::string DTIAtlasFiberAnalyzerguiwindow::LineItemsToString(int row)
 				line+= qs.toStdString();
 			}
 			else
+      {
 				line+= "no";
+      }
 			// Put the coma
 			line+= ",";
 		}
@@ -647,7 +695,9 @@ std::string DTIAtlasFiberAnalyzerguiwindow::LineItemsToString(int row)
 				line+= qs.toStdString();
 			}
 			else
+      {
 				line+= "no";
+      }
 		}
 	}
 	return line;
@@ -698,21 +748,26 @@ void DTIAtlasFiberAnalyzerguiwindow::AddDataFromTableToCSV()
 void DTIAtlasFiberAnalyzerguiwindow::BrowserSaveCSV()
 {
 	QString output;
-	if(m_OutputFolder.size()!=0)
-		output=m_OutputFolder.c_str();
+	if( !m_OutputFolder.empty() )
+  {
+		output = m_OutputFolder.c_str() ;
+  }
 	else
-		output=".";
-	QString file = QFileDialog::getSaveFileName(this, "Save a file", output, "Text (*.csv)");
-	
-	if(file!=NULL)
+  {
+		output = m_DialogDir ;
+  }
+	QString file = QFileDialog::getSaveFileName( this , "Save a file" , output , "Text (*.csv)" ) ;
+	if( file != NULL )
 	{
-		m_csvfilename = file.toStdString();
-		m_CSV->SetFilename(m_csvfilename);
-		csvfilename->setText(file);
-		SaveCSV();
+		m_csvfilename = file.toStdString() ;
+		m_CSV->SetFilename( m_csvfilename ) ;
+		csvfilename->setText( file ) ;
+		SaveCSV() ;
 	}
 	else
-		std::cout<<"ERROR: File name null!"<<std::endl;
+  {
+		std::cout << "ERROR: File name null!" << std::endl ;
+  }
 }
 void DTIAtlasFiberAnalyzerguiwindow::clearCSV()
 {
@@ -773,7 +828,9 @@ void DTIAtlasFiberAnalyzerguiwindow::DeleteC()
 		m_currentColumn = -1;
 	}
 	else
+  {
 		QMessageBox::information(this, "Warning", "Select a column!");
+  }
 }
 
 /********************************************************************************* 
@@ -825,7 +882,9 @@ void DTIAtlasFiberAnalyzerguiwindow::DeleteR()
 		m_currentColumn = -1;
 	}
 	else
+  {
 		QMessageBox::information(this, "Warning", "Select a line!");
+  }
 }
 
 /* Set Data column number */
@@ -872,7 +931,9 @@ void DTIAtlasFiberAnalyzerguiwindow::SetDataColumn()
 		m_DataCol = -1;
 	}
 	else
+  {
 		ColumnData->setText("");
+  }
 	CheckNextStep();
 }
 
@@ -920,7 +981,9 @@ void DTIAtlasFiberAnalyzerguiwindow::SetDeformationColumn()
 		m_DeformationCol = -1;
 	}
 	else
+  {
 		ColumnDeformation->setText("");
+  }
 }
 
 /* Set Name for cases column number */
@@ -967,7 +1030,9 @@ void DTIAtlasFiberAnalyzerguiwindow::SetNameColumn()
 		m_NameCol = -1;
 	}
 	else
+  {
 		ColumnNameCases->setText("");
+  }
 }
 
 /* Color the column : 1->Data(green),2->Def(blue),3->Name(orange) */
@@ -977,15 +1042,21 @@ void DTIAtlasFiberAnalyzerguiwindow::ColorCol(int type)
 	{
 		case 1:
 			if(m_DataCol>=0 && m_DataCol < CSVtable->columnCount())
+      {
 				paintForeGround(0,147,0,m_DataCol,1);
+      }
 			break;
 		case 2:
 			if(m_DeformationCol>=0 && m_DeformationCol < CSVtable->columnCount())
+      {
 				paintForeGround(85,170,255,m_DeformationCol,2);
+      }
 			break;
 		case 3:
 			if(m_NameCol>=0 && m_NameCol < CSVtable->columnCount())
+      {
 				paintForeGround(255,170,0,m_NameCol,3);
+      }
 			break;
 	}
 }
@@ -997,15 +1068,21 @@ void DTIAtlasFiberAnalyzerguiwindow::DecolorCol(int type)
 	{
 		case 1:
 			if(m_DataCol!=-1)
+      {
 				paintForeGround(0,0,0,m_DataCol,1);
+      }
 			break;
 		case 2:
 			if(m_DeformationCol!=-1)
+      {
 				paintForeGround(0,0,0,m_DeformationCol,2);
+      }
 			break;
 		case 3:
 			if(m_NameCol!=-1)
+      {
 				paintForeGround(0,0,0,m_NameCol,3);
+      }
 			break;
 	}
 }
@@ -1067,11 +1144,17 @@ void DTIAtlasFiberAnalyzerguiwindow::ChangeHeader(int col)
 		header->setData( 0, headername );
 		CSVtable->setHorizontalHeaderItem(col,header);
 		if(col == m_DataCol)
+    {
 			ColorCol(1);
+    }
 		if(col == m_DeformationCol)
+    {
 			ColorCol(2);
+    }
 		if(col == m_NameCol)
+    {
 			ColorCol(3);
+    }
 	}
 }
 
@@ -1079,9 +1162,13 @@ void DTIAtlasFiberAnalyzerguiwindow::ChangeHeader(int col)
 void DTIAtlasFiberAnalyzerguiwindow::CellAsBrowser(int row,int col)
 {
 	if(col==m_DataCol)
+  {
 		BrowserIndividualData(row);
+  }
 	if(col==m_DeformationCol)
+  {
 		BrowserDeformationField(row);
+  }
 }
 
 /* Set Param */
@@ -1139,7 +1226,9 @@ void DTIAtlasFiberAnalyzerguiwindow::setParam()
 	}
 	
 	if(m_parameters.compare("")!=0)
+  {
 		m_parameters=m_parameters.substr(0,m_parameters.find_last_of(","));
+  }
 }
 
 
@@ -1150,11 +1239,13 @@ void DTIAtlasFiberAnalyzerguiwindow::setParam()
 void DTIAtlasFiberAnalyzerguiwindow::BrowserIndividualData(int row)
 {
 	QString filename,type;
-	filename = QFileDialog::getOpenFileName(this, "Open Individual Data", "/", 
+	filename = QFileDialog::getOpenFileName(this, "Open Individual Data", m_DialogDir , 
 														 "Images (*.gipl *.hdr *.nhdr *.nrrd)",&type);
-	
+  SetNewDialogDirFromFileName( filename ) ;
 	if(m_debug)
+  {
 		std::cout<<"Filename : "<< (filename.toStdString()).c_str() <<std::endl;
+  }
 	
 	/* Keep the value if cancel */
 	if(filename !=NULL)
@@ -1162,7 +1253,9 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserIndividualData(int row)
 		PutDataonQTable(row,m_DataCol,filename.toStdString());
 	}
 	else if(m_debug)
+  {
 		std::cout<<"Error : filename is NULL."<<std::endl;
+  }
 }
 /********************************************************************************* 
  * load file for deformation field and put it in the Qtable
@@ -1170,18 +1263,21 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserIndividualData(int row)
 void DTIAtlasFiberAnalyzerguiwindow::BrowserDeformationField(int row)
 {
 	QString filename,type;
-	filename = QFileDialog::getOpenFileName(this, "Open Deformation Field", "/");
-	
+	filename = QFileDialog::getOpenFileName(this, "Open Deformation Field", m_DialogDir ) ;
+  SetNewDialogDirFromFileName( filename ) ;
 	if(m_debug)
+  {
 		std::cout<<"Filename : "<< (filename.toStdString()).c_str() <<std::endl;
-	
+	}
 	/* Keep the value if cancel */
 	if(filename !=NULL)
 	{
 		PutDataonQTable(row,m_DeformationCol,filename.toStdString());
 	}
 	else if(m_debug)
+  {
 		std::cout<<"Error : filename is NULL."<<std::endl;
+  }
 }
 
 /********************************************************************************* 
@@ -1189,11 +1285,21 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserDeformationField(int row)
  ********************************************************************************/
 void DTIAtlasFiberAnalyzerguiwindow::BrowserOutputFolder()
 {
-	QString path = QFileDialog::getExistingDirectory(this);
-	if(path!=NULL)
+	QString output;
+	if( !m_OutputFolder.empty() )
+  {
+		output = m_OutputFolder.c_str() ;
+  }
+	else
+  {
+		output = m_DialogDir ;
+  }
+	QString path = QFileDialog::getExistingDirectory(this , "Select output directory" , output ) ;
+	if( path != NULL )
 	{
-		outputfolder->setText(path);
-		EnterOutputFolder();
+    m_DialogDir = path ;//we save the selected directory to open new dialog windows in the same folder
+		outputfolder->setText( path ) ;
+		EnterOutputFolder() ;
 	}
 }
 /********************************************************************************* 
@@ -1215,9 +1321,10 @@ void DTIAtlasFiberAnalyzerguiwindow::EnterOutputFolder()
  ********************************************************************************/
 void DTIAtlasFiberAnalyzerguiwindow::BrowserAtlasFiberFolder()
 {
-	QString path = QFileDialog::getExistingDirectory(this);
-	if(path!=NULL)
+	QString path = QFileDialog::getExistingDirectory( this , "Select Atlas Fiber Folder" , m_DialogDir ) ;
+	if( path != NULL )
 	{
+    m_DialogDir = path ;
 		AtlasFiberFolder->setText(path);
 		EnteronAtlasFiberFolder();
 	}
@@ -1270,7 +1377,9 @@ void DTIAtlasFiberAnalyzerguiwindow::FillFiberFrame()
 	
 	//Print the name in the ListWidget
 	for( unsigned int j=0;j<m_Fibername.size();j++)
+  {
 		FiberInAtlasList->addItem(m_Fibername[j].c_str());
+  }
 }
 
 /********************************************************************************* 
@@ -1279,7 +1388,9 @@ void DTIAtlasFiberAnalyzerguiwindow::FillFiberFrame()
 void DTIAtlasFiberAnalyzerguiwindow::AddFiberInList()
 {
 	if(m_debug)
+  {
 		std::cout<<"Add Fibers"<<std::endl;
+  }
 	QList<QListWidgetItem *> SelectedFiber;
 	SelectedFiber = FiberInAtlasList->selectedItems();
 	std::vector<int> plane;
@@ -1315,7 +1426,9 @@ void DTIAtlasFiberAnalyzerguiwindow::AddFiberInList()
 		}
 	}
 	for(int i=0; i<FiberPlaneFile->count(); i++)
+  {
 		FiberPlaneFile->item(i)->setSelected(true);
+  }
 	CheckNextStep();
 }
 
@@ -1371,7 +1484,9 @@ void DTIAtlasFiberAnalyzerguiwindow::SelectAllFiber()
 void DTIAtlasFiberAnalyzerguiwindow::RemoveFiberInList()
 {
 	if(m_debug)
+  {
 		std::cout<<"Remove Fibers"<<std::endl;
+  }
 	QList<QListWidgetItem *> SelectedFiber;
 	SelectedFiber = FiberSelectedList->selectedItems();
 	std::vector<int> plane;
@@ -1405,7 +1520,9 @@ void DTIAtlasFiberAnalyzerguiwindow::RemoveFiberInList()
 		for(unsigned int k=0;k<m_FiberSelectedname.size();k++)
 		{
 			if(m_FiberSelectedname[k].compare(((SelectedFiber.at(i))->text()).toStdString())==0)
+      {
 				m_FiberSelectedname.erase(m_FiberSelectedname.begin()+k);
+      }
 		}
 	}
 	CheckNextStep();
@@ -1460,37 +1577,24 @@ void DTIAtlasFiberAnalyzerguiwindow::RemoveAllFiber()
  ********************************************************************************/
 bool DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
 {
-	int ret=QMessageBox::Cancel;
+//	int ret=QMessageBox::Cancel;
 	/* Mouse Event when running */
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	/* Call of fiberprocess if there is a Data/Deformation columns and at least one fiber */
 	if(m_DataCol==-1)
+  {
 		QMessageBox::information(this,"Warning","No Data column set, you have to set one!");
+  }
 	else if(m_FiberSelectedname.empty())
+  {
 		QMessageBox::information(this,"Warning","No fiber selected!");
+  }
 	else
 	{
 		std::string pathFiberProcess;
 		//Add the data to the CSV
 		AddDataFromTableToCSV();
-		
-		//Find path for fiberprocess
-        std::vector< std::string > listDir ;
-        listDir.push_back( m_PathToExecutable ) ;
-        pathFiberProcess = itksys::SystemTools::FindProgram( "fiberprocess" , listDir , true ) ;
-        if( pathFiberProcess.empty() )
-        {
-            pathFiberProcess= itksys::SystemTools::FindProgram( "fiberprocess" ) ;
-        }
-		//if path not found
-        if( pathFiberProcess.empty() )
-		{
-			ret = QMessageBox::information(this, "fiberprocess","Select the folder where fiberprocess* is saved .");
-			pathFiberProcess = (QFileDialog::getExistingDirectory(this)).toStdString();
-			pathFiberProcess = pathFiberProcess +"/fiberprocess";
-		}
-		
-		if(pathFiberProcess.compare("")!=0)
+		if( FindExecutable( "fiberprocess" , pathFiberProcess ) )
 		{
 			//Apply fiberprocess on CSV data
 			if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
@@ -1516,6 +1620,43 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
 
 
 
+bool DTIAtlasFiberAnalyzerguiwindow::FindExecutable( const char* name , std::string &pathToExecutable )
+{
+  //Find path for executable
+  std::vector< std::string > listDir ;
+  listDir.push_back( m_PathToCurrentExecutable ) ;
+  #ifdef SlicerExtension
+  listDir.push_back( m_PathToCurrentExecutable + "/../ExternalBin" ) ;
+  listDir.push_back( m_PathToCurrentExecutable + "/../cli-modules" ) ;
+  #endif
+  pathToExecutable = itksys::SystemTools::FindProgram( name , listDir , true ) ;
+  if( pathToExecutable.empty() )
+  {
+    pathToExecutable= itksys::SystemTools::FindProgram( name ) ;
+  }
+  //if path not found
+  while( pathToExecutable.empty() )
+  {
+    std::string message = "Select the folder where " + std::string(name) + " can be found" ;
+    QString selectedDirectory = QFileDialog::getExistingDirectory( this , tr( message.c_str() ) , QString::fromStdString(m_PathToCurrentExecutable) ) ;
+    if( selectedDirectory == "" )
+    {
+      break ;
+    }
+    pathToExecutable = selectedDirectory.toStdString() ;
+    listDir.push_back( pathToExecutable ) ;
+    pathToExecutable = itksys::SystemTools::FindProgram( name , listDir , true ) ;
+  }
+  if( pathToExecutable.empty() )
+  {
+    return false ;
+  }
+  else
+  {
+    return true ;
+  }
+}
+
 /***************************************************
  * 					TAB 3
  ***************************************************/
@@ -1535,37 +1676,31 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
 	FillSelectedPlane();
 	std::cout<<"selected plane:"<<std::endl;
 	for(unsigned int i=0; i<m_SelectedPlane.size(); i++)
+  {
 		std::cout<<m_SelectedPlane[i]<<std::endl;
+  }
 	if(m_parameters.compare("")==0)
+  {
 		QMessageBox::information(this,"Warning","No properties selected!");
+  }
 	else
 	{
 		//set the value of the transposition of row and column
 		if(ArcOnCase->isChecked())
+    {
 			m_transposeColRow = false;
+    }
 		else if(CaseOnArc->isChecked())
+    {
 			m_transposeColRow = true;
+    }
 		//Add the data to the CSV
 		AddDataFromTableToCSV();
-		//Find path for fiberprocess
-        std::vector< std::string > listDir ;
-        listDir.push_back( m_PathToExecutable ) ;
-        pathdti_tract_stat= itksys::SystemTools::FindProgram( "dtitractstat" , listDir , true ) ;
-        if( pathdti_tract_stat.empty() )
-        {
-            pathdti_tract_stat= itksys::SystemTools::FindProgram( "dtitractstat" ) ;
-        }
-		//if path not found
-        if( pathdti_tract_stat.empty() )
-		{
-			QMessageBox::information(this, "dtitractstat", "Select the folder where dtitractstat is located .");
-			pathdti_tract_stat = (QFileDialog::getExistingDirectory(this)).toStdString();
-			pathdti_tract_stat = pathdti_tract_stat +"/dtitractstat";
-		}
-		if(pathdti_tract_stat.compare("")!=0)
+		//Find path for dtitractstat
+		if( FindExecutable( "dtitractstat" , pathdti_tract_stat ) )
 		{
 			//Apply dti tract stat on CSV data
-            if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , this))
+      if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , this))
 			{
 				std::cout<<"dtitractstat has been canceled"<<std::endl;
 				QApplication::restoreOverrideCursor();
@@ -1618,7 +1753,9 @@ void DTIAtlasFiberAnalyzerguiwindow::FillSelectedPlane()
 			}
 		}
 		if(!found)
+    {
 			m_SelectedPlane.push_back("");
+    }
 		found=false;
 	}
 }
@@ -1649,30 +1786,50 @@ void DTIAtlasFiberAnalyzerguiwindow::checkBoxProfile(std::string parameters)
 	for(unsigned int i=0;i<ProfileParam.size();i++)
 	{
 		if(ProfileParam[i].compare("fa")==0)
+    {
 			FABox->setCheckState(Qt::Checked);
+    }
 		else if(ProfileParam[i].compare("md")==0)
+    {
 			MDBox->setCheckState(Qt::Checked);
+    }
 		else if(ProfileParam[i].compare("fro")==0)
+    {
 			FroBox->setCheckState(Qt::Checked);
+    }
 		else if(ProfileParam[i].compare("l1")==0 || ProfileParam[i].compare("ad")==0)
+    {
 			l1Box->setCheckState(Qt::Checked);
+    }
 		else if(ProfileParam[i].compare("l2")==0)
+    {
 			l2Box->setCheckState(Qt::Checked);
+    }
 		else if(ProfileParam[i].compare("l3")==0)
+    {
 			l3Box->setCheckState(Qt::Checked);
+    }
 		else if(ProfileParam[i].compare("rd")==0)
+    {
 			RDBox->setCheckState(Qt::Checked);
+    }
 		else if(ProfileParam[i].compare("ga")==0)
+    {
 			GABox->setCheckState(Qt::Checked);
+    }
 	}
 }
 
 bool DTIAtlasFiberAnalyzerguiwindow::GetAutoPlaneOption()
 {
 	if(APMedianOnFiber->isChecked())
+  {
 		return false;
+  }
 	else
+  {
 		return true;
+  }
 }
 
 /***************************************************
@@ -1761,7 +1918,9 @@ void DTIAtlasFiberAnalyzerguiwindow::ReadDataFilesNameInDirectory(vstring &dataf
 				filefiber=filefiber.substr(nameofcase.size()+1, filefiber.size()-nameofcase.size()+1);
 				extensionoffile = ExtensionofFile(filename);
 				if(extensionoffile.compare("fvp")==0 && filefiber.rfind(fiber)!=std::string::npos)
+        {
 					datafiles.push_back(filename);
+        }
 			}
 		}
 	}
@@ -1978,7 +2137,8 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPCsvFilename()
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	
 	QString type;
-	QString filename=QFileDialog::getOpenFileName(this, "Open CSV File", "/", "Text (*.csv)", &type);
+	QString filename = QFileDialog::getOpenFileName( this , "Open CSV File" , m_DialogDir , "Text (*.csv)" , &type ) ;
+  SetNewDialogDirFromFileName( filename ) ;
 	DTIPcsvfilename->setText(filename);
 	CheckNextStep();
 	
@@ -1990,7 +2150,8 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPVtkFilename()
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	
 	QString type;
-	QString filename=QFileDialog::getOpenFileName(this, "Open VTK File", "/", "VTK (*.vtk)", &type);
+	QString filename=QFileDialog::getOpenFileName( this , "Open VTK File" , m_DialogDir , "VTK (*.vtk)" , &type ) ;
+  SetNewDialogDirFromFileName( filename ) ;
 	DTIPvtkfilename->setText(filename);
 	CheckNextStep();
 	
@@ -2002,7 +2163,16 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPOutputFilename()
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	
 	QString type;
-	QString filename=QFileDialog::getSaveFileName(this, "Save File", ".", "VTK (*.vtk)");
+	QString output;
+	if( !m_OutputFolder.empty() )
+  {
+		output = m_OutputFolder.c_str() ;
+  }
+	else
+  {
+		output = m_DialogDir ;
+  }
+	QString filename = QFileDialog::getSaveFileName( this , "Save File" , output , "VTK (*.vtk)" ) ;
 	DTIPoutputfilename->setText(filename);
 	CheckNextStep();
 	
@@ -2012,22 +2182,10 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPOutputFilename()
 bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    std::vector< std::string > listDir ;
-    listDir.push_back( m_PathToExecutable ) ;
-    std::string PathMergeStatWithFiber = itksys::SystemTools::FindProgram("MergeStatWithFiber" , listDir , true ) ;
-    if( PathMergeStatWithFiber.empty() )
-    {
-        PathMergeStatWithFiber = itksys::SystemTools::FindProgram("MergeStatWithFiber" ) ;
-    }
-    if( PathMergeStatWithFiber.empty() )
+  std::string pathMergeStatWithFiber ;
+	if( FindExecutable( "MergeStatWithFiber" , pathMergeStatWithFiber ) )
 	{
-		QMessageBox::warning(this, "MergeStatWithFiber", "Select the folder where MergeStatWithFiber is located.");
-		PathMergeStatWithFiber=QFileDialog::getExistingDirectory(this).toStdString();
-		PathMergeStatWithFiber=PathMergeStatWithFiber+"/MergeStatWithFiber";
-	}
-	if(PathMergeStatWithFiber.size()!=0)
-	{
-		if(CallMergeStatWithFiber(PathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString() , pvalue->text().toStdString() ) != 0  )
+		if(CallMergeStatWithFiber(pathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString() , pvalue->text().toStdString() ) != 0  )
 		{
 			std::cout<<"Fail during MergeStatWithFiber!"<<std::endl;
 			return false;
@@ -2049,34 +2207,46 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
  ********************************************************************************/
 void DTIAtlasFiberAnalyzerguiwindow::SaveDataAction(std::string Filename)
 {
-	QString output;
-	if(m_OutputFolder.size()!=0)
-		output=m_OutputFolder.c_str();
+	QString output ;
+	if( !m_OutputFolder.empty() )
+  {
+		output = m_OutputFolder.c_str() ;
+  }
 	else
-		output="./";
-	if(Filename=="")
+  {
+		output = m_DialogDir ;
+  }
+	if( Filename.empty() )
 	{
-		QString filename = QFileDialog::getSaveFileName(this, "Save data file", output, "Text (*.txt)");
-		SaveData(filename.toStdString(), m_csvfilename, m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_OutputFolder);
+		QString filename = QFileDialog::getSaveFileName( this , "Save data file" , output , "Text (*.txt)" ) ;
+		SaveData( filename.toStdString() , m_csvfilename , m_DataCol , m_DeformationCol , RB_HField->isChecked() , m_NameCol , m_OutputFolder ) ;
 	}
 	else
-		SaveData(output.toStdString()+"/"+Filename, m_csvfilename, m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_OutputFolder);
+  {
+		SaveData( output.toStdString() + "/" + Filename , m_csvfilename , m_DataCol , m_DeformationCol , RB_HField->isChecked() , m_NameCol , m_OutputFolder ) ;
+  }
 }
 
 void DTIAtlasFiberAnalyzerguiwindow::SaveAnalysisAction(std::string Filename)
 {
-	QString output;
-	if(m_OutputFolder.size()!=0)
-		output=m_OutputFolder.c_str();
+	QString output ;
+	if( !m_OutputFolder.empty() )
+  {
+		output = m_OutputFolder.c_str() ;
+  }
 	else
-		output="./";
-	if(Filename=="")
+  {
+		output = m_DialogDir ;
+  }
+	if( Filename.empty() )
 	{
-		QString filename = QFileDialog::getSaveFileName(this, "Save parameters file", output, "Text (*.txt)");
-		SaveAnalysis(filename.toStdString(), m_AtlasFiberDir, m_FiberSelectedname, m_SelectedPlane, m_parameters, m_transposeColRow);
+		QString filename = QFileDialog::getSaveFileName( this , "Save parameters file" , output , "Text (*.txt)" ) ;
+		SaveAnalysis( filename.toStdString() , m_AtlasFiberDir , m_FiberSelectedname , m_SelectedPlane , m_parameters , m_transposeColRow ) ;
 	}
 	else
-		SaveAnalysis(output.toStdString()+"/"+Filename, m_AtlasFiberDir, m_FiberSelectedname, m_SelectedPlane, m_parameters, m_transposeColRow);
+  {
+		SaveAnalysis( output.toStdString() + "/" + Filename , m_AtlasFiberDir , m_FiberSelectedname , m_SelectedPlane , m_parameters , m_transposeColRow ) ;
+  }
 }
 
 
@@ -2085,8 +2255,8 @@ void DTIAtlasFiberAnalyzerguiwindow::SaveAnalysisAction(std::string Filename)
  ********************************************************************************/
 void DTIAtlasFiberAnalyzerguiwindow::OpenDataFile()
 {
-	QString filename = QFileDialog::getOpenFileName(this, "Open Data File", QString(), "Text (*.txt)");
-	
+	QString filename = QFileDialog::getOpenFileName( this , "Open Data File" , m_DialogDir , "Text (*.txt)" ) ;
+  SetNewDialogDirFromFileName( filename ) ;
 	LoadDataFile(filename.toStdString());
 }
 
@@ -2159,11 +2329,17 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadDataFile(std::string filename)
 						else if(buf1.compare(0,13,"Field Type : ")==0)
 						{
 							if(buf1.substr(13,buf1.size()-13)=="h-field")
+              {
 								RB_HField->setChecked(true);
+              }
 							else if(buf1.substr(13,buf1.size()-13)=="displacement field")
+              {
 								RB_DField->setChecked(true);
+              }
 							else
+              {
 								std::cout<<"Warning: Wrong syntax of Field Type. Computing with default h-field."<<std::endl;
+              }
 						}
 						else if(buf1.compare(0,14,"Case Column : ")==0)
 						{
@@ -2209,21 +2385,30 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadDataFile(std::string filename)
 					}
 				}
 				else if(!loaded && (DataColDone || DefColDone || NameColDone))
+        {
 					QMessageBox::warning(this, "Warning", "CSVFilename required to choose specific column.");
+        }
 				
 				//next step true if there is an csv and an output
 				if(loaded && csvfilename->text().compare("")!=0 && outputfolder->text().compare("")!=0 && m_CSVcreated)
+        {
 					m_nextStep = true;
+        }
 				
 				std::cout<<std::endl;
 				std::cout<<"Data file loaded : New Data"<<std::endl;
 				CheckNextStep();
 			}
 			else
+      {
 				std::cout<<"ERROR: Wrong file for data parameters"<<std::endl;
+      }
 			file.close();
 		}
-		else std::cerr << "ERROR: No data parameters file found" << std::endl;
+		else
+    {
+      std::cerr << "ERROR: No data parameters file found" << std::endl;
+    }
 	}
 }
 
@@ -2233,7 +2418,8 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadDataFile(std::string filename)
 
 void DTIAtlasFiberAnalyzerguiwindow::OpenAnalysisFile()
 {
-	QString filename = QFileDialog::getOpenFileName(this, "Open Analysis File", QString(), "Text (*.txt)");
+	QString filename = QFileDialog::getOpenFileName( this , "Open Analysis File" , m_DialogDir , "Text (*.txt)" ) ;
+  SetNewDialogDirFromFileName( filename ) ;
 	LoadAnalysisFile(filename.toStdString());
 }
 
@@ -2320,9 +2506,13 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 						else if(buf1.compare(0,20,"Auto Plane Origin : ")==0)
 						{
 							if(buf1.compare(20, 6, "median")==0)
+              {
 								APMedianOnFiber->setChecked(true);
+              }
 							else if(buf1.compare(20,3,"cog")==0 || buf1.compare(20,5,"")==0)
+              {
 								APCenterOfGravity->setChecked(true);
+              }
 						}
 						else if(buf1.size()!=0)
 						{
@@ -2352,7 +2542,9 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 							for(unsigned int j=0; j<m_Fibername.size(); j++)
 							{
 								if(FiberSelectedName[i]==m_Fibername[j])
+                {
 									found=true;
+                }
 							}
 							if(!found)
 							{
@@ -2390,14 +2582,17 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 						m_FiberSelectedname=FiberSelectedName;
 						//Select specified planes or all of them if not.
 						if(!SelectedPlaneDone)
+            {
 							m_SelectedPlane.clear();
-						
+						}
 						for(unsigned int i=0; i<m_RelevantPlane.size(); i++)
 						{
 							for(unsigned int j=0; j<m_SelectedPlane.size(); j++)
 							{
 								if(m_RelevantPlane[i]==m_SelectedPlane[j])
+                {
 									FiberPlaneFile->item(i)->setSelected(true);
+                }
 							}
 						}
 							
@@ -2405,18 +2600,26 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
 					
 				}
 				else if(!AtlasDone && SelectedFiberDone)
+        {
 					QMessageBox::warning(this, "Warning", "Atlas directory should be specified if fibers are selected.");
+        }
 				else if(!SelectedFiberDone && SelectedPlaneDone)
+        {
 					QMessageBox::warning(this, "Warning", "Selected Fibers should be specified if planes are selected.");
-					
+        }
 				std::cout<<std::endl;
 				std::cout<<"Analysis file loaded."<<std::endl;
-				CheckNextStep();
+        CheckNextStep();
 			}
 			else
+      {
 				std::cout<<"ERROR: Wrong file for analysis parameters"<<std::endl;
+      }
 			file.close();
 		}
-		else std::cerr << "ERROR: No analysis parameters file found" << std::endl;
+		else
+    {
+      std::cerr << "ERROR: No analysis parameters file found" << std::endl;
+    }
 	}
 }
