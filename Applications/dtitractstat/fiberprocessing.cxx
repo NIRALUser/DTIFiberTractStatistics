@@ -76,14 +76,22 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
 			vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
       //fiberwriter->SetFileTypeToBinary();
 			fiberwriter->SetFileName(input_file.c_str());
+      #if (VTK_MAJOR_VERSION < 6)
       fiberwriter->SetInput(PolyData);
+      #else
+      fiberwriter->SetInputData(PolyData);
+      #endif
 			fiberwriter->Update();
 	  }
 	  else if(input_file.rfind(".vtp") != std::string::npos)
 	  {
 		  vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
 		  fiberwriter->SetFileName(input_file.c_str());
+      #if (VTK_MAJOR_VERSION < 6)
 		  fiberwriter->SetInput(PolyData);
+      #else
+		  fiberwriter->SetInputData(PolyData);
+      #endif
 		  fiberwriter->Update();
 	  }
     //We need to read the new file containing only the fibers crossing the plane
@@ -756,7 +764,11 @@ void fiberprocessing::writeFiberFile(const std::string & filename, GroupType::Po
       vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
 //       fiberwriter->SetFileTypeToBinary();
       fiberwriter->SetFileName(filename.c_str());
+      #if (VTK_MAJOR_VERSION < 6)
       fiberwriter->SetInput(polydata);
+      #else
+      fiberwriter->SetInputData(polydata);
+      #endif
       fiberwriter->Update();
     }
     // XML
@@ -764,7 +776,11 @@ void fiberprocessing::writeFiberFile(const std::string & filename, GroupType::Po
     {
       vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
       fiberwriter->SetFileName(filename.c_str());
+      #if (VTK_MAJOR_VERSION < 6)
       fiberwriter->SetInput(polydata);
+      #else
+      fiberwriter->SetInputData(polydata);
+      #endif
       fiberwriter->Update();
     }
     else
@@ -950,7 +966,11 @@ void fiberprocessing::Write_parametrized_fiber(std::string output_parametrized_f
   vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
   fiberwriter->SetFileTypeToASCII();
   fiberwriter->SetFileName(output_parametrized_fiber_file.c_str());
+  #if (VTK_MAJOR_VERSION < 6)
   fiberwriter->SetInput(polydata);
+  #else
+  fiberwriter->SetInputData(polydata);
+  #endif
   fiberwriter->Update();
 }
 
@@ -1084,7 +1104,11 @@ void fiberprocessing::Write_parametrized_fiber_avg_position_and_arclength(std::s
   vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
   fiberwriter->SetFileTypeToASCII();
   fiberwriter->SetFileName(output_parametrized_fiber_file.c_str());
+  #if (VTK_MAJOR_VERSION < 6)
   fiberwriter->SetInput(polydata);
+  #else
+  fiberwriter->SetInputData(polydata);
+  #endif
   fiberwriter->Update();
 
 }

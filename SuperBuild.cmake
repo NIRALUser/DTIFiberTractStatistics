@@ -1,7 +1,9 @@
-set(LOCAL_PROJECT_NAME DTIAtlasFiberAnalyzer)
+set(PRIMARY_PROJECT_NAME DTIAtlasFiberAnalyzer)
 
-set( ${LOCAL_PROJECT_NAME}_USE_QT ON )
+set( ${PRIMARY_PROJECT_NAME}_USE_QT ON )
 
+set(EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Select where external packages will be downloaded" )
+set(EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Select where external packages will be compiled and installed" )
 
 #-----------------------------------------------------------------------------
 # Extension option(s)
@@ -43,16 +45,16 @@ CMAKE_DEPENDENT_OPTION(
 
 option(EXECUTABLES_ONLY "Build the tools and the tools' libraries statically" ON)
 #------------------------------------------------------------------------------
-# ${LOCAL_PROJECT_NAME} dependency list
+# ${PRIMARY_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
 set(ITK_VERSION_MAJOR 4)
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES QWT ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel)
+set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES QWT ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel)
 
 if(BUILD_STYLE_UTILS)
-  list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
+  list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
 endif()
 
 
@@ -64,8 +66,8 @@ endif()
 # that should passed to ${CMAKE_PROJECT_NAME}.
 # The item of this list should have the following form: <EP_VAR>:<TYPE>
 # where '<EP_VAR>' is an external project variable and TYPE is either BOOL, STRING, PATH or FILEPATH.
-# TODO Variable appended to this list will be automatically exported in ${LOCAL_PROJECT_NAME}Config.cmake,
-# prefix '${LOCAL_PROJECT_NAME}_' will be prepended if it applies.
+# TODO Variable appended to this list will be automatically exported in ${PRIMARY_PROJECT_NAME}Config.cmake,
+# prefix '${PRIMARY_PROJECT_NAME}_' will be prepended if it applies.
 set(${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS)
 
 # The macro '_expand_external_project_vars' can be used to expand the list of <EP_VAR>.
@@ -126,20 +128,11 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   USE_GIT_PROTOCOL:BOOL
   )
 
-if(${LOCAL_PROJECT_NAME}_USE_QT)
-  list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
-    ${LOCAL_PROJECT_NAME}_USE_QT:BOOL
-    QT_QMAKE_EXECUTABLE:PATH
-    QT_MOC_EXECUTABLE:PATH
-    QT_UIC_EXECUTABLE:PATH
-    )
-endif()
-
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
-set(extProjName ${LOCAL_PROJECT_NAME})
-set(proj        ${LOCAL_PROJECT_NAME})
-SlicerMacroCheckExternalProjectDependency(${LOCAL_PROJECT_NAME})
+set(extProjName ${PRIMARY_PROJECT_NAME})
+set(proj        ${PRIMARY_PROJECT_NAME})
+SlicerMacroCheckExternalProjectDependency(${PRIMARY_PROJECT_NAME})
 
 #-----------------------------------------------------------------------------
 # Set CMake OSX variable to pass down the external project
@@ -160,13 +153,6 @@ endif()
 #-----------------------------------------------------------------------------
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   BUILD_TESTING:BOOL
-  ITK_VERSION_MAJOR:STRING
-  ITK_DIR:PATH
-  VTK_DIR:PATH
-  GenerateCLP_DIR:PATH
-  SlicerExecutionModel_DIR:PATH
-  QWT_LIBRARY_PATH:FILEPATH
-  QWT_INCLUDE_DIR:PATH
   EXTENSION:BOOL
   SUPERBUILD_NOT_EXTENSION:BOOL
   CMAKE_MODULE_PATH:PATH
@@ -203,7 +189,7 @@ ExternalProject_Add(${proj}
   INSTALL_COMMAND ""
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
   BINARY_DIR ${proj}-build
-  DEPENDS ${${LOCAL_PROJECT_NAME}_DEPENDENCIES}
+  DEPENDS ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
     -DCOMPILE_EXTERNAL_DTIPROCESS:BOOL=ON

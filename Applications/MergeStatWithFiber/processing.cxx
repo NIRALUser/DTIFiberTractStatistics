@@ -308,7 +308,11 @@ void Processing::WritingDataInVTK(std::string output_vtk_file, double Min, doubl
   }
   vtkSmartPointer<vtkPolyDataWriter> writer(vtkPolyDataWriter::New());
   writer->SetFileName(output_vtk_file.c_str());
+  #if (VTK_MAJOR_VERSION < 6)
   writer->SetInput(m_PolyData);
+  #else
+  writer->SetInputData(m_PolyData);
+  #endif
   writer->Update();
 
   delete Bounds;

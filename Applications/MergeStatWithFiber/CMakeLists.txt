@@ -3,7 +3,7 @@ Project(MergeStatWithFiber)
 SEMMacroBuildCLI(
     NAME MergeStatWithFiber
     ADDITIONAL_SRCS processing.cxx processing.h
-    TARGET_LIBRARIES vtkHybrid
+    TARGET_LIBRARIES ${VTK_LIBRARIES}
     ${STATIC}
     INCLUDE_DIRECTORIES ${MergeStatWithFiber_SOURCE_DIR}
     INSTALL_ARCHIVE_DESTINATION ${ARCHIVE_DESTINATION}
