@@ -10,11 +10,14 @@ set(EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Select whe
 #-----------------------------------------------------------------------------
 if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   find_package(Slicer REQUIRED)
-  set(EXTENSION TRUE)
+  set( EXTENSION TRUE)
+  set( COMPILE_EXTERNAL_DTIPROCESS OFF )
   set( Slicer_USE_PYTHONQT FALSE )
   set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
   set( USE_SYSTEM_ITK ON CACHE BOOL "Build using an externally defined version of ITK" FORCE )
   set( USE_SYSTEM_VTK ON CACHE BOOL "Build using an externally defined version of VTK" FORCE )
+  #VTK_VERSION_MAJOR is define but not a CACHE variable
+  set( VTK_VERSION_MAJOR ${VTK_VERSION_MAJOR} CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
   set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Build using an externally defined version of SlicerExecutionModel" FORCE )
   set( SUPERBUILD_NOT_EXTENSION FALSE )
 else()
@@ -192,7 +195,7 @@ ExternalProject_Add(${proj}
   DEPENDS ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
-    -DCOMPILE_EXTERNAL_DTIPROCESS:BOOL=ON
+    -DCOMPILE_EXTERNAL_DTIPROCESS:BOOL=${COMPILE_EXTERNAL_DTIPROCESS}
     -DCOMPILE_MERGERSTATWITHFIBER:BOOL=ON
     -DCOMPILE_FIBERCOMPARE:BOOL=ON
     -DCOMPILE_DTITRACTSTAT:BOOL=ON

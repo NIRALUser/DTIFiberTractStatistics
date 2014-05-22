@@ -13,11 +13,15 @@
 
 #include <vtkCellArray.h>
 #include <vtkPolyLine.h>
-
+#include <vtkVersion.h>
 #include <itkSpatialObjectReader.h>
 #include <itkSpatialObjectWriter.h>
 
 #include "dtitypes.h"
+
+#ifndef vtkFloatingPointType
+#define vtkFloatingPointType double
+#endif
 
 struct parametrized_distance_struct
 {

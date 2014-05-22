@@ -15,6 +15,7 @@
 #include <vtkObject.h>
 #include <vtkCellArray.h>
 #include <vtkFieldData.h>
+#include <vtkVersion.h>
 #include <limits>
 
 typedef std::vector<std::string> vstring;

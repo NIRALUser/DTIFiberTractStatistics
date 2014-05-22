@@ -34,7 +34,7 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
     SVN_USERNAME slicerbot
     SVN_PASSWORD slicer
-    SVN_REVISION -r 220
+    SVN_REVISION -r 221
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}
@@ -48,6 +48,7 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
       -DDTIProcess_SUPERBUILD:BOOL=FALSE
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
+      -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       ${DTIProcessVarExt}
       -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
