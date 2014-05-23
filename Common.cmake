@@ -43,7 +43,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
-set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/DTIAtlasFiberAnalyzer")
+set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/dti_tract_stat")
 set(EXTENSION_CATEGORY "Diffusion")
 set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
 set(EXTENSION_DESCRIPTION "This extension provides the tool DTIAtlasFiberAnalyzer integrated in Slicer")
