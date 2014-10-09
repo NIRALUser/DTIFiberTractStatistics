@@ -30,11 +30,11 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
        )
   endif()
   set(proj DTIProcess)
+  set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
+  set( ${proj}_GIT_TAG a7c39e485e492bc6b72f72348939d47835cd56cc )
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
-    SVN_USERNAME slicerbot
-    SVN_PASSWORD slicer
-    SVN_REVISION -r 221
+    GIT_REPOSITORY ${${proj}_REPOSITORY}
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}
