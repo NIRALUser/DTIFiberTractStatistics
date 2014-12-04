@@ -86,6 +86,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
         bool ComputeDTIParametrization();
         void BrowseSoft(int); //in the soft dialog window
         void ResetSoft(int);
+        void ConfigDefault();
 
     protected:
         QWidget* stepwidget(int numberstep);

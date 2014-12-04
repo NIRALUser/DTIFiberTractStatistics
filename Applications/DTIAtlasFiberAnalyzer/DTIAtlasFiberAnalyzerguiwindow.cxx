@@ -132,17 +132,63 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
     ResetSoftButtonMapper->setMapping(FiberPostProcessReset, 2);
     connect(DTITractStatReset, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
     ResetSoftButtonMapper->setMapping(DTITractStatReset, 3);
+
+    //Reset All Button
+    connect(ResetAll, SIGNAL(clicked()), this, SLOT(ConfigDefault()));
     //"File" action
     connect(this->actionSave_data_file, SIGNAL(triggered()), SLOT(SaveDataAction()));
     connect(this->actionSave_analysis_file, SIGNAL(triggered()), SLOT(SaveAnalysisAction()));
     connect(this->actionOpen_data_file, SIGNAL(triggered()), SLOT(OpenDataFile()));
     connect(this->actionOpen_analysis_file, SIGNAL(triggered()), SLOT(OpenAnalysisFile()));
         this->pvalue->setText( "0.050" ) ;
+    ConfigDefault();
 }
 
 /***************************************************
  * 					General Slots
  ***************************************************/
+void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
+{
+   std::cout<<"| Searching the softwares..."; // command line display
+   std::string program;
+
+   std::string soft = "fiberprocess";
+   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+   program =itksys::SystemTools:: FindProgram( soft.c_str() );
+   if(program.empty())
+   {
+       std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
+       QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+   }
+   else
+   {
+        FiberProcessLine->setText(QString(program.c_str()));
+   }
+   soft = "FiberPostProcess";
+   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+   program =itksys::SystemTools:: FindProgram( soft.c_str() );
+   if(program.empty())
+   {
+       std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
+       QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+   }
+   else
+   {
+        FiberPostProcessLine->setText(QString(program.c_str()));
+   }
+   soft = "dtitractstat";
+   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+   program =itksys::SystemTools:: FindProgram( soft.c_str() );
+   if(program.empty())
+   {
+       std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
+       QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+   }
+   else
+   {
+        DTITractStatLine->setText(QString(program.c_str()));
+   }
+}
 
 /***************************************************
  *PreviousStep: Go to previous tab.
