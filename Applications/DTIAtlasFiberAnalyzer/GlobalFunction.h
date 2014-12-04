@@ -12,13 +12,13 @@ typedef QVector<qv2double> qv3double;
 /* Functions defined in, exported from Globalfunc.cxx */
 /* Call when there is nogui */
 bool CommandLine( std::string pathToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers );
-		 
+
 /* Create a Directory */
 bool CreateDirectoryForData(std::string outputfolder, std::string name);
 
 /* Compute fiber process : take the parameters and call the software for every fiber/data */
-bool Applyfiberprocess(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir, 
-		       std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
+bool Applyfiberprocess(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
+               std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
            bool nogui, QWidget* parent=NULL);
 
 /* Check if the header existed */
@@ -37,8 +37,8 @@ std::string NameOfCase(CSVClass* CSV, int row, int NameCol, int DataCol);
 std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget*parent=NULL);
 
 /* Call fiberprocess */
-int CallFiberProcess(std::string pathFiberProcess, std::string AtlasFolder, std::string outputname, 
-		     std::string Data, std::string DeformationField, bool FieldType, std::string Fiber);
+int CallFiberProcess(std::string pathFiberProcess, std::string AtlasFolder, std::string outputname,
+             std::string Data, std::string DeformationField, bool FieldType, std::string Fiber);
 
 /* Read the files in the folder and keep the one with the extension ".vtk" */
 void ReadFiberNameInAtlasDirectory(vstring &fibers, vstring &fibersplane, std::string AtlasFiberDir);
@@ -54,7 +54,7 @@ std::string ExtensionofFile(std::string filename);
 
 /* Compute dti_tract_stat : take the parameters and call the software for every fiber selected with its plane */
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-			 std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, 
+             std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
              int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , QWidget *parent=NULL);
 
 /* Call dti_tract_stat */
