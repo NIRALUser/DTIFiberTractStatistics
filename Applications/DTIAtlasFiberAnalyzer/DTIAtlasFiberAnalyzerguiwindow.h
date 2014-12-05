@@ -69,6 +69,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
         void EnterOutputFolder();
         void AutoCompute();
         bool Computefiberprocess();
+        bool ComputeFiberPostProcess();
         bool Computedti_tract_stat();
         bool OpenPlotWindow();
         void OpenDataFile();

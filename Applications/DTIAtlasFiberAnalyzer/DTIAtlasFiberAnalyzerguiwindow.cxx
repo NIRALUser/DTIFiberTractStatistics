@@ -140,7 +140,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
     connect(this->actionSave_analysis_file, SIGNAL(triggered()), SLOT(SaveAnalysisAction()));
     connect(this->actionOpen_data_file, SIGNAL(triggered()), SLOT(OpenDataFile()));
     connect(this->actionOpen_analysis_file, SIGNAL(triggered()), SLOT(OpenAnalysisFile()));
-        this->pvalue->setText( "0.050" ) ;
+    this->pvalue->setText( "0.050" ) ;
     ConfigDefault();
 }
 
@@ -150,44 +150,71 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
 void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
 {
    std::cout<<"| Searching the softwares..."; // command line display
-   std::string program;
 
    std::string soft = "fiberprocess";
    std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-   program =itksys::SystemTools:: FindProgram( soft.c_str() );
-   if(program.empty())
+   //Find path for executable
+   std::string pathToExecutable ;
+   std::vector< std::string > listDir ;
+   listDir.push_back( m_PathToCurrentExecutable ) ;
+   #ifdef SlicerExtension
+   listDir.push_back( m_PathToCurrentExecutable + "/../ExternalBin" ) ;
+   listDir.push_back( m_PathToCurrentExecutable + "/../cli-modules" ) ;
+   #endif
+   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+   pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
+   if( pathToExecutable.empty() )
+   {
+       pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
+   }
+   if(pathToExecutable.empty())
    {
        std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
        QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
    }
    else
    {
-        FiberProcessLine->setText(QString(program.c_str()));
+        FiberProcessLine->setText(QString(pathToExecutable.c_str()));
    }
+
    soft = "FiberPostProcess";
    std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-   program =itksys::SystemTools:: FindProgram( soft.c_str() );
-   if(program.empty())
+   //Find path for executable
+   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+   pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
+   if( pathToExecutable.empty() )
+   {
+       pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
+   }
+   if(pathToExecutable.empty())
    {
        std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
        QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
    }
    else
    {
-        FiberPostProcessLine->setText(QString(program.c_str()));
+        FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
    }
+
    soft = "dtitractstat";
    std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-   program =itksys::SystemTools:: FindProgram( soft.c_str() );
-   if(program.empty())
+   //Find path for executable
+   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+   pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
+   if( pathToExecutable.empty() )
+   {
+       pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
+   }
+   if(pathToExecutable.empty())
    {
        std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
        QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
    }
    else
    {
-        DTITractStatLine->setText(QString(program.c_str()));
+        DTITractStatLine->setText(QString(pathToExecutable.c_str()));
    }
+
 }
 
 /***************************************************
@@ -280,6 +307,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ApplySlot()
     if(m_numberstep==1)
   {
         Computefiberprocess();
+        //ComputefiberPostProcess();
   }
     else if(m_numberstep==2)
   {
@@ -1660,7 +1688,8 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
         std::string pathFiberProcess;
         //Add the data to the CSV
         AddDataFromTableToCSV();
-        if( FindExecutable( "fiberprocess" , pathFiberProcess ) )
+        pathFiberProcess = FiberProcessLine->text().toStdString() ;
+        //if( FindExecutable( "fiberprocess" , pathFiberProcess ) )
         {
             //Apply fiberprocess on CSV data
             if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
@@ -1684,6 +1713,52 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
     return true;
 }
 
+/*********************************************************************************
+ * Compute FiberPostProcess
+ ********************************************************************************/
+bool DTIAtlasFiberAnalyzerguiwindow::ComputeFiberPostProcess()
+{
+//	int ret=QMessageBox::Cancel;
+    /* Mouse Event when running */
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    /* Call of fiberprocess if there is a Data/Deformation columns and at least one fiber */
+    if(m_DataCol==-1)
+  {
+        QMessageBox::information(this,"Warning","No Data column set, you have to set one!");
+  }
+    else if(m_FiberSelectedname.empty())
+  {
+        QMessageBox::information(this,"Warning","No fiber selected!");
+  }
+    else
+    {
+        std::string pathFiberProcess;
+        //Add the data to the CSV
+        AddDataFromTableToCSV();
+        pathFiberProcess = FiberProcessLine->text().toStdString() ;
+        //if( FindExecutable( "fiberprocess" , pathFiberProcess ) )
+        {
+            //Apply fiberprocess on CSV data
+            if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
+            {
+                std::cout<<"fiberprocess has been canceled"<<std::endl;
+                QApplication::restoreOverrideCursor();
+                return false;
+            }
+            else
+            {
+                nextstep->setVisible(true);
+                Apply->setVisible(false);
+                //Add the data to the Table
+                FillCSVFileOnQTable();
+            }
+        }
+    }
+
+    /* Restore the mouse */
+    QApplication::restoreOverrideCursor();
+    return true;
+}
 
 
 bool DTIAtlasFiberAnalyzerguiwindow::FindExecutable( const char* name , std::string &pathToExecutable )
@@ -1763,7 +1838,8 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
         //Add the data to the CSV
         AddDataFromTableToCSV();
         //Find path for dtitractstat
-        if( FindExecutable( "dtitractstat" , pathdti_tract_stat ) )
+        pathdti_tract_stat = DTITractStatLine->text().toStdString() ;
+        //if( FindExecutable( "dtitractstat" , pathdti_tract_stat ) )
         {
             //Apply dti tract stat on CSV data
       if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , this))
@@ -2298,18 +2374,30 @@ void DTIAtlasFiberAnalyzerguiwindow::ResetSoft(int softindex) /*SLOT*/ //softwar
         case 3: soft="dtitractstat";
         break;
     }
+    //Find path for executable
+    std::string pathToExecutable ;
+    std::vector< std::string > listDir ;
+    listDir.push_back( m_PathToCurrentExecutable ) ;
+    #ifdef SlicerExtension
+    listDir.push_back( m_PathToCurrentExecutable + "/../ExternalBin" ) ;
+    listDir.push_back( m_PathToCurrentExecutable + "/../cli-modules" ) ;
+    #endif
     std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-    std::string program =itksys::SystemTools:: FindProgram( soft.c_str() );
-    if(program.empty())
+    pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
+    if( pathToExecutable.empty() )
+    {
+        pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
+    }
+    if(pathToExecutable.empty())
     {
         std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
         QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
     }
     else
     {
-        if(softindex==1) FiberProcessLine->setText(QString(program.c_str()));
-        else if(softindex==2) FiberPostProcessLine->setText(QString(program.c_str()));
-        else if(softindex==3) DTITractStatLine->setText(QString(program.c_str()));
+        if(softindex==1) FiberProcessLine->setText(QString(pathToExecutable.c_str()));
+        else if(softindex==2) FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
+        else if(softindex==3) DTITractStatLine->setText(QString(pathToExecutable.c_str()));
     }
     std::cout<<"DONE"<<std::endl; // command line display
 }
