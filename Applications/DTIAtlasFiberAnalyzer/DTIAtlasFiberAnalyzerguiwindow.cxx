@@ -161,7 +161,6 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
    listDir.push_back( m_PathToCurrentExecutable + "/../ExternalBin" ) ;
    listDir.push_back( m_PathToCurrentExecutable + "/../cli-modules" ) ;
    #endif
-   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
    pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
    if( pathToExecutable.empty() )
    {
@@ -176,9 +175,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
    {
         FiberProcessLine->setText(QString(pathToExecutable.c_str()));
    }
-
    soft = "FiberPostProcess";
-   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
    //Find path for executable
    std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
    pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
@@ -195,9 +192,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
    {
         FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
    }
-
    soft = "dtitractstat";
-   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
    //Find path for executable
    std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
    pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
@@ -214,7 +209,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
    {
         DTITractStatLine->setText(QString(pathToExecutable.c_str()));
    }
-
+   std::cout<<"DONE"<<std::endl; // command line display
 }
 
 /***************************************************
@@ -307,7 +302,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ApplySlot()
     if(m_numberstep==1)
   {
         Computefiberprocess();
-        //ComputefiberPostProcess();
+        ComputeFiberPostProcess();
   }
     else if(m_numberstep==2)
   {
@@ -1732,25 +1727,19 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeFiberPostProcess()
   }
     else
     {
-        std::string pathFiberProcess;
-        //Add the data to the CSV
-        AddDataFromTableToCSV();
-        pathFiberProcess = FiberProcessLine->text().toStdString() ;
+        std::string pathFiberPostProcess;
+        pathFiberPostProcess = FiberPostProcessLine->text().toStdString() ;
         //if( FindExecutable( "fiberprocess" , pathFiberProcess ) )
         {
             //Apply fiberprocess on CSV data
-            if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
+            if(!ApplyFiberPostProcess(m_CSV, pathFiberPostProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
             {
-                std::cout<<"fiberprocess has been canceled"<<std::endl;
+                std::cout<<"fiberpostprocess has been canceled"<<std::endl;
                 QApplication::restoreOverrideCursor();
                 return false;
             }
             else
             {
-                nextstep->setVisible(true);
-                Apply->setVisible(false);
-                //Add the data to the Table
-                FillCSVFileOnQTable();
             }
         }
     }

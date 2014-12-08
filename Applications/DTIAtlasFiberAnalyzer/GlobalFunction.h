@@ -21,6 +21,10 @@ bool Applyfiberprocess(CSVClass* CSV, std::string pathFiberProcess, std::string 
                std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
            bool nogui, QWidget* parent=NULL);
 
+/* Compute FiberPostProcess : take the parameters and call the software for every fiber/data */
+bool ApplyFiberPostProcess(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
+               std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
+           bool nogui, QWidget* parent=NULL);
 /* Check if the header existed */
 int HeaderExisted(CSVClass* CSV, std::string header);
 
@@ -38,6 +42,10 @@ std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget
 
 /* Call fiberprocess */
 int CallFiberProcess(std::string pathFiberProcess, std::string AtlasFolder, std::string outputname,
+             std::string Data, std::string DeformationField, bool FieldType, std::string Fiber);
+
+/* Call fiberPostProcess */
+int CallFiberPostProcess(std::string pathFiberProcess, std::string AtlasFolder, std::string outputname,
              std::string Data, std::string DeformationField, bool FieldType, std::string Fiber);
 
 /* Read the files in the folder and keep the one with the extension ".vtk" */

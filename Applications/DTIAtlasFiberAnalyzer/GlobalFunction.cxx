@@ -285,6 +285,121 @@ bool Applyfiberprocess(CSVClass* CSV,
     return true;
 }
 
+bool ApplyFiberPostProcess(CSVClass* CSV,
+                              std::string pathFiberProcess,
+                              std::string AtlasFiberDir,
+                              std::string OutputFolder,
+                              int DataCol,
+                              int DefCol,
+                              bool FieldType,
+                              int NameCol,
+                              vstring fibers,
+                              bool nogui,
+                              QWidget* parent)
+{
+    int col=-1;
+    std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false,2  cancel
+    skipdata.push_back(false);
+    skipdata.push_back(false);
+    skipdata.push_back(false);
+    bool ExistedFile,DataAdded;
+    std::string outputname, name_of_fiber,header, namecase, nameoffile, gzoutputname, outputcasefolder;
+
+    /* create the output folder where there will be all of the case output fibers and informations */
+    outputcasefolder = "CasesFiberPostProcess";
+    CreateDirectoryForData(OutputFolder,outputcasefolder);
+
+    /* Loop for all the fibers */
+    for(unsigned int j=0;j<fibers.size();j++)
+    {
+        DataAdded = false;
+        name_of_fiber=fibers[j];
+        header = name_of_fiber;
+        name_of_fiber = takeoffExtension(fibers[j]);
+        col = HeaderExisted(CSV,header);
+        if(col==-1)
+        {
+            DataAdded = true;
+        }
+        /* Loop for all the Data */
+        for(unsigned int row=1;row<CSV->getRowSize();row++)
+        {
+            ExistedFile = false;
+            //Set the namecas and the outputname
+            namecase = NameOfCase(CSV,row,NameCol,DataCol);
+            outputname = OutputFolder + "/" + outputcasefolder + "/" + namecase + "/" +
+                    namecase + "_" + name_of_fiber + ".vtk";
+            nameoffile = namecase + "_" + name_of_fiber + ".vtk";
+            gzoutputname = outputname + ".gz";
+            if(FileExisted(outputname) || FileExisted(gzoutputname))
+            {
+                ExistedFile = true;
+                if(!skipdata[1])
+                    skipdata = MessageExistedFile(nogui, nameoffile, parent);
+            }
+
+            if(skipdata[2] == true)
+            {
+                if(DataAdded)
+                return false;
+            }
+            else if(skipdata[0] && ExistedFile)
+            {
+            }
+            else
+            {
+                //if there is a name
+                if(namecase.compare("")!=0)
+                {
+                    /* If the file is created */
+                    if(CreateDirectoryForData(OutputFolder+ "/" + outputcasefolder,namecase))
+                    {
+                        if(DefCol!=-1)
+                        {
+                            /* If fiberprocess worked */
+                            if(CallFiberPostProcess(pathFiberProcess, AtlasFiberDir, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j] ) == 0 )
+                            {
+                                //Check if the output exist
+                                if(FileExisted(outputname) || FileExisted(gzoutputname))
+                                    CSV->AddData(outputname,row,col);
+                            }
+                            else
+                                std::cout<<"Fail during FiberPostProcess!"<< std::endl;
+                        }
+                        else
+                        {
+                            /* If fiberprocess worked */
+                            if(CallFiberProcess(pathFiberProcess, AtlasFiberDir,
+                                outputname,
+                                (*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
+                            {
+                                //Check if the output exist
+                                if(FileExisted(outputname) || FileExisted(gzoutputname))
+                                    CSV->AddData(outputname,row,col);
+                            }
+                            else
+                                std::cout<<"Fail during fiberprocess!"<< std::endl;
+                        }
+                    }
+                    else
+                        std::cout<<"ERROR : Unable to create the output directory!"
+                                <<std::endl;
+                }
+                else
+                    CSV->AddData("no",row,col);
+            }
+        }
+    }
+
+    //save
+    std::string filename;
+    filename = takeoffPath(CSV->getFilename());
+    filename = takeoffExtension(filename);
+    filename = OutputFolder+ "/" + filename + "_computed.csv";
+    CSV->SaveFile(filename);
+
+    return true;
+}
 /* Return the column with the header name or -1 if there is no column*/
 int HeaderExisted(CSVClass* CSV, std::string header)
 {
@@ -477,6 +592,38 @@ int CallFiberProcess(std::string pathFiberProcess,
     return state;
 }
 
+/*********************************************************************************
+ * Call FiberPostProcess
+ ********************************************************************************/
+int CallFiberPostProcess(std::string pathFiberPostProcess,
+                            std::string AtlasFolder,
+                            std::string outputname,
+                            std::string Data,
+                            std::string DeformationField,
+                            bool FieldType,
+                            std::string Fiber)
+{
+    int state=0;
+    QProcess *process= new QProcess();
+    QStringList arguments;
+
+    if(Data.compare("no data")!=0 && Data.compare("no")!=0)
+    {
+        std::cout<<"Compute fiberprocess..."<< std::endl;
+        /* put arguments for each call of fiberprocess */
+        //Fiber
+        QString qs = (AtlasFolder + "/" + Fiber).c_str();
+        arguments.append("--inputFiberFile " +qs );
+        //output
+        qs = outputname.c_str();
+        arguments.append("--outputFiberFile " + qs);
+        std::cout<<"Command Line :  "<< pathFiberPostProcess.c_str() << " " << (arguments.join(" ")).toStdString() <<std::endl;
+        state = process->execute( pathFiberPostProcess.c_str(), arguments);
+    }
+    else
+        std::cout<<"Warning: No data to attribute fibers!"<<std::endl;
+    return state;
+}
 /*********************************************************************************
  * Read all the fiber in the Atlas directory
  ********************************************************************************/
