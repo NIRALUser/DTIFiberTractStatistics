@@ -222,14 +222,14 @@ bool Applyfiberprocess(CSVClass* CSV,
             if(skipdata[2] == true)
             {
                 if(DataAdded)
-                    (*CSV->getData())[0].pop_back();
+                    //(*CSV->getData())[0].pop_back();
                 return false;
             }
-            else if(skipdata[0] && ExistedFile)
+            /*else if(skipdata[0] && ExistedFile)
             {
                 if(!DataExistedInFiberColumn(CSV,row,col,outputname))
                     CSV->AddData(outputname,row,col);
-            }
+            }*/
             else
             {
                 //if there is a name
@@ -303,11 +303,10 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
     skipdata.push_back(false);
     skipdata.push_back(false);
     bool ExistedFile,DataAdded;
-    std::string outputname, name_of_fiber,header, namecase, nameoffile, gzoutputname, outputcasefolder;
-
-    /* create the output folder where there will be all of the case output fibers and informations */
-    outputcasefolder = "CasesFiberPostProcess";
-    CreateDirectoryForData(OutputFolder,outputcasefolder);
+    std::string outputname, name_of_fiber,header, namecase, nameoffile, gzoutputname, outputcasefolder, outputCase , inputName;
+    /* use the output folder where there will be all of the case output fibers and informations */
+    outputcasefolder = "Cases";
+    outputCase = OutputFolder + "/" + outputcasefolder + "/" ;
 
     /* Loop for all the fibers */
     for(unsigned int j=0;j<fibers.size();j++)
@@ -319,6 +318,7 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
         col = HeaderExisted(CSV,header);
         if(col==-1)
         {
+            CSV->AddData(header,0,col);
             DataAdded = true;
         }
         /* Loop for all the Data */
@@ -327,9 +327,11 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
             ExistedFile = false;
             //Set the namecas and the outputname
             namecase = NameOfCase(CSV,row,NameCol,DataCol);
-            outputname = OutputFolder + "/" + outputcasefolder + "/" + namecase + "/" +
-                    namecase + "_" + name_of_fiber + ".vtk";
-            nameoffile = namecase + "_" + name_of_fiber + ".vtk";
+            outputname = outputCase + namecase + "/" +
+                    namecase + "_" + name_of_fiber + "_processed.vtk";
+            nameoffile = namecase + "_" + name_of_fiber +"_processed.vtk" ;
+            inputName = outputCase + namecase + "/" +
+                    namecase + "_" + name_of_fiber + ".vtk" ;
             gzoutputname = outputname + ".gz";
             if(FileExisted(outputname) || FileExisted(gzoutputname))
             {
@@ -337,14 +339,16 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                 if(!skipdata[1])
                     skipdata = MessageExistedFile(nogui, nameoffile, parent);
             }
-
             if(skipdata[2] == true)
             {
                 if(DataAdded)
+                    (*CSV->getData())[0].pop_back();
                 return false;
             }
             else if(skipdata[0] && ExistedFile)
             {
+                if(!DataExistedInFiberColumn(CSV,row,col,outputname))
+                    CSV->AddData(outputname,row,col);
             }
             else
             {
@@ -356,8 +360,8 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                     {
                         if(DefCol!=-1)
                         {
-                            /* If fiberprocess worked */
-                            if(CallFiberPostProcess(pathFiberProcess, AtlasFiberDir, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j] ) == 0 )
+                            /* If fiberpostprocess worked */
+                            if(CallFiberPostProcess(pathFiberProcess, inputName, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j] ) == 0 )
                             {
                                 //Check if the output exist
                                 if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -368,8 +372,8 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                         }
                         else
                         {
-                            /* If fiberprocess worked */
-                            if(CallFiberProcess(pathFiberProcess, AtlasFiberDir,
+                            /* If fiberpostprocess worked */
+                            if(CallFiberPostProcess(pathFiberProcess, AtlasFiberDir,
                                 outputname,
                                 (*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
                             {
@@ -403,7 +407,7 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
 /* Return the column with the header name or -1 if there is no column*/
 int HeaderExisted(CSVClass* CSV, std::string header)
 {
-    //Find the fibername colomn if exist just in the first row = header
+    //Find the fibername column if exist just in the first row = header
     for(unsigned int i=0;i<CSV->getColSize(0);i++)
     {
         if((*CSV->getData())[0][i].compare(header)==0)
@@ -428,7 +432,7 @@ bool DataExistedInFiberColumn(CSVClass* CSV, int row, int column,std::string out
     return false;
 }
 
-/* Return true if there filename exists */
+/* Return true if the filename exists */
 bool FileExisted(std::string Filename)
 {
     std::ofstream file(Filename.c_str(), std::ios::in | std::ios::out | std::ios::ate);
@@ -596,7 +600,7 @@ int CallFiberProcess(std::string pathFiberProcess,
  * Call FiberPostProcess
  ********************************************************************************/
 int CallFiberPostProcess(std::string pathFiberPostProcess,
-                            std::string AtlasFolder,
+                            std::string inputname,
                             std::string outputname,
                             std::string Data,
                             std::string DeformationField,
@@ -609,16 +613,17 @@ int CallFiberPostProcess(std::string pathFiberPostProcess,
 
     if(Data.compare("no data")!=0 && Data.compare("no")!=0)
     {
-        std::cout<<"Compute fiberprocess..."<< std::endl;
+        std::cout<<"Compute FiberPostProcess..."<< std::endl;
         /* put arguments for each call of fiberprocess */
         //Fiber
-        QString qs = (AtlasFolder + "/" + Fiber).c_str();
-        arguments.append("--inputFiberFile " +qs );
+        QString qs = inputname.c_str() ;
+        arguments.append("--inputFiberFile " + qs );
         //output
         qs = outputname.c_str();
         arguments.append("--outputFiberFile " + qs);
         std::cout<<"Command Line :  "<< pathFiberPostProcess.c_str() << " " << (arguments.join(" ")).toStdString() <<std::endl;
         state = process->execute( pathFiberPostProcess.c_str(), arguments);
+        std::cout<<"done"<<std::endl;
     }
     else
         std::cout<<"Warning: No data to attribute fibers!"<<std::endl;
@@ -771,7 +776,8 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                         int fibercol = HeaderExisted(CSV, fibers[j]);
                         if(fibercol!=-1)
                         {
-                            std::string input_fiber = (*CSV->getData())[row][fibercol];
+                            std::string input_fiber=OutputFolder+"/Cases/" + namecase + "/" + namecase +
+                                    "_" + name_of_fiber+"_processed.vtk";//std::string input_fiber = (*CSV->getData())[row][fibercol];
                             globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase +
                                     "_" + name_of_fiber+".fvp";
                             /* If dti_tract_stat worked */
@@ -803,7 +809,8 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                 }
             }
 
-            std::string inputname=AtlasDirectory+"/"+fibers[j];
+            std::string inputname=OutputFolder+"/Cases/" + namecase + "/" + namecase +
+                    "_" + name_of_fiber+"_processed.vtk";
             outputname=OutputFolder+"/Fibers/"+header;
             if( FileExisted( outputname ) )
             {

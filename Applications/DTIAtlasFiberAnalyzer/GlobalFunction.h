@@ -45,7 +45,7 @@ int CallFiberProcess(std::string pathFiberProcess, std::string AtlasFolder, std:
              std::string Data, std::string DeformationField, bool FieldType, std::string Fiber);
 
 /* Call fiberPostProcess */
-int CallFiberPostProcess(std::string pathFiberProcess, std::string AtlasFolder, std::string outputname,
+int CallFiberPostProcess(std::string pathFiberProcess, std::string inputname, std::string outputname,
              std::string Data, std::string DeformationField, bool FieldType, std::string Fiber);
 
 /* Read the files in the folder and keep the one with the extension ".vtk" */
