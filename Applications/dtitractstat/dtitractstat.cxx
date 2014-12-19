@@ -5,7 +5,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <math.h>
-	
+
 #include <itkSpatialObjectReader.h>
 #include <itkSpatialObjectWriter.h>
 
@@ -18,7 +18,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkCell.h>
 #include <vtkFloatArray.h>
-	
+
 #include "dtitypes.h"
 #include "argio.h"
 #include "fiberprocessing.h"
@@ -39,10 +39,10 @@ int main(int argc, char* argv[])
       fstream filecheck;
       filecheck.open(input_fiber_file.c_str(),fstream::in);
       if (!filecheck.good())
-	{
-	  std::cout<<"Unable to open the input fiber file...exit without results!\n"<<std::endl;
-	  return -1;
-	}
+    {
+      std::cout<<"Unable to open the input fiber file...exit without results!\n"<<std::endl;
+      return -1;
+    }
       filecheck.close();
     }
 
@@ -56,10 +56,10 @@ int main(int argc, char* argv[])
       fstream filecheck;
       filecheck.open(output_stats_file.c_str(),fstream::out);
       if (!filecheck.good())
-	{
-	  std::cout<<"Unable to open the output file...exit without results!\n"<<std::endl;
-	  return -1;
-	}
+    {
+      std::cout<<"Unable to open the output file...exit without results!\n"<<std::endl;
+      return -1;
+    }
       filecheck.close();
     }
 
@@ -113,11 +113,11 @@ int main(int argc, char* argv[])
   //if incorrect noise model in -n option, we set Gaussian mean
   if(noise_model == "beta")
     {
-      int_noise_model = 1; 
+      int_noise_model = 1;
     }
   else if(noise_model == "gaussian")
     {
-      int_noise_model = 2; 
+      int_noise_model = 2;
     }
   else
     {
@@ -126,18 +126,18 @@ int main(int argc, char* argv[])
     }
 
   //Type of Maximum likelihood estimate (MLE) assumed in  a kernel window- Mean, Mode or Quantiles
-  std::string stat_str;	
+  std::string stat_str;
   if(stat_type == "mean")
     {
       stat = 2;
-    } 
+    }
   else if(stat_type == "mode")
     {
-      stat = 3; 
+      stat = 3;
     }
   else if(stat_type == "quantile")
     {
-      stat = 1; 
+      stat = 1;
     }
   else
     {
@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
     }
 
   //Visualization option for a kernel window's distribution histogram
-  bool windowOn   = false; 
+  bool windowOn   = false;
   if(window!=-1)
     {
       windowOn = true;
@@ -169,10 +169,10 @@ int main(int argc, char* argv[])
       fstream filecheck;
       filecheck.open(window_file.c_str(),fstream::out);
       if (!filecheck.good() || !filecheck.is_open() || window_file.length()==1)
-	{
-	  cout<<"Unable to open the output visualization file provided as command line argument for writing...!\n";
-	  windowfileOn = false;
-	}
+    {
+      cout<<"Unable to open the output visualization file provided as command line argument for writing...!\n";
+      windowfileOn = false;
+    }
       filecheck.close();
     }
 
@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
       window_file.replace(dot_loc,4,"_viz.csv");
       cout<<"Creating the output visualization file in the main output file location as :\n\t"<< window_file<<endl;
     }
-  
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,17 +192,17 @@ int main(int argc, char* argv[])
   FP = new fiberprocessing;
   itk::Vector<double, 3> origin;
   itk::Vector<double, 3> normal;
-  
+
   //DEBUG
   //std::cout<<"param is "<<param<<std::endl;
-  
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   regression* REG;
   REG = new regression;
   int all_flag = -1;
   std::cout<<"there are "<<param<<" parameters"<<std::endl;
 
-  FP->fiberprocessing_main(input_fiber_file, output_stats_file, planeautoOn, plane_file, worldspace, auto_plane_origin, useNonCrossingFibers , bandwidth , removeCleanFibers );
+  FP->fiberprocessing_main(input_fiber_file, output_stats_file, planeautoOn, plane_file, worldspace, auto_plane_origin, useNonCrossingFibers , bandwidth , removeCleanFibers, removeNanFibers );
 
   if (param == 8){
     all_flag=1;
@@ -217,23 +217,23 @@ int main(int argc, char* argv[])
 
     }
 
-    
+
     std::vector< std::vector<double> > all_results_main = REG->get_all_results();
     int reg_counter = all_results_main.size();
     std::cout<<"start to write parametrized fiber file"<<std::endl;
-    
+
     //Writing results to the output file
     ofstream fp_output_stats_file;
     fp_output_stats_file.open(output_stats_file.c_str(),ios::app);
     fp_output_stats_file<<"Number of samples along the bundle: "<<reg_counter<<"\n";
     fp_output_stats_file<<"Arc_Length , #_fiber_points ,";
-    
+
     for (size_t a=0; a<=param-1; a++)
     {
       fp_output_stats_file<<parameter_list[a]<<" , ";
     }
     fp_output_stats_file<<"\n";
-    
+
     //DEBUG
     //
     for (int i=0;i<reg_counter;i++)
@@ -246,7 +246,7 @@ int main(int argc, char* argv[])
       fp_output_stats_file<<endl;
     }
     fp_output_stats_file.close();
-    
+
 
     std::cout<<"\n***********  Finished General Evaluating of All parameters "<<std::endl;
   }
@@ -254,11 +254,11 @@ int main(int argc, char* argv[])
 
     all_flag = -1;
     for (size_t a=0; a<=param-1; a++){
-      
+
       std::vector< std::vector<double> > length_main = FP->get_arc_length_parametrized_fiber(parameter_list[a]);
-      
+
       REG->regression_main(output_stats_file,parameter_list[a], length_main, step_size, bandwidth, stat, int_noise_model, q_perc, -1, windowOn, window, window_file,worldspace);
-      
+
       std::cout<<"\n***********  Finished Parameter "<<parameter_list[a]<<"  **************\n"<<std::endl;
     }
   }

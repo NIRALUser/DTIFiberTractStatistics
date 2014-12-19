@@ -12,24 +12,24 @@
 
 void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable )
 {
-  //Find path for executable
-  std::vector< std::string > listDir ;
-  listDir.push_back( pathToCurrentExecutable ) ;
-  #ifdef SlicerExtension
-  listDir.push_back( pathToCurrentExecutable + "/../ExternalBin" ) ;
-  listDir.push_back( pathToCurrentExecutable + "/../cli-modules" ) ;
-  #endif
-  pathToExecutable = itksys::SystemTools::FindProgram( name , listDir , true ) ;
-  if( pathToExecutable.empty() )
-  {
-    pathToExecutable= itksys::SystemTools::FindProgram( name ) ;
-  }
-  //if path not found
-  if(pathToExecutable.empty()==true)
-  {
-    std::cout << "Give the path for " << pathToExecutable << " : " << std::endl ;
-    std::cin >> pathToExecutable ;
-  }
+    //Find path for executable
+    std::vector< std::string > listDir ;
+    listDir.push_back( pathToCurrentExecutable ) ;
+#ifdef SlicerExtension
+    listDir.push_back( pathToCurrentExecutable + "/../ExternalBin" ) ;
+    listDir.push_back( pathToCurrentExecutable + "/../cli-modules" ) ;
+#endif
+    pathToExecutable = itksys::SystemTools::FindProgram( name , listDir , true ) ;
+    if( pathToExecutable.empty() )
+    {
+        pathToExecutable= itksys::SystemTools::FindProgram( name ) ;
+    }
+    //if path not found
+    if(pathToExecutable.empty()==true)
+    {
+        std::cout << "Give the path for " << pathToExecutable << " : " << std::endl ;
+        std::cin >> pathToExecutable ;
+    }
 }
 
 /*********************************************************************************
@@ -166,16 +166,16 @@ bool CreateDirectoryForData(std::string outputfolder, std::string name)
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
  ********************************************************************************/
 bool Applyfiberprocess(CSVClass* CSV,
-                              std::string pathFiberProcess,
-                              std::string AtlasFiberDir,
-                              std::string OutputFolder,
-                              int DataCol,
-                              int DefCol,
-                              bool FieldType,
-                              int NameCol,
-                              vstring fibers,
-                              bool nogui,
-                              QWidget* parent)
+                       std::string pathFiberProcess,
+                       std::string AtlasFiberDir,
+                       std::string OutputFolder,
+                       int DataCol,
+                       int DefCol,
+                       bool FieldType,
+                       int NameCol,
+                       vstring fibers,
+                       bool nogui,
+                       QWidget* parent)
 {
     int col=-1;
     std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false,2  cancel
@@ -222,14 +222,14 @@ bool Applyfiberprocess(CSVClass* CSV,
             if(skipdata[2] == true)
             {
                 if(DataAdded)
-                    //(*CSV->getData())[0].pop_back();
-                return false;
+                    (*CSV->getData())[0].pop_back();
+                    return false;
             }
-            /*else if(skipdata[0] && ExistedFile)
+            else if(skipdata[0] && ExistedFile)
             {
                 if(!DataExistedInFiberColumn(CSV,row,col,outputname))
                     CSV->AddData(outputname,row,col);
-            }*/
+            }
             else
             {
                 //if there is a name
@@ -254,8 +254,8 @@ bool Applyfiberprocess(CSVClass* CSV,
                         {
                             /* If fiberprocess worked */
                             if(CallFiberProcess(pathFiberProcess, AtlasFiberDir,
-                                outputname,
-                                (*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
+                                                outputname,
+                                                (*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
                             {
                                 //Check if the output exist
                                 if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -286,16 +286,16 @@ bool Applyfiberprocess(CSVClass* CSV,
 }
 
 bool ApplyFiberPostProcess(CSVClass* CSV,
-                              std::string pathFiberProcess,
-                              std::string AtlasFiberDir,
-                              std::string OutputFolder,
-                              int DataCol,
-                              int DefCol,
-                              bool FieldType,
-                              int NameCol,
-                              vstring fibers,
-                              bool nogui,
-                              QWidget* parent)
+                           std::string pathFiberProcess,
+                           std::string AtlasFiberDir,
+                           std::string OutputFolder,
+                           int DataCol,
+                           int DefCol,
+                           bool FieldType,
+                           int NameCol,
+                           vstring fibers,
+                           bool nogui,
+                           QWidget* parent)
 {
     int col=-1;
     std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false,2  cancel
@@ -374,8 +374,8 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                         {
                             /* If fiberpostprocess worked */
                             if(CallFiberPostProcess(pathFiberProcess, AtlasFiberDir,
-                                outputname,
-                                (*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
+                                                    outputname,
+                                                    (*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
                             {
                                 //Check if the output exist
                                 if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -452,13 +452,13 @@ std::string NameOfCase(CSVClass* CSV, int row, int NameCol, int DataCol)
     std::string namecase;
     /* Filename */
     if(NameCol>=0 && ((*CSV->getData())[row][NameCol].compare("")!=0 &&
-          (*CSV->getData())[row][NameCol].compare("no")!=0 &&
-          (*CSV->getData())[row][NameCol].compare("no name")!=0))
+                      (*CSV->getData())[row][NameCol].compare("no")!=0 &&
+                      (*CSV->getData())[row][NameCol].compare("no name")!=0))
     {
         namecase = (*CSV->getData())[row][NameCol];
     }
     else if(DataCol>=0 && ((*CSV->getData())[row][DataCol].compare("")!=0 &&
-                 (*CSV->getData())[row][DataCol].compare("no data")!=0))
+                           (*CSV->getData())[row][DataCol].compare("no data")!=0))
     {
         namecase = takeoffPath((*CSV->getData())[row][DataCol]);
         namecase = takeoffExtension(namecase);
@@ -491,30 +491,30 @@ std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget
         Box.setText(File);
         Box.setInformativeText("Do you want to skip the computation?");
         Box.setStandardButtons(QMessageBox::Yes | QMessageBox::No |
-                QMessageBox::YesToAll | QMessageBox::NoToAll | QMessageBox::Cancel);
+                               QMessageBox::YesToAll | QMessageBox::NoToAll | QMessageBox::Cancel);
         Box.setDefaultButton(QMessageBox::Yes);
         int ret = Box.exec();
         switch (ret) {
-            case QMessageBox::Yes:
-                skip = true;
-                break;
-            case QMessageBox::No:
-                skip = false;
-                break;
-            case QMessageBox::YesToAll:
-                alldata = true;
-                skip = true;
-                break;
-            case QMessageBox::NoToAll:
-                alldata = true;
-                skip = false;
-                break;
-            case QMessageBox::Cancel:
-                cancel = true;
-                alldata = true;
-                break;
-            default:
-                break;
+        case QMessageBox::Yes:
+            skip = true;
+            break;
+        case QMessageBox::No:
+            skip = false;
+            break;
+        case QMessageBox::YesToAll:
+            alldata = true;
+            skip = true;
+            break;
+        case QMessageBox::NoToAll:
+            alldata = true;
+            skip = false;
+            break;
+        case QMessageBox::Cancel:
+            cancel = true;
+            alldata = true;
+            break;
+        default:
+            break;
         }
     }
     else
@@ -549,12 +549,12 @@ std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget
  * Call Fiberprocess
  ********************************************************************************/
 int CallFiberProcess(std::string pathFiberProcess,
-                            std::string AtlasFolder,
-                            std::string outputname,
-                            std::string Data,
-                            std::string DeformationField,
-                            bool FieldType,
-                            std::string Fiber)
+                     std::string AtlasFolder,
+                     std::string outputname,
+                     std::string Data,
+                     std::string DeformationField,
+                     bool FieldType,
+                     std::string Fiber)
 {
     int state=0;
     QProcess *process= new QProcess();
@@ -600,12 +600,12 @@ int CallFiberProcess(std::string pathFiberProcess,
  * Call FiberPostProcess
  ********************************************************************************/
 int CallFiberPostProcess(std::string pathFiberPostProcess,
-                            std::string inputname,
-                            std::string outputname,
-                            std::string Data,
-                            std::string DeformationField,
-                            bool FieldType,
-                            std::string Fiber)
+                         std::string inputname,
+                         std::string outputname,
+                         std::string Data,
+                         std::string DeformationField,
+                         bool FieldType,
+                         std::string Fiber)
 {
     int state=0;
     QProcess *process= new QProcess();
@@ -706,7 +706,7 @@ std::string ExtensionofFile(std::string filename)
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-             std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
+                         std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
                          int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , QWidget *parent)
 {
     int col=-1;
@@ -744,6 +744,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                 namecase = NameOfCase(CSV,row,NameCol,DataCol);
                 outputname = OutputFolder + "/Cases/" + namecase + "/" + namecase +
                         "_" + name_of_fiber + "_"+param[i]+".fvp";
+                std::cout<<outputname<<std::endl;
                 nameoffile = namecase + "_" + name_of_fiber + "_" + param[i] + ".fvp";
                 if(FileExisted(outputname))
                 {
@@ -782,8 +783,8 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                                     "_" + name_of_fiber+".fvp";
                             /* If dti_tract_stat worked */
                             if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
-                                input_fiber, globalFile, fibersplane[j],
-                                param[i], CoG, sampling , rodent , removeCleanFibers , false ) == 0 )
+                                                  input_fiber, globalFile, fibersplane[j],
+                                                  param[i], CoG, sampling , rodent , removeCleanFibers , false ) == 0 )
                             {
 
                                 if(FileExisted(outputname))
@@ -808,30 +809,28 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                         CSV->AddData("no",row,col);
                 }
             }
-
-            std::string inputname=OutputFolder+"/Cases/" + namecase + "/" + namecase +
-                    "_" + name_of_fiber+"_processed.vtk";
+            std::string inputname=AtlasDirectory+"/"+fibers[j];
             outputname=OutputFolder+"/Fibers/"+header;
             if( FileExisted( outputname ) )
             {
                 ExistedFile = true ;
                 if( !skipdata[ 1 ] )
-        {
-          skipdata = MessageExistedFile(nogui, header, parent);
-        }
+                {
+                    skipdata = MessageExistedFile(nogui, header, parent);
+                }
             }
             if( skipdata[ 2 ] == true )
-      {
+            {
                 return false ;
-      }
+            }
             else if( !skipdata[ 0 ] || !ExistedFile )
             {
-        bool removeCleanFibersAtlas = false ;
-        if( removeCleanFibers && i != 0 )
-        {
-          removeCleanFibersAtlas = true ;
-        }
-        if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , CoG , sampling , rodent , removeCleanFibersAtlas ) != 0 )
+                bool removeCleanFibersAtlas = false ;
+                if( removeCleanFibers && i != 0 )
+                {
+                    removeCleanFibersAtlas = true ;
+                }
+                if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , CoG , sampling , rodent , removeCleanFibersAtlas ) != 0 )
                 {
                     std::cout << "Fail during dti_tract_stat!" << std::endl ;
                     return false ;
@@ -856,16 +855,16 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
  * Call dti_tract_stat
  ********************************************************************************/
 int Calldti_tract_stat(std::string pathdti_tract_stat,
-                              std::string AtlasDirectory,
-                              std::string Input_fiber_file,
-                              std::string Output_fiber_file,
-                              std::string plane,
-                              std::string parameter,
-                              bool CoG,
-                double sampling,
-                bool rodent,
-                bool clean ,
-                              bool Parametrized)
+                       std::string AtlasDirectory,
+                       std::string Input_fiber_file,
+                       std::string Output_fiber_file,
+                       std::string plane,
+                       std::string parameter,
+                       bool CoG,
+                       double sampling,
+                       bool rodent,
+                       bool clean ,
+                       bool Parametrized )
 {
     int state=0;
     QProcess *process= new QProcess();
@@ -884,13 +883,14 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
         if(Parametrized)
         {
             qs = (takeoffExtension(Output_fiber_file)+"_parametrized.vtk").c_str();
-//			arguments.append(QString("--output_parametrized_fiber_file ") + qs);
-      arguments.append(QString("--output_original_fibers_parametrized ") + qs);
+            //			arguments.append(QString("--output_parametrized_fiber_file ") + qs);
+            arguments.append(QString("--output_original_fibers_parametrized ") + qs);
         }
         if( clean )
         {
-      arguments.append(QString("--remove_clean_fiber") ) ;
+            arguments.append(QString("--remove_clean_fiber") ) ;
         }
+        arguments.append( QString( "--remove_nan_fibers" ) ) ;
         //Plane
         if(plane!="")
         {
@@ -1241,7 +1241,7 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 
         if(file)  // if open
         {
-                //the first line
+            //the first line
             getline(file, buf1);
             if(buf1.compare(0,44,"Data parameters for DTIAtlasFiberAnalyzer : ")==0)
             {
@@ -1313,7 +1313,7 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 
         if(file)  // if open
         {
-                //the first line
+            //the first line
             getline(file, buf1);
             if(buf1.compare(0,48,"Analysis parameters for DTIAtlasFiberAnalyzer : ")==0)
             {
@@ -1396,7 +1396,7 @@ int CalculNumberOfProfileParam(std::string parameters)
         {
             //look for the first ","
             parameters = parameters.substr(parameters.find_first_of(",")+1,
-                                                     parameters.size()-parameters.find_first_of(",")+1);
+                                           parameters.size()-parameters.find_first_of(",")+1);
             NumberOfParameters++;
         }
         else
@@ -1430,7 +1430,7 @@ std::vector<int> PlaneAssociatedToFiber(std::string fibername, vstring fiberspla
     return plane;
 }
 
- /************************************************************************************
+/************************************************************************************
  * LineInVector : Like previous definition of LineInVector, take line with data
  * 	separated by ',' and put it in a string vector.
  ************************************************************************************/
@@ -1530,7 +1530,7 @@ long double getStd(QVector <double> data, double mean)
 {
     long double std=0;
     for(int i=0; i<data.size(); i++)
-      std+= (data[i]-mean) * (data[i]-mean);
+        std+= (data[i]-mean) * (data[i]-mean);
     std/=data.size();
     std=sqrtl(std);
     return std;
@@ -1664,10 +1664,10 @@ vstring getparameterslines(std::ifstream& fvpfile)
     vstring parameterslines;
     std::string buffer;
 
-//Put first line in buffer
+    //Put first line in buffer
     getline(fvpfile, buffer);
 
-//Stop at last line of information or if it's the end of file
+    //Stop at last line of information or if it's the end of file
     while(buffer.compare(0,35,"Number of samples along the bundle:")!=0 && !fvpfile.eof())
     {
         parameterslines.push_back(buffer);
@@ -1761,7 +1761,7 @@ int CallMergeStatWithFiber(std::string PathMergeStatWithFiber, std::string CSVFi
         qs=Max.c_str();
         arguments.append("-M "+qs);
     }
-        if( pvalue != "" )
+    if( pvalue != "" )
     {
         qs=pvalue.c_str();
         arguments.append("-p "+qs);

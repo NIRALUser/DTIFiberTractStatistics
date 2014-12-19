@@ -29,7 +29,7 @@
       <description>input fiber file that needs to be in .vtk format</description>
       <channel>input</channel>
       <default></default>
-    </file> 
+    </file>
     <file>
       <name>output_stats_file</name>
       <flag>o</flag>
@@ -66,12 +66,12 @@
       <default></default>
     </file>
     <string>
-	<name>auto_plane_origin</name>
-	<longflag>--auto_plane_origin</longflag>
-	<label>Way to calculate auto plane origin</label>
-	<description>Way to calculate auto plane origin by default origin is calculated with the center of gravity. "median" will calculate the median point on the fiber</description>
-	<channel>input</channel>
-	<default>cog</default>
+   <name>auto_plane_origin</name>
+   <longflag>--auto_plane_origin</longflag>
+   <label>Way to calculate auto plane origin</label>
+   <description>Way to calculate auto plane origin by default origin is calculated with the center of gravity. "median" will calculate the median point on the fiber</description>
+   <channel>input</channel>
+   <default>cog</default>
     </string>
     <file>
       <name>window_file</name>
@@ -100,7 +100,7 @@
       <longflag>--rodent</longflag>
       <label>Processing rodent images</label>
       <description>Specify that rodent images are being processed. The step size will not be changed if smaller than 0.1</description>
-      <default>false</default>    
+      <default>false</default>
     </boolean>
     <integer>
       <name>window</name>
@@ -152,19 +152,26 @@
       <channel>input</channel>
       <default>50</default>
     </double>
-	 <boolean>
-		 <name>useNonCrossingFibers</name>
-		 <longflag>--use_non_crossing_fibers</longflag>
-		 <label>Use non crossing fibers</label>
-		 <description>Use every fibers even if they do not cross the plane</description>
-		 <default>0</default>
+    <boolean>
+       <name>useNonCrossingFibers</name>
+       <longflag>--use_non_crossing_fibers</longflag>
+       <label>Use non crossing fibers</label>
+       <description>Use every fibers even if they do not cross the plane</description>
+       <default>0</default>
    </boolean>
-	 <boolean>
-		 <name>removeCleanFibers</name>
-		 <longflag>--remove_clean_fiber</longflag>
-		 <label>Remove Clean Fibers</label>
-		 <description>Remove clean fiber files that have been saved on the hard drive during the computation</description>
-		 <default>0</default>
+   <boolean>
+      <name>removeNanFibers</name>
+      <longflag>--remove_nan_fibers</longflag>
+      <label>Remove fibers that contain Nan values</label>
+      <description>Remove fibers that contain Nan values</description>
+      <default>0</default>
+  </boolean>
+    <boolean>
+       <name>removeCleanFibers</name>
+       <longflag>--remove_clean_fiber</longflag>
+       <label>Remove Clean Fibers</label>
+       <description>Remove clean fiber files that have been saved on the hard drive during the computation</description>
+       <default>0</default>
    </boolean>
   </parameters>
 </executable>

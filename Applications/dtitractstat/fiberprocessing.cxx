@@ -5,7 +5,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <math.h>
-	
+
 #include <itkSpatialObjectReader.h>
 #include <itkSpatialObjectWriter.h>
 
@@ -17,7 +17,9 @@
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkCell.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkCellData.h>
 
 #include "fiberprocessing.h"
 
@@ -40,7 +42,8 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
                                             std::string auto_plane_origin ,
                                             bool useNonCrossingFibers ,
                                             double bandwidth ,
-                                            bool removeCleanFibers
+                                            bool removeCleanFibers,
+                                            bool removeNanFibers
                                           )
 {
   m_Bandwidth = 2.0 * bandwidth ;//-1/+1
@@ -48,11 +51,11 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
   GroupType::Pointer group = readFiberFile(input_file) ;
   m_Spacing = group->GetSpacing();
   m_Offset = group->GetObjectToParentTransform()->GetOffset();
-  
+
   if (planeautoOn)
   {
     cout<<"Finding the plane origin and normal automatically\n\n";
-	 find_plane(group , auto_plane_origin);
+     find_plane(group , auto_plane_origin);
   }
   else
   {
@@ -60,158 +63,255 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
     if (!plane_defined)
     {
       cout<<"Could not read plane file::finding the plane origin and normal automatically\n\n";
-		find_plane(group, auto_plane_origin);
+        find_plane(group, auto_plane_origin);
     }
     cout<<"return from read_plane_file function :"<<plane_defined<<plane_origin<<plane_normal<<endl;
   }
   if(!useNonCrossingFibers)
   {
-	  vtkSmartPointer<vtkPolyData> PolyData;
-    PolyData=RemoveNonCrossingFibers(input_file);
+      vtkSmartPointer<vtkPolyData> PolyData;
+      PolyData=RemoveNonCrossingFibers(input_file);
     std::string extension=ExtensionofFile(input_file);
-	  std::string plane_name=takeoffExtension(takeoffPath(plane_str));
+      std::string plane_name=takeoffExtension(takeoffPath(plane_str));
     input_file=takeoffExtension(output_file)+"_"+plane_name+"_Clean."+extension;
-	  if (input_file.rfind(".vtk") != std::string::npos)
-	  {
-			vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
+      if (input_file.rfind(".vtk") != std::string::npos)
+      {
+            vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
       //fiberwriter->SetFileTypeToBinary();
-			fiberwriter->SetFileName(input_file.c_str());
+            fiberwriter->SetFileName(input_file.c_str());
       #if (VTK_MAJOR_VERSION < 6)
       fiberwriter->SetInput(PolyData);
       #else
       fiberwriter->SetInputData(PolyData);
       #endif
-			fiberwriter->Update();
-	  }
-	  else if(input_file.rfind(".vtp") != std::string::npos)
-	  {
-		  vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
-		  fiberwriter->SetFileName(input_file.c_str());
+            fiberwriter->Update();
+      }
+      else if(input_file.rfind(".vtp") != std::string::npos)
+      {
+          vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
+          fiberwriter->SetFileName(input_file.c_str());
       #if (VTK_MAJOR_VERSION < 6)
-		  fiberwriter->SetInput(PolyData);
+          fiberwriter->SetInput(PolyData);
       #else
-		  fiberwriter->SetInputData(PolyData);
+          fiberwriter->SetInputData(PolyData);
       #endif
-		  fiberwriter->Update();
-	  }
+          fiberwriter->Update();
+      }
     //We need to read the new file containing only the fibers crossing the plane
     //(since all the filtering was done on the VTK and we work on the spatial object "group")
-    group = readFiberFile(input_file);
+//    group = readFiberFile(input_file);
+//    if( removeCleanFibers )
+//    {
+//      remove( input_file.c_str() ) ;
+//    }
+  }
+  if(removeNanFibers == 1)
+  {
+      vtkSmartPointer<vtkPolyData> PolyData;
+      PolyData=RemoveNanFibers(input_file);
+    std::string extension=ExtensionofFile(input_file);
+      std::string plane_name=takeoffExtension(takeoffPath(plane_str));
+    input_file=takeoffExtension(output_file)+"_"+plane_name+"_noNan."+extension;
+      if (input_file.rfind(".vtk") != std::string::npos)
+      {
+            vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
+      //fiberwriter->SetFileTypeToBinary();
+            fiberwriter->SetFileName(input_file.c_str());
+      #if (VTK_MAJOR_VERSION < 6)
+      fiberwriter->SetInput(PolyData);
+      #else
+      fiberwriter->SetInputData(PolyData);
+      #endif
+            fiberwriter->Update();
+      }
+      else if(input_file.rfind(".vtp") != std::string::npos)
+      {
+          vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
+          fiberwriter->SetFileName(input_file.c_str());
+      #if (VTK_MAJOR_VERSION < 6)
+          fiberwriter->SetInput(PolyData);
+      #else
+          fiberwriter->SetInputData(PolyData);
+      #endif
+          fiberwriter->Update();
+      }
+    //We need to read the new file containing only the fibers crossing the plane
+    //(since all the filtering was done on the VTK and we work on the spatial object "group")
+    /*group = readFiberFile(input_file);
     if( removeCleanFibers )
     {
       remove( input_file.c_str() ) ;
-    }
+    }*/
   }
-  
   arc_length_parametrization( group ) ;
 }
 
 std::string fiberprocessing::takeoffExtension(std::string filename)
 {
-	std::string inputfile;
-	inputfile = filename.substr(0,filename.find_first_of("."));
-	return inputfile;
+    std::string inputfile;
+    inputfile = filename.substr(0,filename.find_first_of("."));
+    return inputfile;
 }
 
 std::string fiberprocessing::takeoffPath(std::string filename)
 {
-	std::string inputfile;
-	inputfile = filename.substr(filename.find_last_of("/")+1,filename.size()-filename.find_last_of("/")+1);
-	return inputfile;
+    std::string inputfile;
+    inputfile = filename.substr(filename.find_last_of("/")+1,filename.size()-filename.find_last_of("/")+1);
+    return inputfile;
 }
 
 std::string fiberprocessing::ExtensionofFile(std::string filename)
 {
-	std::string extension;
-	extension = filename.substr(filename.find_last_of(".")+1,filename.size()-filename.find_last_of(".")+1);
-	return extension;
+    std::string extension;
+    extension = filename.substr(filename.find_last_of(".")+1,filename.size()-filename.find_last_of(".")+1);
+    return extension;
 }
 
 vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNonCrossingFibers(std::string Filename)
 {
-	vtkSmartPointer<vtkPolyData> PolyData;
-	if (Filename.rfind(".vtk") != std::string::npos)
-	{
-		vtkSmartPointer<vtkPolyDataReader> reader = vtkPolyDataReader::New();
-		reader->SetFileName(Filename.c_str());
-		PolyData=reader->GetOutput();
-		reader->Update();
-	}
-	else if (Filename.rfind(".vtp") != std::string::npos)
-	{
-		vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkXMLPolyDataReader::New();
-		reader->SetFileName(Filename.c_str());
-		PolyData=reader->GetOutput();
-		reader->Update();
-	}
-	std::cout<<"Total Number of Fibers : "<<PolyData->GetNumberOfCells()<<std::endl;
-	
-	vtkSmartPointer<vtkPolyData> FinalPolyData=vtkSmartPointer<vtkPolyData>::New();
-	vtkSmartPointer<vtkFloatArray> NewTensors=vtkSmartPointer<vtkFloatArray>::New();
-	vtkSmartPointer<vtkPoints> NewPoints=vtkSmartPointer<vtkPoints>::New();
-	vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New();
-	NewTensors->SetNumberOfComponents(9);
-	vtkDataArray* Tensors=PolyData->GetPointData()->GetTensors();
-	
-	vtkPoints* Points=PolyData->GetPoints();
-	vtkCellArray* Lines=PolyData->GetLines();
-	vtkIdType* Ids;
-	vtkIdType NumberOfPoints;
-	int NewId=0;
-	Lines->InitTraversal();
-	
-	bool Cross;
-	for(int i=0; Lines->GetNextCell(NumberOfPoints, Ids); i++)
-	{
-		Cross=false;
-		vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
-		NewLine->GetPointIds()->SetNumberOfIds(NumberOfPoints);
-		for(int j=0; j<NumberOfPoints-1; j++)
-		{
-			double p1[3], p2[3];
-			Points->GetPoint(Ids[j],p1);
-			Points->GetPoint(Ids[j+1],p2);
-			
-			p1[0]=plane_origin[0]-p1[0];
-			p1[1]=plane_origin[1]-p1[1];
-			p1[2]=plane_origin[2]-p1[2];
-			
-			p2[0]=plane_origin[0]-p2[0];
-			p2[1]=plane_origin[1]-p2[1];
-			p2[2]=plane_origin[2]-p2[2];
-			
-			double ScalarProduct1, ScalarProduct2;
-			ScalarProduct1=p1[0]*plane_normal[0]+p1[1]*plane_normal[1]+p1[2]*plane_normal[2];
-			ScalarProduct2=p2[0]*plane_normal[0]+p2[1]*plane_normal[1]+p2[2]*plane_normal[2];
-			if(ScalarProduct1*ScalarProduct2<0)
-			{
-				Cross=true;
-				break;
-			}
-		}
-		if(Cross)
-		{
-			for(int j=0; j<NumberOfPoints; j++)
-			{
-				NewPoints->InsertNextPoint(Points->GetPoint(Ids[j]));
-				NewLine->GetPointIds()->SetId(j,NewId);
-				NewId++;
-				double tensorValue[9];
-				for(int k=0; k<9; k++)
-					tensorValue[k]=Tensors->GetComponent(Ids[j],k);
-				NewTensors->InsertNextTuple(tensorValue);
-			}
-			NewLines->InsertNextCell(NewLine);
-		}
-	}
-	FinalPolyData->SetPoints(NewPoints);
-	FinalPolyData->GetPointData()->SetTensors(NewTensors);
-	FinalPolyData->SetLines(NewLines);
-	std::cout<<"Number of Fibers without non crossing fibers : "<<FinalPolyData->GetNumberOfCells()<<std::endl;
-	return FinalPolyData;
+    vtkSmartPointer<vtkPolyData> PolyData;
+    if (Filename.rfind(".vtk") != std::string::npos)
+    {
+        vtkSmartPointer<vtkPolyDataReader> reader = vtkPolyDataReader::New();
+        reader->SetFileName(Filename.c_str());
+        PolyData=reader->GetOutput();
+        reader->Update();
+    }
+    else if (Filename.rfind(".vtp") != std::string::npos)
+    {
+        vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkXMLPolyDataReader::New();
+        reader->SetFileName(Filename.c_str());
+        PolyData=reader->GetOutput();
+        reader->Update();
+    }
+    std::cout<<"Total Number of Fibers : "<<PolyData->GetNumberOfCells()<<std::endl;
+
+    vtkSmartPointer<vtkPolyData> FinalPolyData=vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkFloatArray> NewTensors=vtkSmartPointer<vtkFloatArray>::New();
+    vtkSmartPointer<vtkPoints> NewPoints=vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New();
+    NewTensors->SetNumberOfComponents(9);
+    vtkDataArray* Tensors=PolyData->GetPointData()->GetTensors();
+
+    vtkPoints* Points=PolyData->GetPoints();
+    vtkCellArray* Lines=PolyData->GetLines();
+    vtkIdType* Ids;
+    vtkIdType NumberOfPoints;
+    int NewId=0;
+    Lines->InitTraversal();
+
+    bool Cross;
+    for(int i=0; Lines->GetNextCell(NumberOfPoints, Ids); i++)
+    {
+        Cross=false;
+        vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New();
+        NewLine->GetPointIds()->SetNumberOfIds(NumberOfPoints);
+        for(int j=0; j<NumberOfPoints-1; j++)
+        {
+            double p1[3], p2[3];
+            Points->GetPoint(Ids[j],p1);
+            Points->GetPoint(Ids[j+1],p2);
+
+            p1[0]=plane_origin[0]-p1[0];
+            p1[1]=plane_origin[1]-p1[1];
+            p1[2]=plane_origin[2]-p1[2];
+
+            p2[0]=plane_origin[0]-p2[0];
+            p2[1]=plane_origin[1]-p2[1];
+            p2[2]=plane_origin[2]-p2[2];
+
+            double ScalarProduct1, ScalarProduct2;
+            ScalarProduct1=p1[0]*plane_normal[0]+p1[1]*plane_normal[1]+p1[2]*plane_normal[2];
+            ScalarProduct2=p2[0]*plane_normal[0]+p2[1]*plane_normal[1]+p2[2]*plane_normal[2];
+            if(ScalarProduct1*ScalarProduct2<0)
+            {
+                Cross=true;
+                break;
+            }
+        }
+        if(Cross)
+        {
+            for(int j=0; j<NumberOfPoints; j++)
+            {
+                NewPoints->InsertNextPoint(Points->GetPoint(Ids[j]));
+                NewLine->GetPointIds()->SetId(j,NewId);
+                NewId++;
+                double tensorValue[9];
+                for(int k=0; k<9; k++)
+                    tensorValue[k]=Tensors->GetComponent(Ids[j],k);
+                NewTensors->InsertNextTuple(tensorValue);
+            }
+            NewLines->InsertNextCell(NewLine);
+        }
+    }
+    FinalPolyData->SetPoints(NewPoints);
+    FinalPolyData->GetPointData()->SetTensors(NewTensors);
+    FinalPolyData->SetLines(NewLines);
+    std::cout<<"Number of Fibers without non crossing fibers : "<<FinalPolyData->GetNumberOfCells()<<std::endl;
+    return FinalPolyData;
 }
 
-
+vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filename)
+{
+    vtkSmartPointer<vtkPolyData> PolyData;
+    if (Filename.rfind(".vtk") != std::string::npos)
+    {
+        vtkSmartPointer<vtkPolyDataReader> reader = vtkPolyDataReader::New();
+        reader->SetFileName(Filename.c_str());
+        PolyData=reader->GetOutput();
+        reader->Update();
+    }
+    else if (Filename.rfind(".vtp") != std::string::npos)
+    {
+        vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkXMLPolyDataReader::New();
+        reader->SetFileName(Filename.c_str());
+        PolyData=reader->GetOutput();
+        reader->Update();
+    }
+    std::cout<<"Total Number of Fibers : "<<PolyData->GetNumberOfCells()<<std::endl;
+    vtkSmartPointer<vtkPolyData> FinalPolyData=vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkFloatArray> NewTensors=vtkSmartPointer<vtkFloatArray>::New();
+    vtkSmartPointer<vtkPoints> NewPoints=vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New();
+    NewTensors->SetNumberOfComponents(9);
+    vtkDataArray* Tensors=PolyData->GetPointData()->GetTensors();
+    vtkPoints* Points=PolyData->GetPoints();
+    vtkCellArray* Lines=PolyData->GetLines();
+    vtkIdType* Ids;
+    vtkIdType NumberOfPoints;
+    int NewId=0;
+    Lines->InitTraversal();
+    vtkSmartPointer< vtkDoubleArray > fiberReadArray = vtkSmartPointer< vtkDoubleArray >::New() ;
+    fiberReadArray = vtkDoubleArray::SafeDownCast( PolyData->GetCellData()->GetArray( "NanCases" ) ) ;std::cout<<"test1"<<std::endl;
+    //std::cout<<"NbComponents="<<fiberReadArray->GetNumberOfComponents()<<std::endl;std::cout<<"test2"<<std::endl;
+    for( int i=0; Lines->GetNextCell( NumberOfPoints , Ids ) ; i++ )
+    {std::cout<<"coucou"<<std::endl;
+        vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New() ;
+        NewLine->GetPointIds()->SetNumberOfIds( NumberOfPoints ) ;
+        std::cout<<fiberReadArray->GetValue( i )<<std::endl;
+        if( fiberReadArray->GetValue( i ) )
+        {
+            for( int j=0; j < NumberOfPoints ; j++ )
+            {
+                NewPoints->InsertNextPoint( Points->GetPoint(Ids[ j ] ) ) ;
+                NewLine->GetPointIds()->SetId( j , NewId ) ;
+                NewId++ ;
+                double tensorValue[9] ;
+                for( int k = 0 ; k < 9 ; k++ )
+                {
+                    tensorValue[ k ] = Tensors->GetComponent( Ids[ j ] , k ) ;
+                }
+                NewTensors->InsertNextTuple(tensorValue);
+            }
+            NewLines->InsertNextCell(NewLine);
+        }
+    }
+    FinalPolyData->SetPoints(NewPoints);
+    FinalPolyData->GetPointData()->SetTensors(NewTensors);
+    FinalPolyData->SetLines(NewLines);
+    std::cout<<"Number of Fibers without Nan values : "<<FinalPolyData->GetNumberOfCells()<<std::endl;
+    return FinalPolyData;
+}
 bool fiberprocessing::Siequals(std::string a, std::string b)
 {
     unsigned int sz = a.size();
@@ -232,21 +332,21 @@ std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_
     {
       cout<<"Total Number of sample points in the fiber bundle: "<<all.size()<<"...getting all parameters..."<<endl;
       return(all);
-      
+
     }
   else
     {
       for (int a =0;a<8;a++)
-	{
-	  std::string tmp_parameter(parameter_std_list[a]);
-	  //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
-	  if (Siequals(tmp_parameter, param_name))
-	    {
-	      //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<parameter_std_list[a]<<"a is"<<a<<std::endl;
-	      parameter_index = a;
-	      break;
-	    }
-	}
+    {
+      std::string tmp_parameter(parameter_std_list[a]);
+      //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
+      if (Siequals(tmp_parameter, param_name))
+        {
+          //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<parameter_std_list[a]<<"a is"<<a<<std::endl;
+          parameter_index = a;
+          break;
+        }
+    }
     }
   std::vector< std::vector<double> > length_temp;
   for (size_t i =0; i< all.size() ; i++ )
@@ -254,7 +354,7 @@ std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_
       length_temp.push_back(std::vector<double>());
       length_temp[i].push_back(all[i][0]);
       length_temp[i].push_back(all[i][parameter_index+1]);
-    }	
+    }
   cout<<"Total Number of sample points in the fiber bundle: "<<length_temp.size()<<"...getting parameter "<<parameter_std_list[parameter_index]<<endl;
   return(length_temp);
 
@@ -499,62 +599,62 @@ void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plan
   DTIPointListType::iterator pit, pit_closest;
   double sum_x=0,sum_y=0,sum_z=0;
   int num_points=0;
-  
+
   if(auto_plane_origin=="cog")
   {
-		//Finding Plane origin as the average x,y,z coordinate of the whole fiber bundle
-	  for(it = (pchildren->begin()); it != pchildren->end() ; it++)
-	  {
-		  pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
-		  for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
-		  {
-			  itk::Point<double, 3> position = (*pit).GetPosition();
-			  num_points++;
-			  sum_x=sum_x+position[0]; sum_y=sum_y+position[1]; sum_z=sum_z+position[2];
-		  }
-	  }
-	  plane_origin[0]=sum_x/num_points;
-	  plane_origin[1]=sum_y/num_points;
-	  plane_origin[2]=sum_z/num_points;
+        //Finding Plane origin as the average x,y,z coordinate of the whole fiber bundle
+      for(it = (pchildren->begin()); it != pchildren->end() ; it++)
+      {
+          pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+          for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
+          {
+              itk::Point<double, 3> position = (*pit).GetPosition();
+              num_points++;
+              sum_x=sum_x+position[0]; sum_y=sum_y+position[1]; sum_z=sum_z+position[2];
+          }
+      }
+      plane_origin[0]=sum_x/num_points;
+      plane_origin[1]=sum_y/num_points;
+      plane_origin[2]=sum_z/num_points;
   }
   else if(auto_plane_origin=="median")
   {
-	  itk::Vector<double, 3> median_point;
-	  //Finding Plane origin as the average x,y,z of middle points for each fibers
-	  int median=0;
-	  double distance_min=10000.0;
-	  for(it=pchildren->begin(); it!=pchildren->end(); it++)
-	  {
-		  pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
-		  median=ceil((double)pointlist.size()/2.0);
-		  pit=pointlist.begin();
-		  pit+=median;
-		  itk::Point<double,3> position=(*pit).GetPosition();
-		  num_points++;
-		  sum_x+=position[0]; sum_y+=position[1]; sum_z+=position[2];
-	  }
-	  median_point[0]=sum_x/num_points;
-	  median_point[1]=sum_y/num_points;
-	  median_point[2]=sum_z/num_points;
-	  for(it=pchildren->begin(); it!=pchildren->end(); it++)
-	  {
-		  pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
-		  median=ceil((double)pointlist.size()/2.0);
-		  pit=pointlist.begin();
-		  pit+=median;
-		  itk::Point<double,3> position=(*pit).GetPosition();
-		  double distance=sqrt(pow(position[0]-median_point[0],2)+pow(position[1]-median_point[1],2)+pow(position[2]-median_point[2],2));
-		  if(distance<distance_min)
-		  {
-			  distance_min=distance;
-			  plane_origin[0]=position[0];
-			  plane_origin[1]=position[1];
-			  plane_origin[2]=position[2];
-		  }
-	  }
+      itk::Vector<double, 3> median_point;
+      //Finding Plane origin as the average x,y,z of middle points for each fibers
+      int median=0;
+      double distance_min=10000.0;
+      for(it=pchildren->begin(); it!=pchildren->end(); it++)
+      {
+          pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+          median=ceil((double)pointlist.size()/2.0);
+          pit=pointlist.begin();
+          pit+=median;
+          itk::Point<double,3> position=(*pit).GetPosition();
+          num_points++;
+          sum_x+=position[0]; sum_y+=position[1]; sum_z+=position[2];
+      }
+      median_point[0]=sum_x/num_points;
+      median_point[1]=sum_y/num_points;
+      median_point[2]=sum_z/num_points;
+      for(it=pchildren->begin(); it!=pchildren->end(); it++)
+      {
+          pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+          median=ceil((double)pointlist.size()/2.0);
+          pit=pointlist.begin();
+          pit+=median;
+          itk::Point<double,3> position=(*pit).GetPosition();
+          double distance=sqrt(pow(position[0]-median_point[0],2)+pow(position[1]-median_point[1],2)+pow(position[2]-median_point[2],2));
+          if(distance<distance_min)
+          {
+              distance_min=distance;
+              plane_origin[0]=position[0];
+              plane_origin[1]=position[1];
+              plane_origin[2]=position[2];
+          }
+      }
   }
   cout<<"\nCalculated Plane Origin (avg x,y,z): "<<plane_origin[0]<<","<<plane_origin[1]<<","<<plane_origin[2]<<endl;
-		
+
   //Leaving a percent of the bundle end points, find the closest point on bundle to the plane origin (to avoid curved bundles getting ends as the closest point)
 
   int closest_d = 1000.0;
@@ -566,24 +666,24 @@ void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plan
 
       int percent_count = 1;
       for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
-	{
-	  //ignoring first 30% and last 30% of points along the fiber(Fiber-ends)
-	  if (percent_count>floor(pointlist.size() * .3) && percent_count<floor(pointlist.size() * .7))	
-	    {
-	      itk::Point<double, 3> position = (*pit).GetPosition();
-	      double dist =  sqrt((position[0]-plane_origin[0])*(position[0]-plane_origin[0])+(position[1]-plane_origin[1])*(position[1]-plane_origin[1])+(position[2]-plane_origin[2])*(position[2]-plane_origin[2]));
-	      if (dist <= closest_d)
-		{
-		  closest_d = dist;
-		  pit_closest = pit;
-		  closest_point_coor[0] = (*pit).GetPosition()[0];
-		  closest_point_coor[1] = (*pit).GetPosition()[1];
-		  closest_point_coor[2] = (*pit).GetPosition()[2];
-		  it_closest  = it;
-		}
-	    }
-	  percent_count++;
-	}
+    {
+      //ignoring first 30% and last 30% of points along the fiber(Fiber-ends)
+      if (percent_count>floor(pointlist.size() * .3) && percent_count<floor(pointlist.size() * .7))
+        {
+          itk::Point<double, 3> position = (*pit).GetPosition();
+          double dist =  sqrt((position[0]-plane_origin[0])*(position[0]-plane_origin[0])+(position[1]-plane_origin[1])*(position[1]-plane_origin[1])+(position[2]-plane_origin[2])*(position[2]-plane_origin[2]));
+          if (dist <= closest_d)
+        {
+          closest_d = dist;
+          pit_closest = pit;
+          closest_point_coor[0] = (*pit).GetPosition()[0];
+          closest_point_coor[1] = (*pit).GetPosition()[1];
+          closest_point_coor[2] = (*pit).GetPosition()[2];
+          it_closest  = it;
+        }
+        }
+      percent_count++;
+    }
     }
 
   //Using 3 points to left and right of this closest point, find the plane normal
@@ -593,18 +693,18 @@ void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plan
   for(it = (pchildren->begin()); it != pchildren->end() ; it++)
     {
       if (it==it_closest)
-	{
-	  pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
-	  for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
-	    {
-	      if (pit==pit_closest)
-		{
-		  point_before = (*(--(--(--pit)))).GetPosition();
-		  ++pit;++pit;++pit;
-		  point_after = (*(++(++(++pit)))).GetPosition();
-		}
-	    }
-	}
+    {
+      pointlist = dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+      for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
+        {
+          if (pit==pit_closest)
+        {
+          point_before = (*(--(--(--pit)))).GetPosition();
+          ++pit;++pit;++pit;
+          point_after = (*(++(++(++pit)))).GetPosition();
+        }
+        }
+    }
     }
   plane_normal=point_after-point_before;
   double plane_norm = (sqrt((plane_normal[0]*plane_normal[0])+(plane_normal[1]*plane_normal[1])+(plane_normal[2]*plane_normal[2])));
@@ -612,7 +712,7 @@ void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plan
     {
       plane_normal[0] /= plane_norm;
       plane_normal[1] /= plane_norm;
-      plane_normal[2] /= plane_norm;	
+      plane_normal[2] /= plane_norm;
     }
   cout<<"Plane normal:"<<plane_normal[0]<<","<<plane_normal[1]<<","<<plane_normal[2]<<endl;
 }
@@ -632,7 +732,7 @@ bool fiberprocessing::read_plane_details(std::string plane_str)
   {
     //reading the plane origin
     for (int i=0;i<3;i++)
-    {	
+    {
       //to discard the words: "Cut Plane Origin:"
       plane.getline(extra, 30, ' ');
     }
@@ -642,16 +742,16 @@ bool fiberprocessing::read_plane_details(std::string plane_str)
       plane.getline(value, 30, ' ');
       plane_origin[i] = (atof(value) - m_Offset[i])/ m_Spacing[i];
       if (value[0]=='\0' || value[0]==' ' || value[0]=='\t' || value[0]=='\n')
-	i--;
+    i--;
     }
     char value[30];
     plane.getline(value, 30, '\n');
     plane_origin[2] = (atof(value) - m_Offset[2])/ m_Spacing[2];
-    
+
     //reading the plane normal
     extra[0]='\0';
     for (int i=0;i<3;i++)
-    {	
+    {
       //to discard the words: "Cut Plane normal:"
       plane.getline(extra, 30, ' ');
     }
@@ -661,7 +761,7 @@ bool fiberprocessing::read_plane_details(std::string plane_str)
       plane.getline(value, 30, ' ');
       plane_normal[i] = (atof(value) - m_Offset[i])/ m_Spacing[i];
       if (value[0]=='\0' || value[0]==' ' || value[0]=='\t' || value[0]=='\n')
-	i--;
+    i--;
     }
     value[0]='\0';
     plane.getline(value, 30, '\n');
@@ -670,7 +770,7 @@ bool fiberprocessing::read_plane_details(std::string plane_str)
   }
   plane.close();
   return 1;
-  
+
 }
 
 
@@ -808,14 +908,14 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
     soreader->SetFileName(filename);
     soreader->Update();
 
-    return soreader->GetGroup();	
+    return soreader->GetGroup();
   }
   // VTK Poly Data
   else if (filename.rfind(".vt") != std::string::npos)
   {
     // Build up the principal data structure for fiber tracts
     GroupType::Pointer fibergroup = GroupType::New();
- 
+
     vtkSmartPointer<vtkPolyData> fibdata(NULL);
 
     // Legacy

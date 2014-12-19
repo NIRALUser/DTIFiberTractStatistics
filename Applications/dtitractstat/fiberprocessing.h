@@ -40,7 +40,7 @@ class fiberprocessing{
   std::string takeoffPath(std::string filename);
   std::string ExtensionofFile(std::string filename);
   //Main functions
-  void fiberprocessing_main(std::string& input_file,std::string& output_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers , double bandwidth , bool removeCleanFibers ) ;
+  void fiberprocessing_main(std::string& input_file,std::string& output_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers , double bandwidth , bool removeCleanFibers, bool removeNanFibers ) ;
   std::vector< std::vector<double> > get_arc_length_parametrized_fiber(std::string param_name);
   void Write_parametrized_fiber(std::string output_parametrized_fiber_file);//Writes output parametrized fiber file without resampling the fibers
   void Write_parametrized_fiber_avg_position_and_arclength(std::string input_file, std::string output_parametrized_fiber_file, double step_size) ;
@@ -60,6 +60,7 @@ class fiberprocessing{
   itk::Vector<double, 3> get_plane_origin();
   itk::Vector<double, 3> get_plane_normal();
   vtkSmartPointer<vtkPolyData> RemoveNonCrossingFibers(std::string Filename);
+  vtkSmartPointer<vtkPolyData> RemoveNanFibers(std::string Filename);
   double SQ2(double x) {return x*x;};
   static bool sortFunction(parametrized_distance_struct i , parametrized_distance_struct j );
   double DistanceToPlane(itk::Point<double , 3> point) ;
