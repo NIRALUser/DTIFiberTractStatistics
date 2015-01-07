@@ -67,44 +67,6 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
     }
     cout<<"return from read_plane_file function :"<<plane_defined<<plane_origin<<plane_normal<<endl;
   }
-  if(!useNonCrossingFibers)
-  {
-      vtkSmartPointer<vtkPolyData> PolyData;
-      PolyData=RemoveNonCrossingFibers(input_file);
-    std::string extension=ExtensionofFile(input_file);
-      std::string plane_name=takeoffExtension(takeoffPath(plane_str));
-    input_file=takeoffExtension(output_file)+"_"+plane_name+"_Clean."+extension;
-      if (input_file.rfind(".vtk") != std::string::npos)
-      {
-            vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
-      //fiberwriter->SetFileTypeToBinary();
-            fiberwriter->SetFileName(input_file.c_str());
-      #if (VTK_MAJOR_VERSION < 6)
-      fiberwriter->SetInput(PolyData);
-      #else
-      fiberwriter->SetInputData(PolyData);
-      #endif
-            fiberwriter->Update();
-      }
-      else if(input_file.rfind(".vtp") != std::string::npos)
-      {
-          vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
-          fiberwriter->SetFileName(input_file.c_str());
-      #if (VTK_MAJOR_VERSION < 6)
-          fiberwriter->SetInput(PolyData);
-      #else
-          fiberwriter->SetInputData(PolyData);
-      #endif
-          fiberwriter->Update();
-      }
-    //We need to read the new file containing only the fibers crossing the plane
-    //(since all the filtering was done on the VTK and we work on the spatial object "group")
-//    group = readFiberFile(input_file);
-//    if( removeCleanFibers )
-//    {
-//      remove( input_file.c_str() ) ;
-//    }
-  }
   if(removeNanFibers == 1)
   {
       vtkSmartPointer<vtkPolyData> PolyData;
@@ -142,6 +104,44 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
     {
       remove( input_file.c_str() ) ;
     }*/
+  }
+  if(!useNonCrossingFibers)
+  {
+      vtkSmartPointer<vtkPolyData> PolyData;
+      PolyData=RemoveNonCrossingFibers(input_file);
+    std::string extension=ExtensionofFile(input_file);
+      std::string plane_name=takeoffExtension(takeoffPath(plane_str));
+    input_file=takeoffExtension(output_file)+"_"+plane_name+"_Clean."+extension;
+      if (input_file.rfind(".vtk") != std::string::npos)
+      {
+            vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
+      //fiberwriter->SetFileTypeToBinary();
+            fiberwriter->SetFileName(input_file.c_str());
+      #if (VTK_MAJOR_VERSION < 6)
+      fiberwriter->SetInput(PolyData);
+      #else
+      fiberwriter->SetInputData(PolyData);
+      #endif
+            fiberwriter->Update();
+      }
+      else if(input_file.rfind(".vtp") != std::string::npos)
+      {
+          vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
+          fiberwriter->SetFileName(input_file.c_str());
+      #if (VTK_MAJOR_VERSION < 6)
+          fiberwriter->SetInput(PolyData);
+      #else
+          fiberwriter->SetInputData(PolyData);
+      #endif
+          fiberwriter->Update();
+      }
+    //We need to read the new file containing only the fibers crossing the plane
+    //(since all the filtering was done on the VTK and we work on the spatial object "group")
+//    group = readFiberFile(input_file);
+//    if( removeCleanFibers )
+//    {
+//      remove( input_file.c_str() ) ;
+//    }
   }
   arc_length_parametrization( group ) ;
 }
@@ -253,7 +253,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNonCrossingFibers(std::strin
 
 vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filename)
 {
-    vtkSmartPointer<vtkPolyData> PolyData;
+    vtkSmartPointer<vtkPolyData> PolyData;std::cout<<Filename<<std::endl;
     if (Filename.rfind(".vtk") != std::string::npos)
     {
         vtkSmartPointer<vtkPolyDataReader> reader = vtkPolyDataReader::New();
@@ -282,10 +282,10 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
     int NewId=0;
     Lines->InitTraversal();
     vtkSmartPointer< vtkDoubleArray > fiberReadArray = vtkSmartPointer< vtkDoubleArray >::New() ;
-    fiberReadArray = vtkDoubleArray::SafeDownCast( PolyData->GetCellData()->GetArray( "NanCases" ) ) ;std::cout<<"test1"<<std::endl;
-    //std::cout<<"NbComponents="<<fiberReadArray->GetNumberOfComponents()<<std::endl;std::cout<<"test2"<<std::endl;
+    fiberReadArray = vtkDoubleArray::SafeDownCast( PolyData->GetCellData()->GetArray( "NaNCases" ) ) ;//std::cout<<"test1"<<std::endl;
+    std::cout<<"NbComponents="<<fiberReadArray->GetNumberOfComponents()<<std::endl;std::cout<<"test2"<<std::endl;
     for( int i=0; Lines->GetNextCell( NumberOfPoints , Ids ) ; i++ )
-    {std::cout<<"coucou"<<std::endl;
+    {
         vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New() ;
         NewLine->GetPointIds()->SetNumberOfIds( NumberOfPoints ) ;
         std::cout<<fiberReadArray->GetValue( i )<<std::endl;
