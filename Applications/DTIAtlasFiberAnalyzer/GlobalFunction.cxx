@@ -10,6 +10,8 @@
 #include <QProcess>
 
 
+int noNan ;
+
 void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable )
 {
     //Find path for executable
@@ -223,7 +225,7 @@ bool Applyfiberprocess(CSVClass* CSV,
             {
                 if(DataAdded)
                     (*CSV->getData())[0].pop_back();
-                    return false;
+                return false;
             }
             else if(skipdata[0] && ExistedFile)
             {
@@ -782,11 +784,11 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                             globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase +
                                     "_" + name_of_fiber+".fvp";
                             /* If dti_tract_stat worked */
+                            noNan = 0 ;
                             if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
                                                   input_fiber, globalFile, fibersplane[j],
                                                   param[i], CoG, sampling , rodent , removeCleanFibers , false ) == 0 )
                             {
-
                                 if(FileExisted(outputname))
                                 {
                                     if(!DataExistedInFiberColumn(CSV,row,col,globalFile))
@@ -830,6 +832,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                 {
                     removeCleanFibersAtlas = true ;
                 }
+                noNan = 1 ;
                 if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , CoG , sampling , rodent , removeCleanFibersAtlas ) != 0 )
                 {
                     std::cout << "Fail during dti_tract_stat!" << std::endl ;
@@ -890,7 +893,10 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
         {
             arguments.append(QString("--remove_clean_fiber") ) ;
         }
-        arguments.append( QString( "--remove_nan_fibers" ) ) ;
+        if( noNan == 0 )
+        {
+            arguments.append( QString( "--remove_nan_fibers" ) ) ;
+        }
         //Plane
         if(plane!="")
         {
