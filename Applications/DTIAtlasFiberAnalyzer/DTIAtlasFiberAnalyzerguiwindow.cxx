@@ -100,8 +100,8 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
     connect(this->RDBox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
     connect(this->GABox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
 
-    /* Tab 4 */
-    connect(this->PlotButton, SIGNAL(clicked()), this, SLOT(OpenPlotWindow()));
+    /* Tab 4 deleted*/
+    //connect(this->PlotButton, SIGNAL(clicked()), this, SLOT(OpenPlotWindow()));
 
     /* Tab 5 */
     connect(this->DTIPbrowsercsv, SIGNAL(clicked()), this, SLOT(BrowserDTIPCsvFilename()));
@@ -276,13 +276,6 @@ void DTIAtlasFiberAnalyzerguiwindow::NextStep()
         Apply->setEnabled(false);
         SaveAnalysisAction("AutoSave_Analysis.txt");
     }
-    else if(m_numberstep==2)
-    {
-        //widget modifications
-        FillDataFilesList();
-        nextstep->setEnabled(false);
-        SaveAnalysisAction("AutoSave_Analysis.txt");
-    }
     //Go to next tab.
     m_numberstep++;
     PrincipalWidget->setTabEnabled(m_numberstep,true);
@@ -303,14 +296,18 @@ void DTIAtlasFiberAnalyzerguiwindow::ApplySlot()
   {
         Computefiberprocess();
         ComputeFiberPostProcess();
+        nextstep->setEnabled(true);
   }
-    else if(m_numberstep==2)
+  //After computation we can go to next step
+  else if(m_numberstep==2)
   {
         Computedti_tract_stat();
+        nextstep->setEnabled(false);
+        PrincipalWidget->setTabEnabled(m_numberstep+1,true);
   }
 
-    //After computation we can go to next step
-    nextstep->setEnabled(true);
+
+
 }
 
 /*********************************************************************************
@@ -387,30 +384,12 @@ void DTIAtlasFiberAnalyzerguiwindow::CheckNextStep()
     if(m_numberstep==3)
     {
         //Next visible & disabled; Previous enabled; Apply not visible
-        previousstep->setEnabled(true);
-        Apply->setVisible(false);
-        nextstep->setVisible(true);
-        nextstep->setEnabled(false);
-        AutomatedComputation->setEnabled(true);
-
-    }
-    if(m_numberstep==4)
-    {
-        Apply->setVisible(false);
-        nextstep->setVisible(true);
-        nextstep->setEnabled(false);
         previousstep->setEnabled(false);
+        Apply->setVisible(false);
+        nextstep->setEnabled(false);
         AutomatedComputation->setEnabled(false);
-        if(DTIPoutputfilename->text().toStdString().compare("")==0 || !IsFile(DTIPoutputfilename->text().toStdString()) || DTIPcsvfilename->text().toStdString().compare("")==0 || DTIPvtkfilename->text().toStdString().compare("")==0)
-    {
-            DTIPcomputes->setEnabled(false);
-    }
-        else
-    {
-            DTIPcomputes->setEnabled(true);
-    }
-    }
 
+    }
 }
 
 /*********************************************************************************
@@ -426,8 +405,6 @@ QWidget* DTIAtlasFiberAnalyzerguiwindow::stepwidget(int numberstep)
             return Step2;
         case 2:
             return Step3;
-        case 3:
-            return Step4;
     }
     return NULL;
 }
@@ -2060,28 +2037,28 @@ void DTIAtlasFiberAnalyzerguiwindow::ReadDataFilesNameInDirectory(vstring &dataf
  /************************************************************************************
  * FillDataFilesList : Fill the DataFiles QWidgetList with relevent .fvp files
  ************************************************************************************/
+//relevant to the former tab 4, obsolete now
+//void DTIAtlasFiberAnalyzerguiwindow::FillDataFilesList()
+//{
+//    vstring datafiles;
+//    std::string casename, Dir, Item;
+//    setFibers();
 
-void DTIAtlasFiberAnalyzerguiwindow::FillDataFilesList()
-{
-    vstring datafiles;
-    std::string casename, Dir, Item;
-    setFibers();
+//    for(unsigned int row=1; row<m_CSV->getRowSize(); row++)
+//    {
+//        casename=NameOfCase(m_CSV, row, m_NameCol, m_DataCol);
+//        Dir=m_OutputFolder + "/Cases/" + casename;
+//        ReadDataFilesNameInDirectory(datafiles, Dir);
+//    }
 
-    for(unsigned int row=1; row<m_CSV->getRowSize(); row++)
-    {
-        casename=NameOfCase(m_CSV, row, m_NameCol, m_DataCol);
-        Dir=m_OutputFolder + "/Cases/" + casename;
-        ReadDataFilesNameInDirectory(datafiles, Dir);
-    }
-
-    //Print the name in the ListWidget
-    for(unsigned int j=0;j<datafiles.size();j++)
-    {
-        //Avoid double definitions
-        if(DataFilesList->findItems(datafiles[j].c_str(), Qt::MatchExactly).size()==0)
-            DataFilesList->addItem(datafiles[j].c_str());
-    }
-}
+//    //Print the name in the ListWidget
+//    for(unsigned int j=0;j<datafiles.size();j++)
+//    {
+//        //Avoid double definitions
+//        if(DataFilesList->findItems(datafiles[j].c_str(), Qt::MatchExactly).size()==0)
+//            DataFilesList->addItem(datafiles[j].c_str());
+//    }
+//}
 
 /************************************************************************************
  * OpenPlotWindow : Get and calculate every data sample and call PlotWindow class

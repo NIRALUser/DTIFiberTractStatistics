@@ -218,7 +218,7 @@
         <string notr="true"/>
        </property>
        <property name="currentIndex">
-        <number>5</number>
+        <number>3</number>
        </property>
        <property name="usesScrollButtons">
         <bool>true</bool>
@@ -1592,47 +1592,6 @@
            </widget>
           </item>
          </layout>
-        </widget>
-       </widget>
-       <widget class="QWidget" name="Step4">
-        <attribute name="title">
-         <string>Plotting parameters</string>
-        </attribute>
-        <widget class="QListWidget" name="DataFilesList">
-         <property name="geometry">
-          <rect>
-           <x>380</x>
-           <y>70</y>
-           <width>231</width>
-           <height>221</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="DataFilesTitle">
-         <property name="geometry">
-          <rect>
-           <x>380</x>
-           <y>30</y>
-           <width>241</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Data files :</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="PlotButton">
-         <property name="geometry">
-          <rect>
-           <x>400</x>
-           <y>320</y>
-           <width>191</width>
-           <height>28</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Plot</string>
-         </property>
         </widget>
        </widget>
        <widget class="QWidget" name="MergeStatWithFiber">

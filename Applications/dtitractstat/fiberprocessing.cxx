@@ -46,6 +46,8 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
                                             bool removeNanFibers
                                             )
 {
+    std::string tmpExtension = ExtensionofFile( input_file ) ;
+    std::string inputFileNoNan = takeoffExtension( input_file ) + "_noNan." + tmpExtension ;
     m_Bandwidth = 2.0 * bandwidth ;//-1/+1
     m_WorldSpace = worldspace ;
     GroupType::Pointer group = readFiberFile(input_file) ;
@@ -71,11 +73,13 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
     {
         vtkSmartPointer<vtkPolyData> PolyData;
         PolyData=RemoveNanFibers(input_file);
+
         if (input_file.rfind(".vtk") != std::string::npos)
         {
             vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
             //fiberwriter->SetFileTypeToBinary();
-            fiberwriter->SetFileName(input_file.c_str());
+
+            fiberwriter->SetFileName(inputFileNoNan.c_str());
 #if (VTK_MAJOR_VERSION < 6)
             fiberwriter->SetInput(PolyData);
 #else
@@ -86,7 +90,7 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
         else if(input_file.rfind(".vtp") != std::string::npos)
         {
             vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
-            fiberwriter->SetFileName(input_file.c_str());
+            fiberwriter->SetFileName(inputFileNoNan.c_str());
 #if (VTK_MAJOR_VERSION < 6)
             fiberwriter->SetInput(PolyData);
 #else
@@ -104,33 +108,67 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
     }
     if(!useNonCrossingFibers)
     {
+
         vtkSmartPointer<vtkPolyData> PolyData;
-        PolyData=RemoveNonCrossingFibers(input_file);
-        std::string extension=ExtensionofFile(input_file);
-        std::string plane_name=takeoffExtension(takeoffPath(plane_str));
-        input_file=takeoffExtension(output_file)+"_"+plane_name+"_Clean."+extension;
-        if (input_file.rfind(".vtk") != std::string::npos)
+        if( removeNanFibers == 1 )
         {
-            vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
-            //fiberwriter->SetFileTypeToBinary();
-            fiberwriter->SetFileName(input_file.c_str());
-#if (VTK_MAJOR_VERSION < 6)
-            fiberwriter->SetInput(PolyData);
-#else
-            fiberwriter->SetInputData(PolyData);
-#endif
-            fiberwriter->Update();
+            PolyData=RemoveNonCrossingFibers(inputFileNoNan);
+            std::string extension=ExtensionofFile(input_file);
+            std::string plane_name=takeoffExtension(takeoffPath(plane_str));
+            input_file=takeoffExtension(output_file)+"_"+plane_name+"_Clean."+extension;
+            if (input_file.rfind(".vtk") != std::string::npos)
+            {
+                vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
+                //fiberwriter->SetFileTypeToBinary();
+                fiberwriter->SetFileName(input_file.c_str());
+    #if (VTK_MAJOR_VERSION < 6)
+                fiberwriter->SetInput(PolyData);
+    #else
+                fiberwriter->SetInputData(PolyData);
+    #endif
+                fiberwriter->Update();
+            }
+            else if(input_file.rfind(".vtp") != std::string::npos)
+            {
+                vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
+                fiberwriter->SetFileName(input_file.c_str());
+    #if (VTK_MAJOR_VERSION < 6)
+                fiberwriter->SetInput(PolyData);
+    #else
+                fiberwriter->SetInputData(PolyData);
+    #endif
+                fiberwriter->Update();
+            }
         }
-        else if(input_file.rfind(".vtp") != std::string::npos)
+        else
         {
-            vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
-            fiberwriter->SetFileName(input_file.c_str());
-#if (VTK_MAJOR_VERSION < 6)
-            fiberwriter->SetInput(PolyData);
-#else
-            fiberwriter->SetInputData(PolyData);
-#endif
-            fiberwriter->Update();
+            PolyData=RemoveNonCrossingFibers(input_file);
+            std::string extension=ExtensionofFile(input_file);
+            std::string plane_name=takeoffExtension(takeoffPath(plane_str));
+            input_file=takeoffExtension(output_file)+"_"+plane_name+"_Clean."+extension;
+            if (input_file.rfind(".vtk") != std::string::npos)
+            {
+                vtkSmartPointer<vtkPolyDataWriter> fiberwriter = vtkPolyDataWriter::New();
+                //fiberwriter->SetFileTypeToBinary();
+                fiberwriter->SetFileName(input_file.c_str());
+    #if (VTK_MAJOR_VERSION < 6)
+                fiberwriter->SetInput(PolyData);
+    #else
+                fiberwriter->SetInputData(PolyData);
+    #endif
+                fiberwriter->Update();
+            }
+            else if(input_file.rfind(".vtp") != std::string::npos)
+            {
+                vtkSmartPointer<vtkXMLPolyDataWriter> fiberwriter = vtkXMLPolyDataWriter::New();
+                fiberwriter->SetFileName(input_file.c_str());
+    #if (VTK_MAJOR_VERSION < 6)
+                fiberwriter->SetInput(PolyData);
+    #else
+                fiberwriter->SetInputData(PolyData);
+    #endif
+                fiberwriter->Update();
+            }
         }
         //We need to read the new file containing only the fibers crossing the plane
         //(since all the filtering was done on the VTK and we work on the spatial object "group")

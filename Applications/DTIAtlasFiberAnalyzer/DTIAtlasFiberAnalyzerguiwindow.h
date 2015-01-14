@@ -110,7 +110,8 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
         void setParamFromDirectory(std::string directory,std::string fibername);
         void setCases();
         void setFibers();
-        void FillDataFilesList();
+        //relevant to former tab 4, obsolete now
+        //void FillDataFilesList();
         void ReadDataFilesNameInDirectory(vstring &datafiles, std::string Dir);
         QVector <QVector <double> > getdatatable(std::string filepath);
         QVector <QVector <double> > getfiberpoints(std::string filepath);
