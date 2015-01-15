@@ -37,7 +37,7 @@ void FindExecutable( const char* name , std::string pathToCurrentExecutable , st
 /*********************************************************************************
  * Command Line function
  ********************************************************************************/
-bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers )
+bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers )
 {
     //variables
     std::string pathFiberProcess, pathdti_tract_stat, OutputFolder, AtlasFiberDir, parameters, csvfile, pathFiberPostProcess;
@@ -115,7 +115,13 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
         FindExecutable( "fiberprocess" , pathCurrentToExecutable , pathFiberProcess ) ;
         //Call fiberprocess
         Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
-
+        if( removeNanFibers == true )
+        {
+            //Find path for fiberpostprocess
+            FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
+            //Call fiberpostrocess
+            ApplyFiberPostProcess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
+        }
         /* Looking for dti_tract_stat */
         FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
         //Call dti_tract_stat
@@ -127,7 +133,13 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
         FindExecutable( "fiberprocess" , pathCurrentToExecutable , pathFiberProcess ) ;
         //Call fiberprocess
         Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,true);
-
+        if( removeNanFibers == true )
+        {
+            //Find path for fiberpostprocess
+            FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
+            //Call fiberpostrocess
+            ApplyFiberPostProcess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
+        }
         /* Looking for dti_tract_stat */
         FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
         //Call dti_tract_stat

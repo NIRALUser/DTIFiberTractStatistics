@@ -11,7 +11,7 @@ typedef QVector<qv2double> qv3double;
 
 /* Functions defined in, exported from Globalfunc.cxx */
 /* Call when there is nogui */
-bool CommandLine( std::string pathToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers );
+bool CommandLine( std::string pathToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers, bool removeNanFibers );
 
 /* Create a Directory */
 bool CreateDirectoryForData(std::string outputfolder, std::string name);
