@@ -15,6 +15,14 @@
 #include <QString>
 #include <QList>
 #include <QSignalMapper>
+#include <QString>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QFileInfoListIterator>
+#include <QProcessEnvironment>
+#include <QMap>
+#include <QtGlobal>
 
 /* itksys */
 #include <itksys/Process.h>
@@ -26,6 +34,8 @@
 #include "CSVClass.h"
 #include "GlobalFunction.h"
 #include "DTIPlotWindow.h"
+#include "XmlReader.h"
+#include "XmlWriter.h"
 
 class PlotWindow;
 

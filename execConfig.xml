@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Executables>
+   <fiberprocess path="/tools/bin_linux64/fiberprocess"/>
+   <FiberPostProcess path="/tools/bin_linux64/FiberPostProcess"/>
+   <dtitractstat path="/work/jeanyves/DTIAtlasFiberAnalyzer/DTIAtlasFiberAnalyzer-build/dti_tract_stat-build/Applications/dtitractstat/dtitractstat">
+</Executables>

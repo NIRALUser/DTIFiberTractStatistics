@@ -10,6 +10,8 @@ typedef QVector<QVector<double> > qv2double;
 typedef QVector<qv2double> qv3double;
 
 /* Functions defined in, exported from Globalfunc.cxx */
+/* Get the XML file containing paths to each executable used in the program
+void setExecutablesConfigFile() ;*/
 /* Call when there is nogui */
 bool CommandLine( std::string pathToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers, bool removeNanFibers );
 

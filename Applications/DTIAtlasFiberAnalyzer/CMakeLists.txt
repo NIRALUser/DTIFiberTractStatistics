@@ -14,6 +14,18 @@ if(NOT QWT_INCLUDE_DIR)
   message(FATAL_ERROR "QWT_INCLUDE_DIR not found. It should be set to a path containing qwt.h, like '/Projects/qwt-6.0.1-svn/include'")
 endif()
 
+#QtXML lib
+find_package(Qt4 COMPONENTS QtXml)
+if ( NOT QT_FOUND)
+message(FATAL_ERROR "Package Qt not found!")
+endif()
+ if ( NOT QT_QTXML_FOUND )
+  message(FATAL_ERROR " QtXml required, but not found!")
+endif()
+
+include(${QT_USE_FILE})
+include_directories(${QT_INCLUDES})
+
 # Qwt libraries
 if( NOT QWT_LIBRARY OR QWT_LIBRARY_PATH )
   if( EXTENSION OR SUPERBUILD_NOT_EXTENSION )
@@ -36,7 +48,7 @@ Include_directories( ${QWT_INCLUDE_DIR} )
 QT4_WRAP_CPP(MOC_FILES DTIAtlasFiberAnalyzerguiwindow.h DTIPlotWindow.h)
 QT4_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
 
-set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx DTIPlotWindow.cxx ${MOC_FILES} ${UI_FILES})
+set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx DTIPlotWindow.cxx XmlReader.cxx XmlWriter.cxx ExecutablePaths.cxx ${MOC_FILES} ${UI_FILES})
 
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 

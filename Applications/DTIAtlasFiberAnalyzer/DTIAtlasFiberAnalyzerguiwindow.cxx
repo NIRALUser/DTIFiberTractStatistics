@@ -150,65 +150,79 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
 void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
 {
    std::cout<<"| Searching the softwares..."; // command line display
+   QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+   QString pathToConfigFile = env.value("DTIAtlasFibExecConfig" , QString::null );
+   if( pathToConfigFile.isEmpty() )
+   {
+       std::string soft = "fiberprocess";
+       std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+       //Find path for executable
+       std::string pathToExecutable ;
+       std::vector< std::string > listDir ;
+       listDir.push_back( m_PathToCurrentExecutable ) ;
+       #ifdef SlicerExtension
+       listDir.push_back( m_PathToCurrentExecutable + "/../ExternalBin" ) ;
+       listDir.push_back( m_PathToCurrentExecutable + "/../cli-modules" ) ;
+       #endif
+       pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
+       if( pathToExecutable.empty() )
+       {
+           pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
+       }
+       if(pathToExecutable.empty())
+       {
+           std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
+           QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+       }
+       else
+       {
+            FiberProcessLine->setText(QString(pathToExecutable.c_str()));
+       }
+       soft = "FiberPostProcess";
+       //Find path for executable
+       std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+       pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
+       if( pathToExecutable.empty() )
+       {
+           pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
+       }
+       if(pathToExecutable.empty())
+       {
+           std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
+           QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+       }
+       else
+       {
+            FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
+       }
+       soft = "dtitractstat";
+       //Find path for executable
+       std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
+       pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
+       if( pathToExecutable.empty() )
+       {
+           pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
+       }
+       if(pathToExecutable.empty())
+       {
+           std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
+           QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+       }
+       else
+       {
+            DTITractStatLine->setText(QString(pathToExecutable.c_str()));
+       }
+   }
+   else
+   {
+       XmlReader xmlReader ;
+       xmlReader.readExecutablesConfigurationFile( pathToConfigFile ) ;
+       FiberProcessLine->setText( xmlReader.pathToFiberProcess.toStdString().c_str() ) ;
+       FiberPostProcessLine->setText( xmlReader.pathToFiberPostProcess.toStdString().c_str() ) ;
+       DTITractStatLine->setText( xmlReader.pathToDtiTractstat.toStdString().c_str() ) ;
+   }
 
-   std::string soft = "fiberprocess";
-   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-   //Find path for executable
-   std::string pathToExecutable ;
-   std::vector< std::string > listDir ;
-   listDir.push_back( m_PathToCurrentExecutable ) ;
-   #ifdef SlicerExtension
-   listDir.push_back( m_PathToCurrentExecutable + "/../ExternalBin" ) ;
-   listDir.push_back( m_PathToCurrentExecutable + "/../cli-modules" ) ;
-   #endif
-   pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
-   if( pathToExecutable.empty() )
-   {
-       pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
-   }
-   if(pathToExecutable.empty())
-   {
-       std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
-       QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
-   }
-   else
-   {
-        FiberProcessLine->setText(QString(pathToExecutable.c_str()));
-   }
-   soft = "FiberPostProcess";
-   //Find path for executable
-   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-   pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
-   if( pathToExecutable.empty() )
-   {
-       pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
-   }
-   if(pathToExecutable.empty())
-   {
-       std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
-       QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
-   }
-   else
-   {
-        FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
-   }
-   soft = "dtitractstat";
-   //Find path for executable
-   std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-   pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
-   if( pathToExecutable.empty() )
-   {
-       pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
-   }
-   if(pathToExecutable.empty())
-   {
-       std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
-       QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
-   }
-   else
-   {
-        DTITractStatLine->setText(QString(pathToExecutable.c_str()));
-   }
+
    std::cout<<"DONE"<<std::endl; // command line display
 }
 

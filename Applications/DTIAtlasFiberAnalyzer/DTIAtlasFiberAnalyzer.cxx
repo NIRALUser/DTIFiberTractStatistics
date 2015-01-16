@@ -15,6 +15,7 @@
 #include <itksys/Directory.hxx>
 
 
+
 int main(int argc, char *argv[])
 {
     PARSE_ARGS;
@@ -32,6 +33,7 @@ int main(int argc, char *argv[])
   }
   found = pathToExecutable.find_last_of("/\\");
   pathToExecutable = pathToExecutable.substr( 0 , found ) ;
+  //setExecutablesConfigFile() ;
 
     if(!nogui)
     {
