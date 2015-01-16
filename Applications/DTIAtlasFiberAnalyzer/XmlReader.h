@@ -5,8 +5,6 @@
 
 #include <QXmlStreamReader>
 
-#include "ExecutablePaths.h"
-
 class XmlReader
 {
 
