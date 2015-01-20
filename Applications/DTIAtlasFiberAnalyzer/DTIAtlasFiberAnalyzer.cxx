@@ -19,21 +19,21 @@
 int main(int argc, char *argv[])
 {
     PARSE_ARGS;
-  //Verify that arg0 contains a '/' or a '\'. Otherwise find executable in PATH
-  std::string path = argv[ 0 ] ;
-  std::string pathToExecutable ;
-  size_t found = path.find_last_of("/\\") ;
-  if( found != std::string::npos )
-  {
-    pathToExecutable = itksys::SystemTools::CollapseFullPath( argv[ 0 ] ) ;
-  }
-  else
-  {
-    pathToExecutable = itksys::SystemTools::FindProgram( argv[ 0 ] ) ;
-  }
-  found = pathToExecutable.find_last_of("/\\");
-  pathToExecutable = pathToExecutable.substr( 0 , found ) ;
-  //setExecutablesConfigFile() ;
+    //Verify that arg0 contains a '/' or a '\'. Otherwise find executable in PATH
+    std::string path = argv[ 0 ] ;
+    std::string pathToExecutable ;
+    size_t found = path.find_last_of("/\\") ;
+    if( found != std::string::npos )
+    {
+        pathToExecutable = itksys::SystemTools::CollapseFullPath( argv[ 0 ] ) ;
+    }
+    else
+    {
+        pathToExecutable = itksys::SystemTools::FindProgram( argv[ 0 ] ) ;
+    }
+    found = pathToExecutable.find_last_of("/\\");
+    pathToExecutable = pathToExecutable.substr( 0 , found ) ;
+    //setExecutablesConfigFile() ;
 
     if(!nogui)
     {
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
             std::cout<<"DTI Atlas Fiber Analyser WITH GUI"<<std::endl;
         QApplication app(argc, argv);
         /* Set and show the window */
-    DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow( pathToExecutable , debug ) ;
+        DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow( pathToExecutable , debug ) ;
         DTIAFAwindow.show();
         DTIAFAwindow.raise();
         return app.exec();

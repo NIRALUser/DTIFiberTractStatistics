@@ -7,25 +7,36 @@
 
 #include <QtXml>
 #include <QXmlStreamWriter>
+#include <QString>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QFileInfoListIterator>
+#include <QProcessEnvironment>
+#include <QMap>
+#include <QtGlobal>
 
 
 class XmlWriter
 {
 
-   public:
+public:
 
-      XmlWriter();
+    XmlWriter();
 
-      void writeElement(QXmlStreamWriter* stream, QString tag, QString name, QString value);
-      void writeElement(QXmlStreamWriter* stream, QString tag, QString name1, QString value1, QString name2, QString value2);
-      void writeElement(QXmlStreamWriter* stream, QString tag, QString name1, QString value1, QString name2, QString value2, QString name3, QString value3);
-      void writeElement(QXmlStreamWriter* stream, QString tag, QString name1, QString value1, QString name2, QString value2, QString name3, QString value3, QString name4, QString value4);
-      void writeElement(QXmlStreamWriter* stream, QString tag, QString name1, QString value1, QString name2, QString value2, QString name3, QString value3, QString name4, QString value4, QString name5, QString value5);
+    void writeElement(QXmlStreamWriter* stream, QString tag, QString name, QString value);
+    void writeElement(QXmlStreamWriter* stream, QString tag, QString name1, QString value1, QString name2, QString value2);
+    void writeElement(QXmlStreamWriter* stream, QString tag, QString name1, QString value1, QString name2, QString value2, QString name3, QString value3);
+    void writeElement(QXmlStreamWriter* stream, QString tag, QString name1, QString value1, QString name2, QString value2, QString name3, QString value3, QString name4, QString value4);
+    void writeElement(QXmlStreamWriter* stream, QString tag, QString name1, QString value1, QString name2, QString value2, QString name3, QString value3, QString name4, QString value4, QString name5, QString value5);
+    void writeExecutables(QXmlStreamWriter* stream);
+    void writeExecutablesConfiguration(QString file_path);
 
-      /*void writeExecutables(QXmlStreamWriter* stream);*/
-      /*void writeExecutablesConfiguration(QString file_path);*/
+    QString pathToFiberProcess;
+    QString pathToFiberPostProcess;
+    QString pathToDtiTractstat;
 
-   private:
+private:
 
 };
 

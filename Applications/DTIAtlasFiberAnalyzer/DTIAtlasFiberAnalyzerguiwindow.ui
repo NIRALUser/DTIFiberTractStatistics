@@ -2121,28 +2121,31 @@
     <addaction name="separator"/>
     <addaction name="actionOpen_analysis_file"/>
     <addaction name="actionSave_analysis_file"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpenConfigFile"/>
+    <addaction name="actionSaveConfigFile"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen_data_file">
    <property name="text">
-    <string>Open data file</string>
+    <string>Load Data File</string>
    </property>
   </action>
   <action name="actionSave_data_file">
    <property name="text">
-    <string>Save data file</string>
+    <string>Save Data File</string>
    </property>
   </action>
   <action name="actionOpen_analysis_file">
    <property name="text">
-    <string>Open analysis file</string>
+    <string>Load Analysis File</string>
    </property>
   </action>
   <action name="actionSave_analysis_file">
    <property name="text">
-    <string>Save analysis file</string>
+    <string>Save Analysis File</string>
    </property>
   </action>
   <action name="actionBrowseSoft">
@@ -2151,6 +2154,16 @@
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Browse software path&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionOpenConfigFile">
+   <property name="text">
+    <string>Load Softwares Configuration</string>
+   </property>
+  </action>
+  <action name="actionSaveConfigFile">
+   <property name="text">
+    <string>Save Softwares Configuration</string>
    </property>
   </action>
  </widget>

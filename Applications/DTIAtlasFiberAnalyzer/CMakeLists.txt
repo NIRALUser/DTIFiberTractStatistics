@@ -48,7 +48,7 @@ Include_directories( ${QWT_INCLUDE_DIR} )
 QT4_WRAP_CPP(MOC_FILES DTIAtlasFiberAnalyzerguiwindow.h DTIPlotWindow.h)
 QT4_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
 
-set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx DTIPlotWindow.cxx XmlReader.cxx XmlWriter.cxx ExecutablePaths.cxx ${MOC_FILES} ${UI_FILES})
+set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx DTIPlotWindow.cxx XmlReader.cxx XmlWriter.cxx ${MOC_FILES} ${UI_FILES})
 
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} ${QWT_LIBRARIES} )
 
