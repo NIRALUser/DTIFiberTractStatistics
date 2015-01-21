@@ -177,7 +177,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
             }
         }
         FiberProcessLine->setText( QString( pathToExecutable.c_str() ) ) ;
-        xmlWriter.pathToFiberProcess = QString( pathToExecutable.c_str() ) ;
+        xmlWriter.ExecutablePathMap["fiberprocess"] = QString( pathToExecutable.c_str() ) ;
 
         soft = "FiberPostProcess";
         //Find path for executable
@@ -193,7 +193,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
             }
         }
         FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
-        xmlWriter.pathToFiberPostProcess = QString( pathToExecutable.c_str() ) ;
+        xmlWriter.ExecutablePathMap["FiberPostProcess"] = QString( pathToExecutable.c_str() ) ;
 
         soft = "dtitractstat";
         //Find path for executable
@@ -209,18 +209,18 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
             }
         }
         DTITractStatLine->setText(QString(pathToExecutable.c_str()));
-        xmlWriter.pathToDtiTractstat = QString( pathToExecutable.c_str() ) ;
+        xmlWriter.ExecutablePathMap["dtitractstat"] = QString( pathToExecutable.c_str() ) ;
     }
     else
     {
         std::cout<<"| Loading \'"<< pathToConfigFile.toStdString() <<"\' to initialize Executable Paths ..."<<std::endl; // command line display
         xmlReader.readExecutablesConfigurationFile( pathToConfigFile ) ;
-        FiberProcessLine->setText( xmlReader.pathToFiberProcess.toStdString().c_str() ) ;
-        FiberPostProcessLine->setText( xmlReader.pathToFiberPostProcess.toStdString().c_str() ) ;
-        DTITractStatLine->setText( xmlReader.pathToDtiTractstat.toStdString().c_str() ) ;
-        xmlWriter.pathToFiberProcess = xmlReader.pathToFiberProcess ;
-        xmlWriter.pathToFiberPostProcess = xmlReader.pathToFiberPostProcess ;
-        xmlWriter.pathToDtiTractstat = xmlReader.pathToDtiTractstat ;
+        FiberProcessLine->setText( xmlReader.ExecutablePathMap["fiberprocess"] ) ;
+        FiberPostProcessLine->setText( xmlReader.ExecutablePathMap["FiberPostProcess"] ) ;
+        DTITractStatLine->setText( xmlReader.ExecutablePathMap["dtitractstat"] ) ;
+        xmlWriter.ExecutablePathMap["fiberprocess"] = xmlReader.ExecutablePathMap["fiberprocess"] ;
+        xmlWriter.ExecutablePathMap["FiberPostProcess"] = xmlReader.ExecutablePathMap["FiberPostProcess"] ;
+        xmlWriter.ExecutablePathMap["dtitractstat"] = xmlReader.ExecutablePathMap["dtitractstat"] ;
     }
     std::cout<<"DONE"<<std::endl; // command line display
 }
@@ -2332,13 +2332,13 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowseSoft(int soft) /*SLOT*/ //softwares: 
         switch (soft)
         {
         case 1: FiberProcessLine->setText( SoftBrowse ) ;
-            xmlWriter.pathToFiberProcess = SoftBrowse ;
+            xmlWriter.ExecutablePathMap["fiberprocess"] = SoftBrowse ;
             break;
         case 2: FiberPostProcessLine->setText( SoftBrowse ) ;
-            xmlWriter.pathToFiberPostProcess = SoftBrowse ;
+            xmlWriter.ExecutablePathMap["FiberPostProcess"] = SoftBrowse ;
             break;
         case 3: DTITractStatLine->setText( SoftBrowse ) ;
-            xmlWriter.pathToDtiTractstat = SoftBrowse ;
+            xmlWriter.ExecutablePathMap["dtitractstat"] = SoftBrowse ;
             break;
         }
     }
@@ -2373,17 +2373,17 @@ void DTIAtlasFiberAnalyzerguiwindow::ResetSoft( int softindex ) /*SLOT*/ //softw
     if( softindex == 1 )
     {
         FiberProcessLine->setText( QString( pathToExecutable.c_str() ) ) ;
-        xmlWriter.pathToFiberProcess = QString(pathToExecutable.c_str()) ;
+        xmlWriter.ExecutablePathMap["fiberprocess"] = QString(pathToExecutable.c_str()) ;
     }
     else if( softindex == 2 )
     {
         FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
-        xmlWriter.pathToFiberPostProcess = QString(pathToExecutable.c_str()) ;
+        xmlWriter.ExecutablePathMap["FiberPostProcess"] = QString(pathToExecutable.c_str()) ;
     }
     else if( softindex == 3 )
     {
         DTITractStatLine->setText(QString(pathToExecutable.c_str()));
-        xmlWriter.pathToDtiTractstat = QString(pathToExecutable.c_str()) ;
+        xmlWriter.ExecutablePathMap["dtitractstat"] = QString(pathToExecutable.c_str()) ;
     }
     std::cout<<"DONE"<<std::endl; // command line display
 }
@@ -2835,10 +2835,21 @@ void DTIAtlasFiberAnalyzerguiwindow::OpenConfigFile()
 {
     QString filename = QFileDialog::getOpenFileName( this , "Open Configuration File" , m_DialogDir , "XML files (*.xml)" ) ;
     SetNewDialogDirFromFileName( filename ) ;
-    xmlReader.readExecutablesConfigurationFile( filename ) ;
-    FiberProcessLine->setText( xmlReader.pathToFiberProcess ) ;
-    FiberPostProcessLine->setText( xmlReader.pathToFiberPostProcess ) ;
-    DTITractStatLine->setText( xmlReader.pathToDtiTractstat ) ;
+    QString errors = xmlReader.readExecutablesConfigurationFile( filename ) ;
+    if( !errors.isEmpty() )
+    {
+        std::cout << errors.toStdString() << std::endl ;
+    }
+    else
+    {
+        FiberProcessLine->setText( xmlReader.ExecutablePathMap["fiberprocess"] ) ;
+        xmlWriter.ExecutablePathMap["fiberprocess"] = xmlReader.ExecutablePathMap["fiberprocess"] ;
+        FiberPostProcessLine->setText( xmlReader.ExecutablePathMap["FiberPostProcess"] ) ;
+        xmlWriter.ExecutablePathMap["FiberPostProcess"] = xmlReader.ExecutablePathMap["FiberPostProcess"] ;
+        DTITractStatLine->setText( xmlReader.ExecutablePathMap["dtitractstat"] ) ;
+        xmlWriter.ExecutablePathMap["dtitractstat"] = xmlReader.ExecutablePathMap["dtitractstat"] ;
+    }
+
 }
 
 void DTIAtlasFiberAnalyzerguiwindow::SaveConfigFile()

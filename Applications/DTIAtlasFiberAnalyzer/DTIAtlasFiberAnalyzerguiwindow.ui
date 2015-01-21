@@ -218,7 +218,7 @@
         <string notr="true"/>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>4</number>
        </property>
        <property name="usesScrollButtons">
         <bool>true</bool>
@@ -2158,12 +2158,12 @@
   </action>
   <action name="actionOpenConfigFile">
    <property name="text">
-    <string>Load Softwares Configuration</string>
+    <string>Load Software Configuration</string>
    </property>
   </action>
   <action name="actionSaveConfigFile">
    <property name="text">
-    <string>Save Softwares Configuration</string>
+    <string>Save Software Configuration</string>
    </property>
   </action>
  </widget>

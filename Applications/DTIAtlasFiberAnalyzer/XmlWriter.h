@@ -15,6 +15,7 @@
 #include <QProcessEnvironment>
 #include <QMap>
 #include <QtGlobal>
+#include <QMapIterator>
 
 
 class XmlWriter
@@ -32,13 +33,10 @@ public:
     void writeExecutables(QXmlStreamWriter* stream);
     void writeExecutablesConfiguration(QString file_path);
 
-    QString pathToFiberProcess;
-    QString pathToFiberPostProcess;
-    QString pathToDtiTractstat;
+    QMap< QString , QString > ExecutablePathMap ;
 
 private:
 
 };
 
 #endif
-

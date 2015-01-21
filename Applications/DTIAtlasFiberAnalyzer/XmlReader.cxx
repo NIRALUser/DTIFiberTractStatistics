@@ -20,12 +20,9 @@ bool XmlReader::isBoolean(int value)
 QString XmlReader::readExecutablesConfigurationFile(QString file_path)
 {
     QFile* file = new::QFile(file_path);
-    QString currentSection = "" ;
-    QStringList levelOne = QStringList() << QString( "Executables" ) ;
     QString errors ;
     if(!file->exists())
     {
-
         errors = " - " + file_path + " does not exist\n" ;
         return errors ;
     }
@@ -43,42 +40,32 @@ QString XmlReader::readExecutablesConfigurationFile(QString file_path)
         QXmlStreamReader::TokenType token = xml.readNext() ;
         /* If token is just StartDocument, we'll go to next.*/
         if(token == QXmlStreamReader::StartDocument)
-            continue;
-
+        {
+            continue ;
+        }
         /* If token is StartElement, we'll see if we can read it.*/
         if( token == QXmlStreamReader::StartElement )
         {
             QString name = xml.name().toString() ;
             QString path = xml.attributes().value("path").toString();
-            if( name == "fiberprocess" )
+            if( name == "Executables" )
             {
-                if( path.isEmpty() || !QFileInfo(path).isExecutable() )
-                {
-                    errors = "Path to fiberprocess is not written properly in the configuration file" ;
-                    return errors ;
-                }
-                pathToFiberProcess = path ;
+                continue ;
             }
-            if( name == "FiberPostProcess" )
+            if( path.isEmpty() )
             {
-                if( path.isEmpty() || !QFileInfo(path).isExecutable() )
-                {
-                    errors = "Path to FiberPostProcess is not written properly in the configuration file" ;
-                    return errors ;
-                }
-                pathToFiberPostProcess = path ;
+                errors = "Path to " + name + " written in the configuration file " + file_path + " is empty " ;
+                return errors ;
             }
-            if( name == "dtitractstat" )
+
+            if( !QFileInfo(path).isExecutable() )
             {
-                if( path.isEmpty() || !QFileInfo(path).isExecutable() )
-                {
-                    errors = "Path to dtitractstat is not written properly in the configuration file" ;
-                    return errors ;
-                }
-                pathToDtiTractstat = path ;
+                errors = "Path to " + name + " written in the configuration file " + file_path + " is not a path to an executable " ;
+                return errors ;
             }
-            continue;
+            ExecutablePathMap[name] = path ;
         }
+        continue;
     }
     /* Error handling. */
     if( xml.hasError() )

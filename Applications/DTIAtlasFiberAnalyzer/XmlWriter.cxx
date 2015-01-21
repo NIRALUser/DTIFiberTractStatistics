@@ -55,9 +55,12 @@ void XmlWriter::writeElement(QXmlStreamWriter* stream, QString tag, QString name
 void XmlWriter::writeExecutables(QXmlStreamWriter* stream)
 {
     stream->writeStartElement("Executables");
-    writeElement(stream, "fiberprocess", "path", pathToFiberProcess);
-    writeElement(stream, "FiberPostProcess", "path", pathToFiberPostProcess);
-    writeElement(stream, "dtitractstat", "path", pathToDtiTractstat);
+    QMapIterator<QString, QString> iterator(ExecutablePathMap);
+    while( iterator.hasNext() )
+    {
+        iterator.next() ;
+        writeElement(stream, iterator.key() , "path" , iterator.value() ) ;
+    }
     stream->writeEndElement();
 }
 
@@ -78,7 +81,6 @@ void XmlWriter::writeExecutablesConfiguration(QString file_path)
 
     file->close();
 }
-
 
 
 

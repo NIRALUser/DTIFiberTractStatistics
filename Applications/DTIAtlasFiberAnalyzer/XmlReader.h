@@ -12,17 +12,16 @@
 #include <QProcessEnvironment>
 #include <QMap>
 #include <QtGlobal>
+#include <iostream>
 
 class XmlReader
 {
 
 public:
-    XmlReader();
-    bool isBoolean(int value);
-    QString readExecutablesConfigurationFile(QString file_path);
-    QString pathToFiberProcess;
-    QString pathToFiberPostProcess;
-    QString pathToDtiTractstat;
+    XmlReader() ;
+    bool isBoolean( int value ) ;
+    QString readExecutablesConfigurationFile( QString file_path ) ;
+    QMap< QString , QString > ExecutablePathMap ;
 private:
 
 };
@@ -30,4 +29,3 @@ private:
 
 
 #endif
-
