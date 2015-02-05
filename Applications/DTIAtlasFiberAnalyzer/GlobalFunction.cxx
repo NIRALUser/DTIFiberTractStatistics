@@ -10,7 +10,8 @@
 #include <QProcess>
 
 
-int noNan ;
+int noNan = 1 ;
+int removeNan = 1 ;
 
 void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable )
 {
@@ -117,6 +118,8 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
         Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
         if( removeNanFibers == true )
         {
+            removeNan = 0 ;
+            noNan = 0;
             //Find path for fiberpostprocess
             FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
             //Call fiberpostrocess
@@ -135,6 +138,8 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
         Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,true);
         if( removeNanFibers == true )
         {
+            removeNan = 0 ;
+            noNan = 0 ;
             //Find path for fiberpostprocess
             FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
             //Call fiberpostrocess
@@ -796,7 +801,10 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                             globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase +
                                     "_" + name_of_fiber+".fvp";
                             /* If dti_tract_stat worked */
-                            noNan = 0 ;
+                            if( removeNan == 0 )
+                            {
+                                noNan = 0 ;
+                            }
                             if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
                                                   input_fiber, globalFile, fibersplane[j],
                                                   param[i], CoG, sampling , rodent , removeCleanFibers , false ) == 0 )
