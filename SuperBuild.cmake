@@ -186,7 +186,7 @@ if(verbose)
 endif()
 
 
-set(proj dti_tract_stat)
+set(proj DTIAtlasFiberAnalyzer)
 ExternalProject_Add(${proj}
   DOWNLOAD_COMMAND ""
   INSTALL_COMMAND ""
@@ -200,6 +200,7 @@ ExternalProject_Add(${proj}
     -DCOMPILE_FIBERCOMPARE:BOOL=ON
     -DCOMPILE_DTITRACTSTAT:BOOL=ON
     -DCOMPILE_DTIATLASFIBERANALYZER:BOOL=ON
+    #-DCOMPILE_FIBERPOSTPROCESS:BOOL=ON
     -DDTIAtlasFiberAnalyzer_SuperBuild:BOOL=OFF
      ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
      ${COMMON_EXTERNAL_PROJECT_ARGS}
