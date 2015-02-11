@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+   <category>Diffusion.FiberAnalysis</category>
+   <title>Fiber Post Processing</title>
+   <description>Removes fibers outside of a mask</description>
+   <version>1.0.0</version>
+   <contributor>Jean-Yves Yang</contributor>
+   <parameters>
+
+      <label>IO</label>
+      <description>Input/Output parameters</description>
+
+        <file>
+           <name>inputFiberFileName</name>
+           <longflag>inputFiberFile</longflag>
+           <label>Input Fiber File Name</label>
+           <channel>input</channel>
+           <flag>i</flag>
+           <description>input fiber filename in .vtk or .vtp</description>
+        </file>
+
+        <geometry type="fiberbundle">
+           <name>outputFiberFileName</name>
+           <longflag>outputFiberFile</longflag>
+           <label>Output Fiber File Name</label>
+           <channel>output</channel>
+           <flag>o</flag>
+           <description>output fiber filename in .vtk or .vtp</description>
+        </geometry>
+
+        <image>
+           <name>attributeFileName</name>
+           <longflag>attributeFile</longflag>
+           <label>Attribute File Name</label>
+           <channel>input</channel>
+           <flag>m</flag>
+           <description>attribute filename in .nrrd, .nhdr, etc, such as a probability mask, or FA, MD, etc. Set by default as a binary mask. This parameter is used to crop the beginning and the end of each fiber or to mask the fiber bundle and remove any fiber considered outside of this mask (determined by the threshold parameter).</description>
+        </image>
+
+        <string-enumeration>
+           <name>thresholdMode</name>
+           <label>thresholdMode</label>
+           <channel>input</channel>
+           <longflag>thresholdMode</longflag>
+           <description>Set to above or below. Determines if the mask is considered as an inclusion mask or as an exclusion mask.</description>
+           <element>above</element>
+           <element>below</element>
+        </string-enumeration>
+
+        <float>
+           <name>threshold</name>
+           <longflag>threshold</longflag>
+           <label>Threshold value</label>
+           <channel>input</channel>
+           <flag>t</flag>
+           <description>Threshold value between 0 and 1. If the attribute value averaged along fiber is below or above threshold, the corresponding fiber is excluded.</description>
+        </float>
+
+        <boolean>
+           <name>mask</name>
+           <longflag>mask</longflag>
+           <label>Enables the masking of the fiber bundle.</label>
+           <channel>input</channel>
+           <description>If toggled, the mask is applied to the fiber bundle. By default the output will contains additional cell datas but fibers will not be removed. Use the --clean flag to remove the fibers that are supposed to be excluded.</description>
+        </boolean>
+
+        <boolean>
+           <name>crop</name>
+           <longflag>crop</longflag>
+           <label>Output file contains the fiber bundle cropped if a mask has been given as an input.</label>
+           <channel>input</channel>
+           <description>If toggled, the output file is a fiber bundle cropped. If not, the fiber file contains the same fiber bundle than the input, with appended cell datas and point datas.</description>
+        </boolean>
+
+        <boolean>
+           <name>clean</name>
+           <longflag>clean</longflag>
+           <label>Enables the cleaning of the fiber bundle.</label>
+           <channel>input</channel>
+           <description>If this flag and the mask flag are toggled, the output bundle will be a fiber bundle masked, fibers are excluded depending on the threshold. </description>
+        </boolean>
+
+        <boolean>
+           <name>noNan</name>
+           <longflag>noNan</longflag>
+           <label>The output fiber file will not contain fibers that can have Nan values.</label>
+           <channel>input</channel>
+           <description>If toggled, remove any fibers that can contain Nan values. </description>
+        </boolean>
+
+        <boolean>
+           <name>visualisationFlag</name>
+           <longflag>visualize</longflag>
+           <label>Write a visualizable output file (file name = outputfileName + "-visu")</label>
+           <channel>input</channel>
+           <description>If toggled, enable to visualize which parts of the fiber bundles are outside of the mask.</description>
+        </boolean>
+
+   </parameters>
+
+</executable>
