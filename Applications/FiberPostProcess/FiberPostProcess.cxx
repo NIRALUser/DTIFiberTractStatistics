@@ -23,6 +23,7 @@ int main( int argc , char* argv[] )
   PARSE_ARGS ;
   bool attributeFlag = false ;
   bool thresholdFlag = false ;
+  bool lengthMatchFlag = false ;
   if( !attributeFileName.empty() )
   {
       attributeFlag = true ;
@@ -32,6 +33,13 @@ int main( int argc , char* argv[] )
       if( !strcmp( argv[ i ] , "-t" ) || !strcmp( argv[ i ] , "--threshold" ) )
       {
           thresholdFlag = true ;
+      }
+  }
+  for( int i = 0 ; i < argc ; i++ )
+  {
+      if( !strcmp( argv[ i ] , "--lengthMatch" ) || !strcmp( argv[ i ] , "-l" )  )
+      {
+          lengthMatchFlag = true ;
       }
   }
   processing FiberProcessing ;
@@ -63,6 +71,8 @@ int main( int argc , char* argv[] )
   FiberProcessing.SetCleanFlag( clean ) ;
   FiberProcessing.SetThresholdMode ( thresholdMode ) ;
   FiberProcessing.SetNoNanFlag( noNan ) ;
+  FiberProcessing.SetLengthMatchFlag( lengthMatchFlag ) ;
+  FiberProcessing.SetLengthMatchFiber( lengthMatch ) ;
   FiberProcessing.run() ;
   return EXIT_SUCCESS ;
 }

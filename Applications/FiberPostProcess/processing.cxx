@@ -15,8 +15,7 @@
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
-//#include "itkImageToVTKImageFilter.h"
-
+#include <itksys/SystemTools.hxx>
 
 #include <vtkImageWriter.h>
 #include <itkPoint.h>
@@ -38,6 +37,8 @@
 
 #include <vtkMath.h>
 #include <vtkCellLocator.h>
+
+#include <vtkZLibDataCompressor.h>
 
 /* allocate memory for an nrow x ncol matrix */
 template< class TReal>
@@ -116,6 +117,14 @@ void processing::SetThresholdMode( std::string thresholdMode )
 void processing::SetNoNanFlag( int noNanFlag )
 {
     FlagNoNan = noNanFlag ;
+}
+void processing::SetLengthMatchFlag( int lengthMatchFlag )
+{
+    FlagLengthMatch = lengthMatchFlag ;
+}
+void processing::SetLengthMatchFiber(std::string lengthMatchFiber )
+{
+    LengthMatchFiber = lengthMatchFiber ;
 }
 void processing::WriteLogFile( processing::fileNameStruct fileName , std::vector< std::vector< float> > vecPointData ,
                                vtkSmartPointer< vtkPolyData > fiberFile , std::vector< float > cumul , std::vector< float > average )
@@ -203,24 +212,59 @@ vtkSmartPointer< vtkPolyData > processing::ReadFiberFile( T reader , std::string
     return PolyData ;
 }
 
-void processing::WriteFiberFile( vtkSmartPointer< vtkPolyData > polyData , std::string outputFileName )
+int processing::WriteFiberFile( std::string encoding , std::string extension , const char* outputFileName ,
+                int compressionLevel , vtkSmartPointer< vtkPolyData > readerPolyData )
 {
-    std::string extension = ExtensionOfFile( outputFileName ) ;
-    if( extension.rfind( "vtk" ) != std::string::npos )
-    {
-        vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New() ;
-        writer->SetInputData( polyData ) ;
-        writer->SetFileName( outputFileName.c_str() ) ;
-        writer->Update() ;
-    }
-    else if( extension.rfind("vtp") != std::string::npos )
-    {
-        vtkSmartPointer<vtkXMLPolyDataWriter> writer = vtkSmartPointer< vtkXMLPolyDataWriter >::New() ;
-        writer->SetInputData( polyData ) ;
-        writer->SetDataModeToBinary() ;
-        writer->SetFileName( outputFileName.c_str() ) ;
-        writer->Update() ;
-    }
+    if( extension == "vtp" )
+        {
+            vtkSmartPointer< vtkXMLPolyDataWriter > writer = vtkSmartPointer< vtkXMLPolyDataWriter >::New() ;
+            writer->SetFileName( outputFileName ) ;
+            writer->SetInputData( readerPolyData ) ;
+            vtkZLibDataCompressor *compressor = dynamic_cast< vtkZLibDataCompressor* > ( writer->GetCompressor() ) ;
+            if( compressor )
+            {
+                compressor->SetCompressionLevel( compressionLevel ) ;
+            }
+            if( encoding == "binary" )
+            {
+                writer->SetDataModeToBinary() ;
+            }
+            else if( encoding == "appended" )
+            {
+                writer->SetDataModeToAppended() ;
+            }
+            else if( encoding == "ascii" )
+            {
+                writer->SetDataModeToAscii() ;
+            }
+            else // should not arrive here. tested in main before already and program should exit at that time.
+            {
+                return -1 ;
+            }
+            writer->Update() ;
+            return writer->GetErrorCode() ;
+        }
+        else
+        {
+            vtkSmartPointer< vtkPolyDataWriter > writer = vtkSmartPointer< vtkPolyDataWriter >::New() ;
+            writer->SetFileName( outputFileName ) ;
+            writer->SetInputData( readerPolyData ) ;
+            if( encoding =="binary" )
+            {
+                writer->SetFileTypeToBinary();
+            }
+            else if( encoding == "ascii" )
+            {
+                writer->SetFileTypeToASCII() ;
+            }
+            else
+            {
+                return -1 ;
+            }
+
+            writer->Update() ;
+            return writer->GetErrorCode() ;
+        }
 }
 
 /*std::vector< int > processing::CheckNaN( vtkSmartPointer< vtkPolyData > polyData , std::vector< std::vector< float > > vecPointData )
@@ -735,6 +779,106 @@ vtkSmartPointer<vtkPolyData> processing::RemoveNanFibers( vtkSmartPointer< vtkPo
     return FinalPolyData;
 }
 
+vtkSmartPointer< vtkPolyData > processing::MatchLength( vtkSmartPointer< vtkPolyData > polyData , std::string MatchLengthFiber )
+{
+    vtkSmartPointer< vtkPolyData > matchLengthPolyData = vtkSmartPointer<vtkPolyData>::New() ;
+    std::string extension = ExtensionOfFile( MatchLengthFiber ) ;
+    if( extension.rfind("vtk") != std::string::npos )
+    {
+        vtkSmartPointer< vtkPolyDataReader > fiberPolyDataReader = vtkSmartPointer< vtkPolyDataReader >::New() ;
+        matchLengthPolyData = ReadFiberFile( fiberPolyDataReader, MatchLengthFiber ) ;
+    }
+    else if( extension.rfind("vtp") != std::string::npos )
+    {
+        vtkSmartPointer<vtkXMLPolyDataReader> fiberPolyDataReader = vtkSmartPointer< vtkXMLPolyDataReader >::New() ;
+        matchLengthPolyData = ReadFiberFile( fiberPolyDataReader, MatchLengthFiber ) ;
+    }
+    else
+    {
+        std::cerr << "lengthMatch File could not be read" << std::endl ;
+        return polyData ;
+    }
+    vtkSmartPointer< vtkPolyData > newPolyData = vtkSmartPointer<vtkPolyData>::New() ;
+    vtkSmartPointer<vtkFloatArray> NewTensors=vtkSmartPointer<vtkFloatArray>::New() ;
+    vtkSmartPointer<vtkPoints> NewPoints=vtkSmartPointer<vtkPoints>::New() ;
+    vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New() ;
+    NewTensors->SetNumberOfComponents( 9 ) ;
+    vtkDataArray* Tensors = polyData->GetPointData()->GetTensors() ;
+    vtkPoints* Points = vtkPoints::New() ;
+    Points = matchLengthPolyData->GetPoints() ;
+    vtkCellArray* Lines = vtkCellArray::New() ;
+    Lines = matchLengthPolyData->GetLines() ;
+    vtkIdType* Ids ;
+    vtkIdType NumberOfPoints ;
+    int NewId = 0 ;
+    Lines->InitTraversal() ;
+    int min , max ;
+    int nbLines = matchLengthPolyData->GetNumberOfLines() ;
+    double fiberLength, step ;
+    for( int i = 0 ; i < nbLines ; i++  )
+    {
+        Lines->GetNextCell( NumberOfPoints , Ids ) ;
+        fiberLength = 0 ;
+        for( unsigned int pointId=0 ; pointId+1< NumberOfPoints ; pointId++ )
+        {
+            double Point1[ 3 ] , Point2[ 3 ] , x , y , z ;
+            Points->GetPoint( Ids[ pointId ], Point1 ) ;
+            Points->GetPoint( Ids[ pointId + 1 ] , Point2 ) ;
+            x = Point2[ 0 ]- Point1[ 0 ] ;
+            y = Point2[ 1 ]- Point1[ 1 ] ;
+            z = Point2[ 2 ]- Point1[ 2 ] ;
+            //Distance between two successive points
+            step = sqrt( x * x + y * y + z * z ) ;
+            //Distance between first point and last calculated one.
+            fiberLength += step ;
+        }
+        if( i == 0 )
+        {
+            min = fiberLength ;
+            max = fiberLength ;
+        }
+        else
+        {
+            if( min > fiberLength )
+            {
+                min = fiberLength ;
+            }
+            if(max < fiberLength )
+            {
+                max = fiberLength ;
+            }
+        }
+    }
+    Points = polyData->GetPoints() ;
+    Lines = polyData->GetLines() ;
+    Lines->InitTraversal() ;
+    for( int j=0; Lines->GetNextCell( NumberOfPoints , Ids ) ; j++ )
+    {
+        vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New() ;
+        NewLine->GetPointIds()->SetNumberOfIds( NumberOfPoints ) ;
+        if( NumberOfPoints > min && NumberOfPoints < max )
+        {
+            for( int k = 0 ; k < NumberOfPoints ; k++ )
+            {
+                NewPoints->InsertNextPoint( Points->GetPoint(Ids[ k ] ) ) ;
+                NewLine->GetPointIds()->SetId( k , NewId ) ;
+                NewId++ ;
+                double tensorValue[9] ;
+                for( int l = 0 ; l < 9 ; l++ )
+                {
+                    tensorValue[ l ] = Tensors->GetComponent( Ids[ k ] , l ) ;
+                }
+                NewTensors->InsertNextTuple(tensorValue);
+            }
+            NewLines->InsertNextCell(NewLine);
+        }
+    }
+    newPolyData->SetPoints(NewPoints);
+    newPolyData->GetPointData()->SetTensors(NewTensors);
+    newPolyData->SetLines(NewLines);
+    return newPolyData ;
+}
+
 int processing::run()
 {
     processing::fileNameStruct fileName ;
@@ -783,17 +927,21 @@ int processing::run()
         cleanedFiberPolyData->GetPointData()->AddArray( pointData ) ;
     }
     cleanedFiberPolyData = CheckNaN( cleanedFiberPolyData ) ;
+    extension = ExtensionOfFile( OutputFileName ) ;
     if( extension.rfind( "vtk" ) != std::string::npos )
     {
         fileName.visu =  ChangeEndOfFileName( OutputFileName , "-visu.vtk" ) ;
     }
-    else if( extension.rfind("vtp") != std::string::npos )
+    else if( extension.rfind( "vtp" ) != std::string::npos )
     {
         fileName.visu = ChangeEndOfFileName( OutputFileName , "-visu.vtp" ) ;
     }
+    std::string encoding = "binary" ;
+
+    int compressionLevel = 1 ;
     if( FlagVisualize )
     {
-        WriteFiberFile( cleanedFiberPolyData , fileName.visu ) ;
+        WriteFiberFile( encoding , extension , fileName.visu.c_str() , compressionLevel , cleanedFiberPolyData ) ;
     }
     if( FlagAttribute == true )
     {
@@ -806,11 +954,15 @@ int processing::run()
 
         }
     }
-    if( FlagThreshold ==true && FlagMask == true )
+    if( FlagThreshold == true && FlagMask == true )
     {
         cleanedFiberPolyData = CleanFiber( cleanedFiberPolyData , Threshold ) ;
     }
+    if( FlagLengthMatch == true )
+    {
+        cleanedFiberPolyData = MatchLength( cleanedFiberPolyData , LengthMatchFiber ) ;
+    }
     WriteLogFile( fileName , vecPointData , cleanedFiberPolyData , cumul , average ) ;
-    WriteFiberFile( cleanedFiberPolyData , fileName.output ) ;
+    WriteFiberFile( encoding , extension , fileName.output.c_str() , compressionLevel , cleanedFiberPolyData ) ;
     return 0 ;
 }

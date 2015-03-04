@@ -3,7 +3,7 @@
    <category>Diffusion.FiberAnalysis</category>
    <title>Fiber Post Processing</title>
    <description>Removes fibers outside of a mask</description>
-   <version>1.0.0</version>
+   <version>1.1.0</version>
    <contributor>Jean-Yves Yang</contributor>
    <parameters>
 
@@ -95,6 +95,15 @@
            <channel>input</channel>
            <description>If toggled, enable to visualize which parts of the fiber bundles are outside of the mask.</description>
         </boolean>
+
+        <image>
+           <name>lengthMatch</name>
+           <longflag>lengthMatch</longflag>
+           <label>Attribute File Name</label>
+           <channel>input</channel>
+           <flag>l</flag>
+           <description>Use the file given to match the length of the fibers of the input fiber bundle file.</description>
+        </image>
 
    </parameters>
 

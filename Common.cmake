@@ -52,9 +52,6 @@ set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/thumb/2/2
 set(EXTENSION_STATUS "Beta")
 set(EXTENSION_DEPENDS "DTIProcess") # Specified as a space separated list or 'NA' if any
 set(EXTENSION_BUILD_SUBDIRECTORY dti_tract_stat-build )
-
-option( BUILD_TESTING   "Build the testing tree" ON )
- 
 #-----------------------------------------------------------------------------
 # Update CMake module path
 #------------------------------------------------------------------------------
@@ -75,7 +72,7 @@ include(SlicerExtensionsConfigureMacros)
 #-----------------------------------------------------------------------------
 include(CMakeParseArguments)
 
-
+include(ExternalData)
 
 include(SlicerMacroEmptyExternalProject)
 include(SlicerMacroCheckExternalProjectDependency)

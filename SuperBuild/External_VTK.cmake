@@ -30,8 +30,8 @@ set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to b
 # Set the possible values of VTK major version for cmake-gui
 set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
 if(NOT "${VTK_VERSION_MAJOR}" STREQUAL "5" AND NOT "${VTK_VERSION_MAJOR}" STREQUAL "6")
-  set(VTK_VERSION_MAJOR 5 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6)." FORCE)
-  message(WARNING "Setting VTK_VERSION_MAJOR to '5' as an valid value was specified.")
+  set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6)." FORCE)
+  message(WARNING "Setting VTK_VERSION_MAJOR to '6' as an valid value was specified.")
 endif()
 
 set(USE_VTKv5 ON)
@@ -47,6 +47,9 @@ else()
   set(${extProjName}_REQUIRED_VERSION "5.10")  #If a required version is necessary, then set this, else leave blank
 endif()
 
+if("${VTK_VERSION_MAJOR}" STREQUAL "5")
+  message(WARNING "VTK_VERSION_MAJOR 5 support is deprecated.") 
+endif()
 # Sanity checks
 #if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 #  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
