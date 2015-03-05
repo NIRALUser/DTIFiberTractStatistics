@@ -57,6 +57,7 @@ protected:
     vtkSmartPointer< vtkPolyData > CreateVisuFiber( vtkSmartPointer< vtkPolyData > polyData ) ;
     vtkSmartPointer<vtkPolyData> RemoveNanFibers( vtkSmartPointer< vtkPolyData > polyData ) ;
     vtkSmartPointer< vtkPolyData > MatchLength( vtkSmartPointer< vtkPolyData > polyData , std::string MatchLengthFiber ) ;
+    double ComputeFiberLength( vtkSmartPointer< vtkPolyData > polyData , vtkIdType NumberOfPoints , vtkIdType* Ids ) ;
 
 private:
     int FlagVisualize ; // enables the writing of a vtk file visualizable through Slicer or another visualizer (removes the tensors, point data fields are not visualizable if tensors are present in the vtk file)
