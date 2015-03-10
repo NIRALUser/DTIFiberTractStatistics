@@ -223,13 +223,13 @@ ExternalData_Add_Test(FiberPostProcessData NAME FiberPostProcessTest1111 COMMAND
   --clean
 )
 
-# Test matchlength
+# Test LengthMatch Feature
 ExternalData_Add_Test(FiberPostProcessData NAME FiberPostProcessTestMatchLength COMMAND $<TARGET_FILE:FiberProcessingTest>
   --compare
-  DATA{Data/LeftMotorLengthMatch.vtk}
+  DATA{Data/LengthMatchTestBaseline.vtk}
   ${Output}
   ModuleEntryPoint
-  -i DATA{Data/LeftMotorInput.vtk}
+  -i DATA{Data/LengthMatchTestInput.vtk}
   -o ${Output}
   --lengthMatch DATA{Data/CorpusCallosumOccipitalSpleniumInput.vtk}
 )
