@@ -66,7 +66,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/Slicer/SlicerExecutionModel.git")
-  set(${proj}_GIT_TAG "e96f2965378cd9a9e5217cd43c8023350138b1cf")
+  set(${proj}_GIT_TAG 18cdc5a9d489f381acd7666668efa8d57ef08e47)
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

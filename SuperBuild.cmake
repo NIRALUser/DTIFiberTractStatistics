@@ -22,6 +22,7 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   set( SUPERBUILD_NOT_EXTENSION FALSE )
 else()
   set( SUPERBUILD_NOT_EXTENSION TRUE )
+  option(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fiberprocess application)." ON)
 endif()
 
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)

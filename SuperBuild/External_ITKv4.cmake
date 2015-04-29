@@ -151,11 +151,10 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DBUILD_TESTING:BOOL=OFF
       -DBUILD_EXAMPLES:BOOL=OFF
       -DCMAKE_INSTALL_PREFIX:PATH=${${proj}_INSTALL_PATH}
-      -DITK_LEGACY_REMOVE:BOOL=OFF
-      -DITK_FUTURE_LEGACY_REMOVE:=BOOL=ON
-      -DITKV3_COMPATIBILITY:BOOL=ON
-      -DITK_USE_REVIEW:BOOL=ON
-      -DModule_ITKReview:BOOL=ON
+      -DITK_LEGACY_REMOVE:BOOL=ON
+      -DITKV3_COMPATIBILITY:BOOL=OFF
+      -DITK_USE_REVIEW:BOOL=OFF
+      -DModule_ITKReview:BOOL=OFF
       #-DITK_INSTALL_NO_DEVELOPMENT:BOOL=ON
       -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
@@ -173,8 +172,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG 9dc4f194046cedb4b392e181caec73b629ae7564)
-  set(ITK_VERSION_ID ITK-4.6)
+  set(${proj}_GIT_TAG 20c05927f51d88b25429c6bd270e19c4b365b7e4)
+  set(ITK_VERSION_ID ITK-4.7)
 
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}

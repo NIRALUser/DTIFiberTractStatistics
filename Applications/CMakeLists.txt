@@ -21,9 +21,6 @@ ENDIF(COMPILE_FIBERPOSTPROCESS)
 
 OPTION(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fiberprocess application)." ON)
 IF(COMPILE_EXTERNAL_DTIPROCESS)
-  if( NOT DEFINED ITKV3_COMPATIBILITY OR NOT ${ITKV3_COMPATIBILITY}  )
-    message( WARNING "Choose ITKv4 compiled with ITKV3_COMPATIBILITY set to ON (or GenerateCLP compiled against such an ITK version). If not, you may have compilation errors" )
-  endif()
   if( EXTENSION )
     set(DTIProcessVarExt 
         -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=ON
@@ -35,7 +32,7 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
   endif()
   set(proj DTIProcess)
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG a7c39e485e492bc6b72f72348939d47835cd56cc )
+  set( ${proj}_GIT_TAG 9680fd40cfd762f125894a4be30d9ff065330844 )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -54,6 +51,9 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
       -DVTK_DIR:PATH=${VTK_DIR}
       -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
+      -DBUILD_PolyDataTransform:BOOL=FALSE
+      -DBUILD_PolyDataMerge:BOOL=FALSE
+      -DBUILD_CropDTI:BOOL=FALSE
       ${DTIProcessVarExt}
       -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
       -DINSTALL_RUNTIME_DESTINATION:STRING=${install_dir}
