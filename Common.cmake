@@ -42,6 +42,21 @@ endif()
 
 
 #-----------------------------------------------------------------------------
+# Build tests
+#-----------------------------------------------------------------------------
+option( BUILD_TESTING "Build the testing tree" ON )
+
+#-----------------------------------------------------------------------------
+# Set a default build type if none was specified
+#-----------------------------------------------------------------------------
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+#-----------------------------------------------------------------------------
 set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
 set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/dti_tract_stat")
 set(EXTENSION_CATEGORY "Diffusion")
