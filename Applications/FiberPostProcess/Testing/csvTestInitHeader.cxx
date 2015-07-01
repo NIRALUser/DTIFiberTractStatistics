@@ -1,9 +1,11 @@
 #include "../csv.h"
+#include <iostream>
+#include <unistd.h>
 
 int main()
 {
     csv csvBaselineHeader ;
-    csvBaselineHeader.read( "/NIRAL/work/jeanyves/FiberPostProcess/src/Testing/Data/initHeader.csv" ) ;
+    csvBaselineHeader.read( "Data/initHeader.csv" ) ;
     csv csvTestInitHeader ;
     std::vector< std::vector< std::string > > header ;
     std::vector< std::string > buff ;

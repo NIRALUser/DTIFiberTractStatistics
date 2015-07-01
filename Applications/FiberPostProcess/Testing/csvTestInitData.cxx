@@ -3,7 +3,7 @@
 int main( int argc , char* argv[] )
 {
     csv csvBaselineData ;
-    csvBaselineData.read( "/NIRAL/work/jeanyves/FiberPostProcess/src/Testing/Data/initData.csv" ) ;
+    csvBaselineData.read( "Data/initData.csv" ) ;
     csv csvTestInitData ;
     std::vector< std::vector< std::string > > data ;
     std::vector< std::string > buff ;

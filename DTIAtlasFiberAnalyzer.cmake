@@ -82,13 +82,11 @@ else()
   endif()
 endif()
 
-add_subdirectory( Applications )
-
-
 IF(BUILD_TESTING)
   include( CTest )
-  ADD_SUBDIRECTORY(Testing)
 ENDIF(BUILD_TESTING)
+
+add_subdirectory( Applications )
 
 if( COMPILE_EXTERNAL_DTIPROCESS )
   set( ToolsList

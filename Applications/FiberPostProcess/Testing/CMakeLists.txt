@@ -5,7 +5,7 @@
 list(APPEND ExternalData_URL_TEMPLATES
   "http://slicer.kitware.com/midas3/api/rest?method=midas.bitstream.download&checksum=%(hash)"
   )
-set(TEMP_DIR ${FiberPostProcess_BINARY_DIR}/Testing/Temporary )
+set(TEMP_DIR ${PROJECT_BINARY_DIR}/Testing/Temporary )
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Data )
 set(Output ${TEMP_DIR}/output.vtk)
 set(Output1 ${TEMP_DIR}/output1.vtk)
@@ -236,9 +236,11 @@ ExternalData_Add_Test(FiberPostProcessData NAME FiberPostProcessTestMatchLength 
 
 # CSV Tests
 
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Data/initHeader.csv ${CMAKE_CURRENT_BINARY_DIR}/Data/initHeader.csv COPYONLY )
 add_executable(CSVTestInitHeader csvTestInitHeader.cxx)
 add_test(NAME FiberPostProcessCSVInitHeader COMMAND $<TARGET_FILE:CSVTestInitHeader>)
 
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Data/initData.csv ${CMAKE_CURRENT_BINARY_DIR}/Data/initData.csv COPYONLY )
 add_executable(CSVTestInitData csvTestInitData.cxx)
 add_test(NAME FiberPostProcessCSVInitData COMMAND $<TARGET_FILE:CSVTestInitData>)
 
@@ -248,6 +250,7 @@ add_test(NAME FiberPostProcessCSVInitRowsId COMMAND $<TARGET_FILE:CSVTestInitRow
 add_executable(CSVTestInitColsId csvTestInitColsId.cxx)
 add_test(NAME FiberPostProcessCSVInitColsId COMMAND $<TARGET_FILE:CSVTestInitColsId>)
 
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Data/initDataFull.csv ${CMAKE_CURRENT_BINARY_DIR}/Data/initDataFull.csv COPYONLY )
 add_executable(CSVTestInitFull csvTestInitFull.cxx)
 add_test(NAME FiberPostProcessCSVInitFull COMMAND $<TARGET_FILE:CSVTestInitFull>)
 
