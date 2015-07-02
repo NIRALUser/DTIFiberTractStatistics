@@ -20,7 +20,7 @@
       <x>0</x>
       <y>0</y>
       <width>1001</width>
-      <height>791</height>
+      <height>667</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="PrincipalLayout">
@@ -1972,131 +1972,125 @@
          </widget>
         </widget>
        </widget>
-       <widget class="QWidget" name="Step6">
+       <widget class="QWidget" name="SoftwareConfiguration">
         <attribute name="title">
          <string>Software Configuration</string>
         </attribute>
-        <widget class="QLineEdit" name="FiberProcessLine">
-         <property name="geometry">
-          <rect>
-           <x>220</x>
-           <y>50</y>
-           <width>621</width>
-           <height>27</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="FiberPostProcessLine">
-         <property name="geometry">
-          <rect>
-           <x>220</x>
-           <y>110</y>
-           <width>621</width>
-           <height>27</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="DTITractStatLine">
-         <property name="geometry">
-          <rect>
-           <x>220</x>
-           <y>170</y>
-           <width>621</width>
-           <height>27</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="FiberProcessReset">
-         <property name="geometry">
-          <rect>
-           <x>860</x>
-           <y>50</y>
-           <width>93</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Reset</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="FiberPostProcessReset">
-         <property name="geometry">
-          <rect>
-           <x>860</x>
-           <y>110</y>
-           <width>93</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Reset</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="DTITractStatReset">
-         <property name="geometry">
-          <rect>
-           <x>860</x>
-           <y>170</y>
-           <width>93</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Reset</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="ResetAll">
-         <property name="geometry">
-          <rect>
-           <x>440</x>
-           <y>320</y>
-           <width>93</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Reset all</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="FiberProcessButton">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>50</y>
-           <width>171</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>FiberProcess</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="FiberPostProcessButton">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>110</y>
-           <width>171</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>FiberPostProcess</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="DTITractStatButton">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>170</y>
-           <width>171</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>DTITractStat</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="3" column="0">
+              <widget class="QPushButton" name="MergeStatWithFiberButton">
+               <property name="text">
+                <string>MergeStatWithFiber</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QPushButton" name="FiberProcessReset">
+               <property name="text">
+                <string>Reset</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="FiberPostProcessLine"/>
+             </item>
+             <item row="0" column="0">
+              <widget class="QPushButton" name="FiberProcessButton">
+               <property name="text">
+                <string>FiberProcess</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="FiberProcessLine"/>
+             </item>
+             <item row="3" column="2">
+              <widget class="QPushButton" name="MergeStatWithFiberReset">
+               <property name="text">
+                <string>Reset</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QPushButton" name="FiberPostProcessButton">
+               <property name="text">
+                <string>FiberPostProcess</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="QPushButton" name="DTITractStatReset">
+               <property name="text">
+                <string>Reset</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QPushButton" name="FiberPostProcessReset">
+               <property name="text">
+                <string>Reset</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="DTITractStatLine"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="DTITractStatButton">
+               <property name="text">
+                <string>DTITractStat</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="MergeStatWithFiberLine"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="ResetAll">
+               <property name="text">
+                <string>Reset all</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
       </widget>
      </item>
@@ -2109,7 +2103,7 @@
      <x>0</x>
      <y>0</y>
      <width>1010</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

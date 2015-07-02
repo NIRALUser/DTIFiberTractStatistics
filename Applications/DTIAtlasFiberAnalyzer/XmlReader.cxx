@@ -54,13 +54,13 @@ QString XmlReader::readExecutablesConfigurationFile(QString file_path)
             }
             if( path.isEmpty() )
             {
-                errors = "Path to " + name + " written in the configuration file " + file_path + " is empty " ;
+                errors = "Path to " + name + " ('" + path + "') written in the configuration file " + file_path + " is empty " ;
                 return errors ;
             }
 
             if( !QFileInfo(path).isExecutable() )
             {
-                errors = "Path to " + name + " written in the configuration file " + file_path + " is not a path to an executable " ;
+                errors = "Path to " + name + " ('" + path + "') written in the configuration file " + file_path + " is not a path to an executable " ;
                 return errors ;
             }
             ExecutablePathMap[name] = path ;

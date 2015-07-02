@@ -122,6 +122,8 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
     SoftButtonMapper->setMapping(FiberPostProcessButton , 2);
     connect(DTITractStatButton, SIGNAL(clicked()),  SoftButtonMapper , SLOT(map()));
     SoftButtonMapper->setMapping(DTITractStatButton , 3);
+    connect(MergeStatWithFiberButton, SIGNAL(clicked()),  SoftButtonMapper , SLOT(map()));
+    SoftButtonMapper->setMapping(MergeStatWithFiberButton , 4);
 
     //Reset Button
     QSignalMapper *ResetSoftButtonMapper = new QSignalMapper() ;
@@ -132,7 +134,8 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
     ResetSoftButtonMapper->setMapping(FiberPostProcessReset, 2);
     connect(DTITractStatReset, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
     ResetSoftButtonMapper->setMapping(DTITractStatReset, 3);
-
+    connect(MergeStatWithFiberReset, SIGNAL(clicked()), ResetSoftButtonMapper, SLOT(map()));
+    ResetSoftButtonMapper->setMapping(MergeStatWithFiberReset, 4);
     //Reset All Button
     connect(ResetAll, SIGNAL(clicked()), this, SLOT(ConfigDefault()));
     //"File" action
@@ -140,10 +143,24 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
     connect(this->actionSave_analysis_file, SIGNAL(triggered()), SLOT(SaveAnalysisAction()));
     connect(this->actionOpen_data_file, SIGNAL(triggered()), SLOT(OpenDataFile()));
     connect(this->actionOpen_analysis_file, SIGNAL(triggered()), SLOT(OpenAnalysisFile()));
-    connect(this->actionOpenConfigFile, SIGNAL( triggered() ), SLOT( OpenConfigFile() ) ) ;
+    connect(this->actionOpenConfigFile, SIGNAL( triggered() ), SLOT( SelectConfigFile() ) ) ;
     connect(this->actionSaveConfigFile, SIGNAL( triggered() ), SLOT( SaveConfigFile() ) ) ;
     this->pvalue->setText( "0.050" ) ;
     ConfigDefault();
+}
+
+void DTIAtlasFiberAnalyzerguiwindow::GUIFindExecutable( std::string soft , QLineEdit* toolQtLine )
+{
+    std::cout << "| Searching the software \'" << soft << "\'..." ; // command line display
+    //Find path for executable
+    std::string pathToExecutable ;
+    FindExecutable( soft.c_str() , m_PathToCurrentExecutable , pathToExecutable , false ) ;
+    if( pathToExecutable.empty() )
+    {
+        std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n" ;
+        QMessageBox::warning( this , "Program missing" , QString(text.c_str() ) ) ;
+    }
+    toolQtLine->setText( QString( pathToExecutable.c_str() ) ) ;
 }
 
 /***************************************************
@@ -156,71 +173,15 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
     QString pathToConfigFile = env.value("DTIAtlasFibExecConfig" , QString::null );
     if( pathToConfigFile.isEmpty() )
     {
-        std::string soft = "fiberprocess";
-        std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-        //Find path for executable
-        std::string pathToExecutable ;
-        std::vector< std::string > listDir ;
-        listDir.push_back( m_PathToCurrentExecutable ) ;
-#ifdef SlicerExtension
-        listDir.push_back( m_PathToCurrentExecutable + "/../ExternalBin" ) ;
-        listDir.push_back( m_PathToCurrentExecutable + "/../cli-modules" ) ;
-#endif
-        pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
-        if( pathToExecutable.empty() )
-        {
-            pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
-            if( pathToExecutable.empty() )
-            {
-                std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
-                QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
-            }
-        }
-        FiberProcessLine->setText( QString( pathToExecutable.c_str() ) ) ;
-        xmlWriter.ExecutablePathMap["fiberprocess"] = QString( pathToExecutable.c_str() ) ;
-
-        soft = "FiberPostProcess";
-        //Find path for executable
-        std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-        pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
-        if( pathToExecutable.empty() )
-        {
-            pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
-            if( pathToExecutable.empty() )
-            {
-                std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
-                QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
-            }
-        }
-        FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
-        xmlWriter.ExecutablePathMap["FiberPostProcess"] = QString( pathToExecutable.c_str() ) ;
-
-        soft = "dtitractstat";
-        //Find path for executable
-        std::cout<<"| Searching the software \'"<< soft <<"\'..."; // command line display
-        pathToExecutable = itksys::SystemTools::FindProgram( soft.c_str() , listDir , true ) ;
-        if( pathToExecutable.empty() )
-        {
-            pathToExecutable= itksys::SystemTools::FindProgram( soft.c_str() ) ;
-            if( pathToExecutable.empty() )
-            {
-                std::string text = "The program \'" + soft + "\' is missing.\nPlease enter the path manually.\n";
-                QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
-            }
-        }
-        DTITractStatLine->setText(QString(pathToExecutable.c_str()));
-        xmlWriter.ExecutablePathMap["dtitractstat"] = QString( pathToExecutable.c_str() ) ;
+        GUIFindExecutable( "fiberprocess" , FiberProcessLine ) ;
+        GUIFindExecutable( "FiberPostProcess" , FiberPostProcessLine ) ;
+        GUIFindExecutable( "dtitractstat" , DTITractStatLine ) ;
+        GUIFindExecutable( "MergeStatWithFiber" , MergeStatWithFiberLine ) ;
     }
     else
     {
         std::cout<<"| Loading \'"<< pathToConfigFile.toStdString() <<"\' to initialize Executable Paths ..."<<std::endl; // command line display
-        xmlReader.readExecutablesConfigurationFile( pathToConfigFile ) ;
-        FiberProcessLine->setText( xmlReader.ExecutablePathMap["fiberprocess"] ) ;
-        FiberPostProcessLine->setText( xmlReader.ExecutablePathMap["FiberPostProcess"] ) ;
-        DTITractStatLine->setText( xmlReader.ExecutablePathMap["dtitractstat"] ) ;
-        xmlWriter.ExecutablePathMap["fiberprocess"] = xmlReader.ExecutablePathMap["fiberprocess"] ;
-        xmlWriter.ExecutablePathMap["FiberPostProcess"] = xmlReader.ExecutablePathMap["FiberPostProcess"] ;
-        xmlWriter.ExecutablePathMap["dtitractstat"] = xmlReader.ExecutablePathMap["dtitractstat"] ;
+        OpenConfigFile( pathToConfigFile ) ;
     }
     std::cout<<"DONE"<<std::endl; // command line display
 }
@@ -1674,25 +1635,21 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
         //Add the data to the CSV
         AddDataFromTableToCSV();
         pathFiberProcess = FiberProcessLine->text().toStdString() ;
-        //if( FindExecutable( "fiberprocess" , pathFiberProcess ) )
+        //Apply fiberprocess on CSV data
+        if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
         {
-            //Apply fiberprocess on CSV data
-            if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
-            {
-                std::cout<<"fiberprocess has been canceled"<<std::endl;
-                QApplication::restoreOverrideCursor();
-                return false;
-            }
-            else
-            {
-                nextstep->setVisible(true);
-                Apply->setVisible(false);
-                //Add the data to the Table
-                FillCSVFileOnQTable();
-            }
+            std::cout<<"fiberprocess has been canceled"<<std::endl;
+            QApplication::restoreOverrideCursor();
+            return false;
+        }
+        else
+        {
+            nextstep->setVisible(true);
+            Apply->setVisible(false);
+            //Add the data to the Table
+            FillCSVFileOnQTable();
         }
     }
-
     /* Restore the mouse */
     QApplication::restoreOverrideCursor();
     return true;
@@ -1719,18 +1676,15 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeFiberPostProcess()
     {
         std::string pathFiberPostProcess;
         pathFiberPostProcess = FiberPostProcessLine->text().toStdString() ;
-        //if( FindExecutable( "fiberprocess" , pathFiberProcess ) )
+        //Apply fiberprocess on CSV data
+        if(!ApplyFiberPostProcess(m_CSV, pathFiberPostProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
         {
-            //Apply fiberprocess on CSV data
-            if(!ApplyFiberPostProcess(m_CSV, pathFiberPostProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
-            {
-                std::cout<<"fiberpostprocess has been canceled"<<std::endl;
-                QApplication::restoreOverrideCursor();
-                return false;
-            }
-            else
-            {
-            }
+            std::cout<<"fiberpostprocess has been canceled"<<std::endl;
+            QApplication::restoreOverrideCursor();
+            return false;
+        }
+        else
+        {
         }
     }
 
@@ -1739,43 +1693,6 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeFiberPostProcess()
     return true;
 }
 
-
-bool DTIAtlasFiberAnalyzerguiwindow::FindExecutable( const char* name , std::string &pathToExecutable )
-{
-    //Find path for executable
-    std::vector< std::string > listDir ;
-    listDir.push_back( m_PathToCurrentExecutable ) ;
-#ifdef SlicerExtension
-    listDir.push_back( m_PathToCurrentExecutable + "/../ExternalBin" ) ;
-    listDir.push_back( m_PathToCurrentExecutable + "/../cli-modules" ) ;
-#endif
-    pathToExecutable = itksys::SystemTools::FindProgram( name , listDir , true ) ;
-    if( pathToExecutable.empty() )
-    {
-        pathToExecutable= itksys::SystemTools::FindProgram( name ) ;
-    }
-    //if path not found
-    while( pathToExecutable.empty() )
-    {
-        std::string message = "Select the folder where " + std::string(name) + " can be found" ;
-        QString selectedDirectory = QFileDialog::getExistingDirectory( this , tr( message.c_str() ) , QString::fromStdString(m_PathToCurrentExecutable) ) ;
-        if( selectedDirectory == "" )
-        {
-            break ;
-        }
-        pathToExecutable = selectedDirectory.toStdString() ;
-        listDir.push_back( pathToExecutable ) ;
-        pathToExecutable = itksys::SystemTools::FindProgram( name , listDir , true ) ;
-    }
-    if( pathToExecutable.empty() )
-    {
-        return false ;
-    }
-    else
-    {
-        return true ;
-    }
-}
 
 /***************************************************
  * 					TAB 3
@@ -1818,31 +1735,28 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
         AddDataFromTableToCSV();
         //Find path for dtitractstat
         pathdti_tract_stat = DTITractStatLine->text().toStdString() ;
-        //if( FindExecutable( "dtitractstat" , pathdti_tract_stat ) )
+        //Apply dti tract stat on CSV data
+        if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , this))
         {
-            //Apply dti tract stat on CSV data
-            if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , this))
+            std::cout<<"dtitractstat has been canceled"<<std::endl;
+            QApplication::restoreOverrideCursor();
+            return false;
+        }
+        else
+        {
+            setFibers();
+            m_FiberProfile=GatheringFiberProfile(m_CSV, m_OutputFolder, m_DataCol, m_NameCol, m_transposeColRow, m_FiberSelectedname,success);
+            //if(!success||m_FiberProfile.size()<0)???vector.size is always>0???
+            if(!success || m_FiberProfile.size() == 0)
             {
-                std::cout<<"dtitractstat has been canceled"<<std::endl;
+                QMessageBox::warning(this, "Warning", "Error gathering fiber profile\r Please recompute dtitractstat.");
                 QApplication::restoreOverrideCursor();
                 return false;
             }
             else
             {
-                setFibers();
-                m_FiberProfile=GatheringFiberProfile(m_CSV, m_OutputFolder, m_DataCol, m_NameCol, m_transposeColRow, m_FiberSelectedname,success);
-                //if(!success||m_FiberProfile.size()<0)???vector.size is always>0???
-                if(!success || m_FiberProfile.size() == 0)
-                {
-                    QMessageBox::warning(this, "Warning", "Error gathering fiber profile\r Please recompute dtitractstat.");
-                    QApplication::restoreOverrideCursor();
-                    return false;
-                }
-                else
-                {
-                    nextstep->setVisible(true);
-                    Apply->setVisible(false);
-                }
+                nextstep->setVisible(true);
+                Apply->setVisible(false);
             }
             //Add the data to the Table
             FillCSVFileOnQTable();
@@ -2303,16 +2217,12 @@ void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPOutputFilename()
 bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
 {
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    std::string pathMergeStatWithFiber ;
-    if( FindExecutable( "MergeStatWithFiber" , pathMergeStatWithFiber ) )
+    std::string pathMergeStatWithFiber = MergeStatWithFiberLine->text().toStdString() ; ;
+    if(CallMergeStatWithFiber(pathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString() , pvalue->text().toStdString() ) != 0  )
     {
-        if(CallMergeStatWithFiber(pathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString() , pvalue->text().toStdString() ) != 0  )
-        {
-            std::cout<<"Fail during MergeStatWithFiber!"<<std::endl;
-            return false;
-        }
+        std::cout<<"Fail during MergeStatWithFiber!"<<std::endl;
+        return false;
     }
-
     QApplication::restoreOverrideCursor();
     return true;
 }
@@ -2324,27 +2234,30 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
 * Open a dialog to search the name of the vector's path and write it in the GUI
 * Widget
 ********************************************************************************/
-void DTIAtlasFiberAnalyzerguiwindow::BrowseSoft(int soft) /*SLOT*/ //softwares: 1=FiberProcess, 2=FiberPostProcess, 3=DTITractStat
+void DTIAtlasFiberAnalyzerguiwindow::BrowseSoft(int soft) /*SLOT*/ //softwares: 1=FiberProcess, 2=FiberPostProcess, 3=DTITractStat, 4=MergeStatWithFiber
 {
     QString SoftBrowse = QFileDialog::getOpenFileName(this, "Open Software", QString(), "Executable Files (*)");
     if(!SoftBrowse.isEmpty())
     {
         switch (soft)
         {
-        case 1: FiberProcessLine->setText( SoftBrowse ) ;
-            xmlWriter.ExecutablePathMap["fiberprocess"] = SoftBrowse ;
+        case 1:
+            FiberProcessLine->setText( SoftBrowse ) ;
             break;
-        case 2: FiberPostProcessLine->setText( SoftBrowse ) ;
-            xmlWriter.ExecutablePathMap["FiberPostProcess"] = SoftBrowse ;
+        case 2:
+            FiberPostProcessLine->setText( SoftBrowse ) ;
             break;
-        case 3: DTITractStatLine->setText( SoftBrowse ) ;
-            xmlWriter.ExecutablePathMap["dtitractstat"] = SoftBrowse ;
+        case 3:
+            DTITractStatLine->setText( SoftBrowse ) ;
+            break;
+        case 4:
+            MergeStatWithFiberLine->setText( SoftBrowse ) ;
             break;
         }
     }
 }
 
-void DTIAtlasFiberAnalyzerguiwindow::ResetSoft( int softindex ) /*SLOT*/ //softwares: 1=FiberProcess, 2=FiberPostProcess, 3=DTITractStat
+void DTIAtlasFiberAnalyzerguiwindow::ResetSoft( int softindex ) /*SLOT*/ //softwares: 1=FiberProcess, 2=FiberPostProcess, 3=DTITractStat, 4=MergeStatWithFiber
 {
     std::string soft ;
     switch ( softindex )
@@ -2354,6 +2267,8 @@ void DTIAtlasFiberAnalyzerguiwindow::ResetSoft( int softindex ) /*SLOT*/ //softw
     case 2: soft = "FiberPostProcess" ;
         break ;
     case 3: soft = "dtitractstat" ;
+        break ;
+    case 4: soft = "MergeStatWithFiber" ;
         break ;
     }
     //Find path for executable
@@ -2373,17 +2288,18 @@ void DTIAtlasFiberAnalyzerguiwindow::ResetSoft( int softindex ) /*SLOT*/ //softw
     if( softindex == 1 )
     {
         FiberProcessLine->setText( QString( pathToExecutable.c_str() ) ) ;
-        xmlWriter.ExecutablePathMap["fiberprocess"] = QString(pathToExecutable.c_str()) ;
     }
     else if( softindex == 2 )
     {
         FiberPostProcessLine->setText(QString(pathToExecutable.c_str()));
-        xmlWriter.ExecutablePathMap["FiberPostProcess"] = QString(pathToExecutable.c_str()) ;
     }
     else if( softindex == 3 )
     {
         DTITractStatLine->setText(QString(pathToExecutable.c_str()));
-        xmlWriter.ExecutablePathMap["dtitractstat"] = QString(pathToExecutable.c_str()) ;
+    }
+    else if( softindex == 4 )
+    {
+        MergeStatWithFiberLine->setText(QString(pathToExecutable.c_str()));
     }
     std::cout<<"DONE"<<std::endl; // command line display
 }
@@ -2831,10 +2747,16 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
  * Load/Save the configuration file for the executables
  ********************************************************************************/
 
-void DTIAtlasFiberAnalyzerguiwindow::OpenConfigFile()
+void DTIAtlasFiberAnalyzerguiwindow::SelectConfigFile()
 {
     QString filename = QFileDialog::getOpenFileName( this , "Open Configuration File" , m_DialogDir , "XML files (*.xml)" ) ;
     SetNewDialogDirFromFileName( filename ) ;
+    OpenConfigFile( filename ) ;
+}
+
+void DTIAtlasFiberAnalyzerguiwindow::OpenConfigFile( QString filename )
+{
+    XmlReader xmlReader ;
     QString errors = xmlReader.readExecutablesConfigurationFile( filename ) ;
     if( !errors.isEmpty() )
     {
@@ -2843,18 +2765,23 @@ void DTIAtlasFiberAnalyzerguiwindow::OpenConfigFile()
     else
     {
         FiberProcessLine->setText( xmlReader.ExecutablePathMap["fiberprocess"] ) ;
-        xmlWriter.ExecutablePathMap["fiberprocess"] = xmlReader.ExecutablePathMap["fiberprocess"] ;
         FiberPostProcessLine->setText( xmlReader.ExecutablePathMap["FiberPostProcess"] ) ;
-        xmlWriter.ExecutablePathMap["FiberPostProcess"] = xmlReader.ExecutablePathMap["FiberPostProcess"] ;
         DTITractStatLine->setText( xmlReader.ExecutablePathMap["dtitractstat"] ) ;
-        xmlWriter.ExecutablePathMap["dtitractstat"] = xmlReader.ExecutablePathMap["dtitractstat"] ;
+        MergeStatWithFiberLine->setText( xmlReader.ExecutablePathMap["MergeStatWithFiber"] ) ;
     }
-
 }
 
 void DTIAtlasFiberAnalyzerguiwindow::SaveConfigFile()
 {
     QString ExecutablePath = QFileDialog::getSaveFileName(this, tr("Save file"), tr("executables.xml"), "XML files (*.xml)") ;
-    xmlWriter.writeExecutablesConfiguration( ExecutablePath ) ;
+    if( !ExecutablePath.isEmpty() )
+    {
+        XmlWriter xmlWriter ;
+        xmlWriter.ExecutablePathMap["fiberprocess"] = FiberProcessLine->text() ;
+        xmlWriter.ExecutablePathMap["FiberPostProcess"] = FiberPostProcessLine->text() ;
+        xmlWriter.ExecutablePathMap["dtitractstat"] = DTITractStatLine->text() ;
+        xmlWriter.ExecutablePathMap["MergeStatWithFiber"] = MergeStatWithFiberLine->text() ;
+        xmlWriter.writeExecutablesConfiguration( ExecutablePath ) ;
+    }
 }
 

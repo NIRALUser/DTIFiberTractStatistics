@@ -13,7 +13,7 @@
 int noNan = 1 ;
 int removeNan = 1 ;
 
-void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable )
+void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable , bool interactive )
 {
     //Find path for executable
     std::vector< std::string > listDir ;
@@ -28,7 +28,7 @@ void FindExecutable( const char* name , std::string pathToCurrentExecutable , st
         pathToExecutable= itksys::SystemTools::FindProgram( name ) ;
     }
     //if path not found
-    if(pathToExecutable.empty()==true)
+    if( interactive && pathToExecutable.empty() == true )
     {
         std::cout << "Give the path for " << pathToExecutable << " : " << std::endl ;
         std::cin >> pathToExecutable ;

@@ -98,7 +98,8 @@ private slots:
     void BrowseSoft(int); //in the soft dialog window
     void ResetSoft(int);
     void ConfigDefault();
-    void OpenConfigFile() ;
+    void OpenConfigFile( QString filename ) ;
+    void SelectConfigFile() ;
     void SaveConfigFile() ;
 
 
@@ -135,8 +136,8 @@ protected:
     void LoadAnalysisFile(std::string filename);
     void FillSelectedPlane();
     bool GetAutoPlaneOption();
-    bool FindExecutable( const char* name , std::string &pathToExecutable ) ;
     void SetNewDialogDirFromFileName( QString filename ) ;
+    void GUIFindExecutable( std::string soft , QLineEdit* toolQtLine ) ;
 
 private:
     /* debug */
@@ -184,9 +185,6 @@ private:
     std::string m_PathToCurrentExecutable ;
     QString m_DialogDir ;
 
-    /* Config variables */
-    XmlReader xmlReader ;
-    XmlWriter xmlWriter ;
 };
 
 #endif

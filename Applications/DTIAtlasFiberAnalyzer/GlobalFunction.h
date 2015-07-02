@@ -92,7 +92,7 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
 int CalculNumberOfProfileParam(std::string parameters);
 
 /* Finds path on system to a program, looking first in the current executable directory as well as in "current executable/../ExternalBin" and then in the system PATH*/
-void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable ) ;
+void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable , bool interactive = true  ) ;
 
 /* look for a plane associated to fiber */
 std::vector<int> PlaneAssociatedToFiber(std::string fibername, vstring fibersplane);
