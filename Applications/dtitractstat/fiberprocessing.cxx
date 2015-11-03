@@ -515,7 +515,7 @@ int fiberprocessing::ParametrizesHalfFiber( DTIPointListType &pointlist ,
     DTIPointListType::iterator pit_first ;
     double distance_min ;
     distance_min = Find_First_Point( pointlist , increment , pit_first ) ;
-#if WIN32
+#ifdef WIN32
     if( _isnan( distance_min ) )
     {
         return 1 ;

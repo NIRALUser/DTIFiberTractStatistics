@@ -80,7 +80,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_DEPENDENCIES}
   )
   set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
-  set(${extProjName}_LIBRARY ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/libqwt.a)
+  if(WIN32)
+    set(${extProjName}_LIBRARY ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/qwt.lib)
+  else()
+    set(${extProjName}_LIBRARY ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/libqwt.a)
+  endif()
   set(${extProjName}_INCLUDE_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include)
 else()
   if(${USE_SYSTEM_${extProjName}})

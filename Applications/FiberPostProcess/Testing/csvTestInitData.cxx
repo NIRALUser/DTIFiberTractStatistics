@@ -1,4 +1,4 @@
-#include "../csv.h"
+#include "csv.h"
 
 int main( int argc , char* argv[] )
 {

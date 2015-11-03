@@ -87,7 +87,7 @@ void processing::SetThreshold( float threshold )
 {
     Threshold = threshold ;
 }
-void processing::processing::SetThresholdFlag( int thresholdFlag )
+void processing::SetThresholdFlag( int thresholdFlag )
 {
     FlagThreshold = thresholdFlag ;
 }
@@ -154,7 +154,7 @@ void processing::WriteLogFile( processing::fileNameStruct fileName , std::vector
     buff.push_back( Convert( vecPointData.size() ) ) ;
     headerData.push_back( buff ) ;
     buff.clear() ;
-    if( FlagThreshold == true )
+    if( FlagThreshold != 0 )
     {   buff.push_back( "Threshold = " ) ;
         buff.push_back( Convert( Threshold ) ) ;
         headerData.push_back( buff ) ;
@@ -608,7 +608,6 @@ vtkSmartPointer< vtkPolyData > processing::CleanFiber( vtkSmartPointer< vtkPolyD
     vtkSmartPointer<vtkCellArray> newLines = vtkSmartPointer<vtkCellArray>::New() ;
     vtkPoints* points = polyData->GetPoints() ;
     vtkCellArray* lines = polyData->GetLines() ;
-    vtkIdType* ids ;
     int newId = 0 ;
     vtkSmartPointer< vtkDoubleArray > fiberReadArray = vtkSmartPointer< vtkDoubleArray >::New() ;
     fiberReadArray = vtkDoubleArray::SafeDownCast( polyData->GetCellData()->GetArray( "AverageValue" ) ) ;
@@ -666,7 +665,7 @@ vtkSmartPointer< vtkPolyData > processing::CleanFiber( vtkSmartPointer< vtkPolyD
     newPolyData->SetLines( newLines ) ;
     newPolyData->GetPointData()->SetTensors( newTensors ) ;
     polyData->GetCellData()->AddArray( removeFiber ) ;
-    if( FlagClean == true )
+    if( FlagClean != 0 )
     {
         return newPolyData ;
     }
@@ -911,11 +910,11 @@ int processing::run()
     std::vector< float > cumul , average ;
     vtkSmartPointer< vtkDoubleArray > pointData ;
     cleanedFiberPolyData = CheckNaN( fiberPolyData ) ;
-    if( FlagNoNan == true )
+    if( FlagNoNan != 0 )
     {
         cleanedFiberPolyData = RemoveNanFibers( cleanedFiberPolyData ) ;
     }
-    if( FlagAttribute == true )
+    if( FlagAttribute != 0 )
     {
         vecPointData = ApplyMaskToFiber( cleanedFiberPolyData ) ;
         cumul = CumulValuePerFiber( vecPointData ) ;
@@ -945,9 +944,9 @@ int processing::run()
     {
         WriteFiberFile( encoding , extension , fileName.visu.c_str() , compressionLevel , cleanedFiberPolyData ) ;
     }
-    if( FlagAttribute == true )
+    if( FlagAttribute != 0 )
     {
-        if( FlagCrop == true )
+        if( FlagCrop != 0 )
         {
             cleanedFiberPolyData = CropFiber( cleanedFiberPolyData , vecPointData ) ;
         }
@@ -956,11 +955,11 @@ int processing::run()
 
         }
     }
-    if( FlagThreshold == true && FlagMask == true )
+    if( FlagThreshold != 0 && FlagMask != 0 )
     {
         cleanedFiberPolyData = CleanFiber( cleanedFiberPolyData , Threshold ) ;
     }
-    if( FlagLengthMatch == true )
+    if( FlagLengthMatch != 0 )
     {
         //cleanedFiberPolyData = MatchLength( cleanedFiberPolyData , LengthMatchFiber ) ;
     }

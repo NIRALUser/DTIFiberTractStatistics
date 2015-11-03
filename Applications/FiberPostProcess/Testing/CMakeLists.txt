@@ -12,7 +12,7 @@ set(Output1 ${TEMP_DIR}/output1.vtk)
 set(Output2 ${TEMP_DIR}/output2.vtk)
 set(OutputCleaned ${TEMP_DIR}/output-cleaned.vtk)
 set(VoidMask ${SOURCE_DIR}/inputnull.nrrd)
-
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 if( NOT DTIAtlasFiberAnalyzer_SuperBuild )
   add_executable(FiberPostProcessTest vtkTest.cxx)
@@ -241,21 +241,21 @@ ExternalData_Add_Test(FiberPostProcessData NAME FiberPostProcessTestMatchLength 
 # CSV Tests
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Data/initHeader.csv ${CMAKE_CURRENT_BINARY_DIR}/Data/initHeader.csv COPYONLY )
-add_executable(CSVTestInitHeader csvTestInitHeader.cxx)
+add_executable(CSVTestInitHeader csvTestInitHeader.cxx ${CMAKE_CURRENT_SOURCE_DIR}/../csv.cxx)
 add_test(NAME FiberPostProcessCSVInitHeader COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CSVTestInitHeader>)
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Data/initData.csv ${CMAKE_CURRENT_BINARY_DIR}/Data/initData.csv COPYONLY )
-add_executable(CSVTestInitData csvTestInitData.cxx)
+add_executable(CSVTestInitData csvTestInitData.cxx ${CMAKE_CURRENT_SOURCE_DIR}/../csv.cxx)
 add_test(NAME FiberPostProcessCSVInitData COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CSVTestInitData>)
 
-add_executable(CSVTestInitRowsId csvTestInitRowsId.cxx)
+add_executable(CSVTestInitRowsId csvTestInitRowsId.cxx ${CMAKE_CURRENT_SOURCE_DIR}/../csv.cxx)
 add_test(NAME FiberPostProcessCSVInitRowsId COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CSVTestInitRowsId>)
 
-add_executable(CSVTestInitColsId csvTestInitColsId.cxx)
+add_executable(CSVTestInitColsId csvTestInitColsId.cxx ${CMAKE_CURRENT_SOURCE_DIR}/../csv.cxx)
 add_test(NAME FiberPostProcessCSVInitColsId COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CSVTestInitColsId>)
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Data/initDataFull.csv ${CMAKE_CURRENT_BINARY_DIR}/Data/initDataFull.csv COPYONLY )
-add_executable(CSVTestInitFull csvTestInitFull.cxx)
+add_executable(CSVTestInitFull csvTestInitFull.cxx ${CMAKE_CURRENT_SOURCE_DIR}/../csv.cxx)
 add_test(NAME FiberPostProcessCSVInitFull COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:CSVTestInitFull>)
 
 # NaN Cases Tests
