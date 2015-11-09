@@ -961,7 +961,7 @@ int processing::run()
     }
     if( FlagLengthMatch != 0 )
     {
-        //cleanedFiberPolyData = MatchLength( cleanedFiberPolyData , LengthMatchFiber ) ;
+        cleanedFiberPolyData = MatchLength( cleanedFiberPolyData , LengthMatchFiber ) ;
     }
     WriteLogFile( fileName , vecPointData , cleanedFiberPolyData , cumul , average ) ;
     WriteFiberFile( encoding , extension , fileName.output.c_str() , compressionLevel , cleanedFiberPolyData ) ;

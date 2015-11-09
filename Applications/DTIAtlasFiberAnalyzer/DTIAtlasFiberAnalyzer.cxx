@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
             std::cout<<"DTI Atlas Fiber Analyser WITH GUI"<<std::endl;
         QApplication app(argc, argv);
         /* Set and show the window */
-        DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow( pathToExecutable , debug ) ;
+        DTIAtlasFiberAnalyzerguiwindow DTIAFAwindow( pathToExecutable , configFile, debug ) ;
         DTIAFAwindow.show();
         DTIAFAwindow.raise();
         return app.exec();
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         if(debug)
             std::cout<<"DTI Atlas Fiber Analyser WITHOUT GUI"<<std::endl;
 
-        if(!CommandLine( pathToExecutable , loadCSV, datafile, analysisfile, debug , sampling , rodent , removeCleanFibers , removeNanFibers ))
+        if(!CommandLine( pathToExecutable , loadCSV, datafile, analysisfile, debug , sampling , rodent , removeCleanFibers , removeNanFibers , configFile ))
             std::cout<<"Stop DTIAtlasFiberAnalyzer ..."<<std::endl;
 
         return 0;

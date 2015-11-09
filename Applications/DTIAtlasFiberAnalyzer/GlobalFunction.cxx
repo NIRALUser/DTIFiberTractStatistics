@@ -1,5 +1,6 @@
 #include "GlobalFunction.h"
 #include "DTIAtlasFiberAnalyzerguiwindow.h"
+#include "XmlReader.h"
 
 /* itksys */
 #include <itksys/Process.h>
@@ -10,11 +11,15 @@
 #include <QProcess>
 
 
-int noNan = 1 ;
-int removeNan = 1 ;
-
 void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable , bool interactive )
 {
+    // If path already set, we just do nothing.
+    // This allows us to leave most of the source code mostly unmodified after adding an option
+    // to load software path from an XML file.
+    if( !pathToExecutable.empty() )
+    {
+        return ;
+    }
     //Find path for executable
     std::vector< std::string > listDir ;
     listDir.push_back( pathToCurrentExecutable ) ;
@@ -38,7 +43,17 @@ void FindExecutable( const char* name , std::string pathToCurrentExecutable , st
 /*********************************************************************************
  * Command Line function
  ********************************************************************************/
-bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers )
+bool CommandLine( std::string pathCurrentToExecutable ,
+                  std::string CSVFilename ,
+                  std::string datafile ,
+                  std::string analysisfile ,
+                  bool debug ,
+                  double sampling ,
+                  bool rodent ,
+                  bool removeCleanFibers ,
+                  bool removeNanFibers ,
+                  std::string configFile
+                  )
 {
     //variables
     std::string pathFiberProcess, pathdti_tract_stat, OutputFolder, AtlasFiberDir, parameters, csvfile, pathFiberPostProcess;
@@ -90,7 +105,25 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
     //Load the CSV
     if(!CSVFile->loadCSVFile(csvfile))
         return false;
-
+    // If config file given or environment variable defined, read config XML file
+   if( configFile.empty() )
+   {
+       configFile = itksys::SystemTools::GetEnv( "DTIAtlasFibExecConfig" ) ;
+   }
+   if( !configFile.empty() )
+   {
+        XmlReader xmlReader ;
+        QString errors = xmlReader.readExecutablesConfigurationFile( configFile.c_str() ) ;
+        if( !errors.isEmpty() )
+        {
+            std::cerr << "Errors detected while trying to read XML configuration file:" << std::endl ;
+            std::cerr << errors.toStdString() << std::endl ;
+            return false;
+        }
+        pathFiberProcess = xmlReader.ExecutablePathMap["fiberprocess"].toStdString() ;
+        pathFiberPostProcess = xmlReader.ExecutablePathMap["FiberPostProcess"].toStdString() ;
+        pathdti_tract_stat = xmlReader.ExecutablePathMap["dtitractstat"].toStdString() ;
+    }
     // Read atlas directory
     ReadFiberNameInAtlasDirectory(fibers,fibersplane, AtlasFiberDir);
 
@@ -118,8 +151,6 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
         Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
         if( removeNanFibers == true )
         {
-            removeNan = 0 ;
-            noNan = 0;
             //Find path for fiberpostprocess
             FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
             //Call fiberpostrocess
@@ -128,7 +159,22 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
         /* Looking for dti_tract_stat */
         FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
         //Call dti_tract_stat
-        Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, SelectedFibers, Selectedfibersplane,parameters, DataCol, NameCol, true , CoG , sampling , rodent , removeCleanFibers ) ;
+        Applydti_tract_stat(CSVFile ,
+                            pathdti_tract_stat ,
+                            AtlasFiberDir ,
+                            OutputFolder ,
+                            SelectedFibers ,
+                            Selectedfibersplane ,
+                            parameters ,
+                            DataCol ,
+                            NameCol ,
+                            true ,
+                            CoG ,
+                            sampling ,
+                            rodent ,
+                            removeCleanFibers ,
+                            removeNanFibers
+                            ) ;
     }
     else
     {
@@ -138,8 +184,6 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
         Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,true);
         if( removeNanFibers == true )
         {
-            removeNan = 0 ;
-            noNan = 0 ;
             //Find path for fiberpostprocess
             FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
             //Call fiberpostrocess
@@ -148,7 +192,22 @@ bool CommandLine( std::string pathCurrentToExecutable , std::string CSVFilename,
         /* Looking for dti_tract_stat */
         FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
         //Call dti_tract_stat
-        Applydti_tract_stat(CSVFile, pathdti_tract_stat, AtlasFiberDir, OutputFolder, fibers, fibersplane,parameters, DataCol, NameCol, true , CoG , sampling , rodent , removeCleanFibers ) ;
+        Applydti_tract_stat(CSVFile ,
+                            pathdti_tract_stat ,
+                            AtlasFiberDir ,
+                            OutputFolder ,
+                            fibers ,
+                            fibersplane ,
+                            parameters ,
+                            DataCol ,
+                            NameCol ,
+                            true ,
+                            CoG ,
+                            sampling ,
+                            rodent ,
+                            removeCleanFibers,
+                            removeNanFibers
+                            ) ;
     }
 
     //calcul the number of parameters
@@ -380,7 +439,7 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                         if(DefCol!=-1)
                         {
                             /* If fiberpostprocess worked */
-                            if(CallFiberPostProcess(pathFiberProcess, inputName, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j] ) == 0 )
+                            if(CallFiberPostProcess(pathFiberProcess, inputName, outputname, (*CSV->getData())[row][DataCol] ) == 0 )
                             {
                                 //Check if the output exist
                                 if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -394,7 +453,7 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                             /* If fiberpostprocess worked */
                             if(CallFiberPostProcess(pathFiberProcess, AtlasFiberDir,
                                                     outputname,
-                                                    (*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
+                                                    (*CSV->getData())[row][DataCol] ) == 0 )
                             {
                                 //Check if the output exist
                                 if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -621,10 +680,8 @@ int CallFiberProcess(std::string pathFiberProcess,
 int CallFiberPostProcess(std::string pathFiberPostProcess,
                          std::string inputname,
                          std::string outputname,
-                         std::string Data,
-                         std::string DeformationField,
-                         bool FieldType,
-                         std::string Fiber)
+                         std::string Data
+                         )
 {
     int state=0;
     QProcess *process= new QProcess();
@@ -726,7 +783,7 @@ std::string ExtensionofFile(std::string filename)
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
                          std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
-                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , QWidget *parent)
+                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, QWidget *parent)
 {
     int col=-1;
     bool DataAdded = false;
@@ -738,7 +795,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
     CreateDirectoryForData(OutputFolder,"Fibers");
     vstring param;
     LineInVector(parameters, param);
-
+    bool noNan = 1 ;
     for(int i=0; i< ((int) param.size()); i++)
     {
         /* Loop for all the fibers */
@@ -801,13 +858,13 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                             globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase +
                                     "_" + name_of_fiber+".fvp";
                             /* If dti_tract_stat worked */
-                            if( removeNan == 0 )
+                            if( removeNanFibers == 0 )
                             {
                                 noNan = 0 ;
                             }
                             if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
                                                   input_fiber, globalFile, fibersplane[j],
-                                                  param[i], CoG, sampling , rodent , removeCleanFibers , false ) == 0 )
+                                                  param[i], CoG, sampling , rodent , removeCleanFibers , noNan , false ) == 0 )
                             {
                                 if(FileExisted(outputname))
                                 {
@@ -853,7 +910,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                     removeCleanFibersAtlas = true ;
                 }
                 noNan = 1 ;
-                if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , CoG , sampling , rodent , removeCleanFibersAtlas ) != 0 )
+                if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , CoG , sampling , rodent , noNan , removeCleanFibersAtlas ) != 0 )
                 {
                     std::cout << "Fail during dti_tract_stat!" << std::endl ;
                     return false ;
@@ -887,7 +944,9 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
                        double sampling,
                        bool rodent,
                        bool clean ,
-                       bool Parametrized )
+                       bool noNan,
+                       bool Parametrized
+                      )
 {
     int state=0;
     QProcess *process= new QProcess();

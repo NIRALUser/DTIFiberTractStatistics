@@ -82,5 +82,13 @@
          <label>Fiber sampling step</label>
          <default>1.0</default>
       </double>
+      <file>
+         <name>configFile</name>
+         <longflag>configFile</longflag>
+         <flag>C</flag>
+         <description>Load an XML file containing the path to the different executables required by DTIAtlasFiberAnalyzer</description>
+         <label>Config File</label>
+         <default></default>
+      </file>
   </parameters>
 </executable>

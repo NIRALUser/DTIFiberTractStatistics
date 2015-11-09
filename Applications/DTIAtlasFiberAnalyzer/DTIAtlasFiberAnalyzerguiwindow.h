@@ -43,7 +43,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
 public:
-    DTIAtlasFiberAnalyzerguiwindow( std::string pathToCurrentExecutable , bool debug=false, QWidget * parent = 0, Qt::WFlags f = 0 );
+    DTIAtlasFiberAnalyzerguiwindow( std::string pathToCurrentExecutable , std::string configFile , bool debug=false , QWidget * parent = 0, Qt::WFlags f = 0 );
     vstring getCases(){return m_Cases;}
     vstring getFibers(){return m_Fibers;}
     vstring getFiberInformations(std::string fiber, std::string parameter);
@@ -184,6 +184,7 @@ private:
     bool m_PlotError;
     std::string m_PathToCurrentExecutable ;
     QString m_DialogDir ;
+    std::string m_ConfigFile ;
 
 };
 
