@@ -746,7 +746,7 @@ std::string takeoffExtension(std::string filename)
     std::string inputfile;
 
     /* take of the extension  */
-    inputfile = filename.substr(0,filename.find_first_of("."));
+    inputfile = filename.substr(0,filename.find_last_of("."));
 
     return inputfile;
 }
