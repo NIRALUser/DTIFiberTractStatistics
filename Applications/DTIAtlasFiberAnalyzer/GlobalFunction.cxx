@@ -644,24 +644,31 @@ int CallFiberProcess(std::string pathFiberProcess,
         /* put arguments for each call of fiberprocess */
         //Fiber
         QString qs = (AtlasFolder + "/" + Fiber).c_str();
-        arguments.append("--fiber_file " +qs );
+        arguments.append("--fiber_file" );
+        arguments.append(qs );
         //Data
         qs =  Data.c_str();
-        arguments.append("--tensor_volume " +qs);
+        arguments.append("--tensor_volume");
+        arguments.append(qs);
         //Deformation field
         if(DeformationField.compare("no")!=0 && DeformationField.compare("no deformation")!=0)
         {
             qs =  DeformationField.c_str();
             if(FieldType)
-                arguments.append("--h_field " +qs);
+            {
+                arguments.append("--h_field");
+            }
             else
-                arguments.append("--displacement_field " +qs);
+            {
+                arguments.append("--displacement_field");
+            }
+            arguments.append(qs);
         }
-
         arguments.append("--no_warp");
         //output
         qs = outputname.c_str();
-        arguments.append("--fiber_output " + qs);
+        arguments.append("--fiber_output");
+        arguments.append(qs);
         //verbose
         arguments.append("--verbose");
         // save fiber properties separately for QC visualizations
@@ -693,10 +700,12 @@ int CallFiberPostProcess(std::string pathFiberPostProcess,
         /* put arguments for each call of fiberprocess */
         //Fiber
         QString qs = inputname.c_str() ;
-        arguments.append("--inputFiberFile " + qs );
+        arguments.append("--inputFiberFile" );
+        arguments.append( qs );
         //output
         qs = outputname.c_str();
-        arguments.append("--outputFiberFile " + qs);
+        arguments.append("--outputFiberFile");
+        arguments.append(qs);
         std::cout<<"Command Line :  "<< pathFiberPostProcess.c_str() << " " << (arguments.join(" ")).toStdString() <<std::endl;
         state = process->execute( pathFiberPostProcess.c_str(), arguments);
         std::cout<<"done"<<std::endl;
@@ -957,16 +966,19 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
     {
         //Input fiber file
         QString qs = Input_fiber_file.c_str();
-        arguments.append(QString("--input_fiber_file ") + qs);
+        arguments.append(QString("--input_fiber_file"));
+        arguments.append(qs);
         //Output fiber file
         qs =  (takeoffExtension(Output_fiber_file)+"_"+parameter+".fvp").c_str();
-        arguments.append(QString("--ouput_stats_file ") + qs);
+        arguments.append(QString("--ouput_stats_file") );
+        arguments.append(qs);
 
         if(Parametrized)
         {
             qs = (takeoffExtension(Output_fiber_file)+"_parametrized.vtk").c_str();
             //			arguments.append(QString("--output_parametrized_fiber_file ") + qs);
-            arguments.append(QString("--output_original_fibers_parametrized ") + qs);
+            arguments.append(QString("--output_original_fibers_parametrized"));
+            arguments.append(qs);
         }
         if( clean )
         {
@@ -982,23 +994,27 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
             qs = AtlasDirectory.c_str();
             qs.append("/");
             qs.append(plane.c_str());
-            arguments.append(QString("--plane_file ") + qs);
+            arguments.append(QString("--plane_file") );
+            arguments.append(qs);
         }
         else
         {
             if(!CoG)
             {
                 qs="median";
-                arguments.append(QString("--auto_plane_origin ")+qs);
+                arguments.append(QString("--auto_plane_origin"));
+                arguments.append(qs);
             }
         }
         //parameter
         if(parameter.compare("")!=0)
         {
             qs = parameter.c_str();
-            arguments.append(QString("--parameter_list ") + qs);
+            arguments.append(QString("--parameter_list"));
+            arguments.append(qs);
         }
-        arguments.append(QString("--step_size ") + QString::number(sampling) );
+        arguments.append(QString("--step_size") );
+        arguments.append(QString::number(sampling) );
         if( rodent )
         {
             arguments.append(QString("--rodent") );
@@ -1831,25 +1847,31 @@ int CallMergeStatWithFiber(std::string PathMergeStatWithFiber, std::string CSVFi
 
     std::cout<<"Compute MergeStatWithFiber..."<<std::endl;
     QString qs=CSVFilename.c_str();
-    arguments.append(QString("-c ")+qs);
+    arguments.append(QString("-c"));
+    arguments.append(qs);
     qs=VTKFilename.c_str();
-    arguments.append("-v "+qs);
+    arguments.append("-v");
+    arguments.append(qs);
     qs=OutputFilename.c_str();
-    arguments.append("-o "+qs);
+    arguments.append("-o");
+    arguments.append(qs);
     if(Min!="")
     {
         qs=Min.c_str();
-        arguments.append("-m "+qs);
+        arguments.append("-m");
+        arguments.append(qs);
     }
     if(Max!="")
     {
         qs=Max.c_str();
-        arguments.append("-M "+qs);
+        arguments.append("-M");
+        arguments.append(qs);
     }
     if( pvalue != "" )
     {
         qs=pvalue.c_str();
-        arguments.append("-p "+qs);
+        arguments.append("-p");
+        arguments.append(qs);
     }
     std::cout<<"Command Line: "<< PathMergeStatWithFiber.c_str() << " " << arguments.join(" ").toStdString()<<std::endl;
     state=process->execute(PathMergeStatWithFiber.c_str(), arguments);
