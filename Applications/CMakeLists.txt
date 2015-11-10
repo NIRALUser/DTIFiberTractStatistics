@@ -23,7 +23,7 @@ OPTION(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fib
 IF(COMPILE_EXTERNAL_DTIPROCESS)
   set(proj DTIProcess)
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG ae5f8ddcba46065e9706ab37a947690849557a2f )
+  set( ${proj}_GIT_TAG af6b0940e3c31647d50b35b74943ec143115b6c2 )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
