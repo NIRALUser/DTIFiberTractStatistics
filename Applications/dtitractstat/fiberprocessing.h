@@ -40,7 +40,7 @@ class fiberprocessing{
   std::string takeoffPath(std::string filename);
   std::string ExtensionofFile(std::string filename);
   //Main functions
-  void fiberprocessing_main(std::string& input_file,std::string& output_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers , double bandwidth , bool removeCleanFibers, bool removeNanFibers, char* TargetScalarName="") ;
+  void fiberprocessing_main(std::string& input_file,std::string& output_file,bool planeautoOn, std::string plane_file, bool worldspace, std::string auto_plane_origin, bool useNonCrossingFibers , double bandwidth , bool removeCleanFibers, bool removeNanFibers, const char* TargetScalarName="") ;
   std::vector< std::vector<double> > get_arc_length_parametrized_fiber(std::string param_name);
   void Write_parametrized_fiber(std::string output_parametrized_fiber_file);//Writes output parametrized fiber file without resampling the fibers
   void Write_parametrized_fiber_avg_position_and_arclength(std::string input_file, std::string output_parametrized_fiber_file, double step_size) ;

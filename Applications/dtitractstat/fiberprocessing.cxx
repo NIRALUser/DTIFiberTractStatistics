@@ -44,7 +44,7 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
                                             double bandwidth ,
                                             bool removeCleanFibers,
                                             bool removeNanFibers,
-					    char* TargetScalarName
+					    const char* TargetScalarName
                                             )
 {
     std::string tmpExtension = ExtensionofFile( input_file ) ;
@@ -604,7 +604,7 @@ void fiberprocessing::arc_length_parametrization( GroupType::Pointer group )
     plane_normal[0] /= plane_norm;
     plane_normal[1] /= plane_norm;
     plane_normal[2] /= plane_norm;
-    int ignored_fibers = 0 PolyData;
+    int ignored_fibers = 0;
     for(it = (children->begin()); it != children->end() ; it++)
     {
         if( parametrized_position.empty()
@@ -1031,7 +1031,7 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
 
 		  vtkFloatingPointType* vtktensor = fibtensordata->GetTuple9(pindex);
 		  // !mark: debug
-		  printf("tensor data is found at point index %d\n",pindex)
+		  printf("tensor data is found at point index %d\n",pindex);
 
 		  float floattensor[6];
 		  ITKTensorType itktensor;
