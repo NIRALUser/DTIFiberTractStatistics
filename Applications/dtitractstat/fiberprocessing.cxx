@@ -43,11 +43,13 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
                                             bool useNonCrossingFibers ,
                                             double bandwidth ,
                                             bool removeCleanFibers,
-                                            bool removeNanFibers
+                                            bool removeNanFibers,
+					    char* TargetScalarName
                                             )
 {
     std::string tmpExtension = ExtensionofFile( input_file ) ;
     std::string inputFileNoNan = takeoffExtension( input_file ) + "_noNan." + tmpExtension ;
+    scalarName = TargetScalarName;
     m_Bandwidth = 2.0 * bandwidth ;//-1/+1
     m_WorldSpace = worldspace ;
     GroupType::Pointer group = readFiberFile(input_file) ;
@@ -203,6 +205,7 @@ std::string fiberprocessing::ExtensionofFile(std::string filename)
     return extension;
 }
 
+
 vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNonCrossingFibers(std::string Filename)
 {
     vtkSmartPointer<vtkPolyData> PolyData;
@@ -287,6 +290,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNonCrossingFibers(std::strin
     return FinalPolyData;
 }
 
+// !mark4
 vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filename)
 {
     vtkSmartPointer<vtkPolyData> PolyData;
@@ -360,8 +364,8 @@ bool fiberprocessing::Siequals(std::string a, std::string b)
 
 std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_fiber(std::string param_name)
 {
-    const char* parameter_std_list[] = {"fa", "md", "l1", "l2" , "l3", "fro" , "rd" ,"ga"};
-    int parameter_index = 0; //which parameter was called
+    const char* parameter_std_list[] = {"fa", "md", "l1", "l2" , "l3", "fro" , "rd" ,"ga", scalarName};
+    int parameter_index = -1; //which parameter was called
     if (param_name == "all")
     {
         cout<<"Total Number of sample points in the fiber bundle: "<<all.size()<<"...getting all parameters..."<<endl;
@@ -373,7 +377,7 @@ std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_
         for (int a =0;a<8;a++)
         {
             std::string tmp_parameter(parameter_std_list[a]);
-            //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
+            std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
             if (Siequals(tmp_parameter, param_name))
             {
                 //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<parameter_std_list[a]<<"a is"<<a<<std::endl;
@@ -381,6 +385,10 @@ std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_
                 break;
             }
         }
+        if (parameter_index == -1) {
+	  // No match to existing parameters, we now assume that the call was for the additional scalar parameter (HACK)
+          parameter_index = 8;
+	}
     }
     std::vector< std::vector<double> > length_temp;
     for (size_t i =0; i< all.size() ; i++ )
@@ -456,7 +464,8 @@ double fiberprocessing::Find_First_Point( DTIPointListType &pointlist ,
     return std::numeric_limits<double>::quiet_NaN(); ;
 }
 
-void fiberprocessing::AddValueParametrization( DTIPointListType::iterator &pit , itk::Point<double,3> p1 , double distance )
+//!mark7
+void fiberprocessing::AddValueParametrization( DTIPointListType::iterator &pit , itk::Point<double,3> p1 , double distance)
 {
     size_t fiber_counter = parametrized_position.size() - 1 ;
     parametrized_distance_struct param_dist ;
@@ -476,6 +485,11 @@ void fiberprocessing::AddValueParametrization( DTIPointListType::iterator &pit ,
     all[all_size].push_back((*pit).GetField("FRO"));
     all[all_size].push_back((*pit).GetField("RD"));	//RD
     all[all_size].push_back((*pit).GetField("GA"));
+    if (scalarName != "") {
+      all[all_size].push_back((*pit).GetField(scalarName));
+    } else {
+      all[all_size].push_back(0.0);
+    }
 }
 
 void fiberprocessing::ComputeArcLength( DTIPointListType::iterator &beginit ,
@@ -590,7 +604,7 @@ void fiberprocessing::arc_length_parametrization( GroupType::Pointer group )
     plane_normal[0] /= plane_norm;
     plane_normal[1] /= plane_norm;
     plane_normal[2] /= plane_norm;
-    int ignored_fibers = 0 ;
+    int ignored_fibers = 0 PolyData;
     for(it = (children->begin()); it != children->end() ; it++)
     {
         if( parametrized_position.empty()
@@ -990,65 +1004,83 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
             std::vector<DTIPointType> pointsToAdd;
 
             vtkSmartPointer<vtkDataArray> fibtensordata = fibdata->GetPointData()->GetTensors();
+	    vtkSmartPointer<vtkDataArray> fibscalardata = fibdata->GetPointData()->GetArray(scalarName);
+
             for(int j = 0; j < points->GetNumberOfPoints(); ++j)
             {
-                ++pindex;
-
+                ++pindex;		
                 vtkFloatingPointType* coordinates = points->GetPoint(j);
+
                 DTIPointType pt;
                 // Convert from RAS to LPS for vtk
                 pt.SetPosition(coordinates[0], coordinates[1], coordinates[2]);
                 pt.SetRadius(0.5);
                 pt.SetColor(0.0, 1.0, 0.0);
 
-                vtkFloatingPointType* vtktensor = fibtensordata->GetTuple9(pindex);
-                float floattensor[6];
-                ITKTensorType itktensor;
+		if (fibscalardata != NULL)
+		  {
+		    // !mark debug
+		    std::cout << "target scalar: " << fibscalardata->GetName() << " is found.\n" << std::endl;
+		    vtkFloatingPointType scalar = fibscalardata->GetTuple1(pindex);
+		    pt.AddField(scalarName,scalar);
+		  }
 
-                floattensor[0] = itktensor[0] = vtktensor[0];
-                floattensor[1] = itktensor[1] = vtktensor[1];
-                floattensor[2] = itktensor[2] = vtktensor[2];
-                floattensor[3] = itktensor[3] = vtktensor[4];
-                floattensor[4] = itktensor[4] = vtktensor[5];
-                floattensor[5] = itktensor[5] = vtktensor[8];
 
-                pt.SetTensorMatrix(floattensor);
+		if (fibtensordata != NULL) 
+		  {
 
-                LambdaArrayType lambdas;
+		  vtkFloatingPointType* vtktensor = fibtensordata->GetTuple9(pindex);
+		  // !mark: debug
+		  printf("tensor data is found at point index %d\n",pindex)
 
-                // Need to do do eigenanalysis of the tensor
-                itktensor.ComputeEigenValues(lambdas);
+		  float floattensor[6];
+		  ITKTensorType itktensor;
 
-                float md = (lambdas[0] + lambdas[1] + lambdas[2])/3;
-                float fa = sqrt(1.5) * sqrt((lambdas[0] - md)*(lambdas[0] - md) +
-                        (lambdas[1] - md)*(lambdas[1] - md) +
-                        (lambdas[2] - md)*(lambdas[2] - md))
-                        / sqrt(lambdas[0]*lambdas[0] + lambdas[1]*lambdas[1] + lambdas[2]*lambdas[2]);
+		  floattensor[0] = itktensor[0] = vtktensor[0];
+		  floattensor[1] = itktensor[1] = vtktensor[1];
+		  floattensor[2] = itktensor[2] = vtktensor[2];
+		  floattensor[3] = itktensor[3] = vtktensor[4];
+		  floattensor[4] = itktensor[4] = vtktensor[5];
+		  floattensor[5] = itktensor[5] = vtktensor[8];
 
-                float logavg = (log(lambdas[0])+log(lambdas[1])+log(lambdas[2]))/3;
+		  pt.SetTensorMatrix(floattensor);
 
-                float ga =  sqrt( SQ2(log(lambdas[0])-logavg) \
-                        + SQ2(log(lambdas[1])-logavg) \
-                        + SQ2(log(lambdas[2])-logavg) );
+		  LambdaArrayType lambdas;
 
-                float fro = sqrt(lambdas[0]*lambdas[0] + lambdas[1]*lambdas[1] + lambdas[2]*lambdas[2]);
-                float ad = lambdas[2];
-                float rd = (lambdas[0] + lambdas[1])/2;
+		  // Need to do eigenanalysis of the tensor
+		  itktensor.ComputeEigenValues(lambdas);
 
-                pt.AddField("FA",fa);
-                pt.AddField("MD",md);
-                pt.AddField("FRO",fro);
-                pt.AddField("l2",lambdas[1]);
-                pt.AddField("l3",lambdas[0]);
-                pt.AddField("l1",ad);
-                pt.AddField("RD",rd);
-                pt.AddField("GA",ga);
+		  float md = (lambdas[0] + lambdas[1] + lambdas[2])/3;
+		  float fa = sqrt(1.5) * sqrt((lambdas[0] - md)*(lambdas[0] - md) +
+					      (lambdas[1] - md)*(lambdas[1] - md) +
+					      (lambdas[2] - md)*(lambdas[2] - md))
+		    / sqrt(lambdas[0]*lambdas[0] + lambdas[1]*lambdas[1] + lambdas[2]*lambdas[2]);
 
+		  float logavg = (log(lambdas[0])+log(lambdas[1])+log(lambdas[2]))/3;
+
+		  float ga =  sqrt( SQ2(log(lambdas[0])-logavg) \
+				    + SQ2(log(lambdas[1])-logavg) \
+				    + SQ2(log(lambdas[2])-logavg) );
+
+		  float fro = sqrt(lambdas[0]*lambdas[0] + lambdas[1]*lambdas[1] + lambdas[2]*lambdas[2]);
+		  float ad = lambdas[2];
+		  float rd = (lambdas[0] + lambdas[1])/2;
+
+		  pt.AddField("FA",fa);
+		  pt.AddField("MD",md);
+		  pt.AddField("FRO",fro);
+		  pt.AddField("l2",lambdas[1]);
+		  pt.AddField("l3",lambdas[0]);
+		  pt.AddField("l1",ad);
+		  pt.AddField("RD",rd);
+		  pt.AddField("GA",ga);
+		}
                 pointsToAdd.push_back(pt);
             }
 
             dtiTube->SetPoints(pointsToAdd);
             fibergroup->AddSpatialObject(dtiTube);
+
         }
         return fibergroup;
     } // end process .vtk .vtp
