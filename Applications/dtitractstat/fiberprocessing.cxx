@@ -319,11 +319,16 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
     Lines->InitTraversal();
     vtkSmartPointer< vtkDoubleArray > fiberReadArray = vtkSmartPointer< vtkDoubleArray >::New() ;
     fiberReadArray = vtkDoubleArray::SafeDownCast( PolyData->GetCellData()->GetArray( "NaNCases" ) ) ;
-    for( int i=0; Lines->GetNextCell( NumberOfPoints , Ids ) ; i++ )
+    std::cout<<"fbarray: "<<fiberReadArray<<std::endl;
+    PolyData->Print(std::cout);
+    PolyData->GetCellData()->Print(std::cout);
+    
+    for( int i=0; i < Lines->GetSize() ; i++ )        
     {
+        Lines->GetCell(i, NumberOfPoints , Ids );
         vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New() ;
         NewLine->GetPointIds()->SetNumberOfIds( NumberOfPoints ) ;
-        if( !fiberReadArray->GetValue( i ) )
+        if(fiberReadArray == NULL || (fiberReadArray && !fiberReadArray->GetValue( i ) ))
         {
             for( int j=0; j < NumberOfPoints ; j++ )
             {
@@ -340,6 +345,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
             NewLines->InsertNextCell(NewLine);
         }
     }
+    FinalPolyData->Print(std::cout);
     FinalPolyData->SetPoints(NewPoints);
     FinalPolyData->GetPointData()->SetTensors(NewTensors);
     FinalPolyData->SetLines(NewLines);
