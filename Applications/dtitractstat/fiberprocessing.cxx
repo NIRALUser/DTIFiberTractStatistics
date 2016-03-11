@@ -318,10 +318,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
     int NewId=0;
     Lines->InitTraversal();
     vtkSmartPointer< vtkDoubleArray > fiberReadArray = vtkSmartPointer< vtkDoubleArray >::New() ;
-    fiberReadArray = vtkDoubleArray::SafeDownCast( PolyData->GetCellData()->GetArray( "NaNCases" ) ) ;
-    std::cout<<"fbarray: "<<fiberReadArray<<std::endl;
-    PolyData->Print(std::cout);
-    PolyData->GetCellData()->Print(std::cout);
+    fiberReadArray = vtkDoubleArray::SafeDownCast( PolyData->GetCellData()->GetArray( "NaNCases" ) ) ;    
     
     for( int i=0; i < Lines->GetSize() ; i++ )        
     {
