@@ -341,8 +341,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
             }
             NewLines->InsertNextCell(NewLine);
         }
-    }
-    FinalPolyData->Print(std::cout);
+    }    
     FinalPolyData->SetPoints(NewPoints);
     FinalPolyData->GetPointData()->SetTensors(NewTensors);
     FinalPolyData->SetLines(NewLines);
