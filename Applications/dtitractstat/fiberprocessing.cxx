@@ -29,6 +29,7 @@ fiberprocessing::fiberprocessing()
     m_Bandwidth = 0.0 ;
     closest_d = 0 ;
     m_WorldSpace = true ;
+    m_scalarName = "NoScalar";
 }
 
 fiberprocessing::~fiberprocessing()
@@ -49,7 +50,7 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
 {
     std::string tmpExtension = ExtensionofFile( input_file ) ;
     std::string inputFileNoNan = takeoffExtension( input_file ) + "_noNan." + tmpExtension ;
-    scalarName = TargetScalarName;
+    m_scalarName = TargetScalarName;
     m_Bandwidth = 2.0 * bandwidth ;//-1/+1
     m_WorldSpace = worldspace ;
     GroupType::Pointer group = readFiberFile(input_file) ;
@@ -180,7 +181,6 @@ void fiberprocessing::fiberprocessing_main( std::string& input_file ,
             remove( input_file.c_str() ) ;
         }
     }
-
     arc_length_parametrization( group ) ;
 }
 
@@ -231,7 +231,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNonCrossingFibers(std::strin
     vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New();
     NewTensors->SetNumberOfComponents(9);
     vtkDataArray* Tensors=PolyData->GetPointData()->GetTensors();
-
+    vtkDataArray* Scalars=PolyData->GetPointData()->GetArray(m_scalarName);
     vtkPoints* Points=PolyData->GetPoints();
     vtkCellArray* Lines=PolyData->GetLines();
     vtkIdType* Ids;
@@ -285,12 +285,13 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNonCrossingFibers(std::strin
     }
     FinalPolyData->SetPoints(NewPoints);
     FinalPolyData->GetPointData()->SetTensors(NewTensors);
+    FinalPolyData->GetPointData()->AddArray(Scalars);
     FinalPolyData->SetLines(NewLines);
     std::cout<<"Number of Fibers without non crossing fibers : "<<FinalPolyData->GetNumberOfCells()<<std::endl;
     return FinalPolyData;
 }
 
-// !mark4
+
 vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filename)
 {
     vtkSmartPointer<vtkPolyData> PolyData;
@@ -315,6 +316,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
     vtkSmartPointer<vtkCellArray> NewLines=vtkSmartPointer<vtkCellArray>::New();
     NewTensors->SetNumberOfComponents(9);
     vtkDataArray* Tensors=PolyData->GetPointData()->GetTensors();
+    vtkDataArray* Scalars=PolyData->GetPointData()->GetArray(m_scalarName);
     vtkPoints* Points=PolyData->GetPoints();
     vtkCellArray* Lines=PolyData->GetLines();
     vtkIdType* Ids;
@@ -346,6 +348,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
     }
     FinalPolyData->SetPoints(NewPoints);
     FinalPolyData->GetPointData()->SetTensors(NewTensors);
+    FinalPolyData->GetPointData()->AddArray(Scalars);
     FinalPolyData->SetLines(NewLines);
     std::cout<<"Number of Fibers without Nan values : "<<FinalPolyData->GetNumberOfCells()<<std::endl;
     return FinalPolyData;
@@ -364,7 +367,7 @@ bool fiberprocessing::Siequals(std::string a, std::string b)
 
 std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_fiber(std::string param_name)
 {
-    const char* parameter_std_list[] = {"fa", "md", "l1", "l2" , "l3", "fro" , "rd" ,"ga", scalarName};
+    const char* parameter_std_list[] = {"fa", "md", "l1", "l2" , "l3", "fro" , "rd" ,"ga", m_scalarName};
     int parameter_index = -1; //which parameter was called
     if (param_name == "all")
     {
@@ -374,10 +377,10 @@ std::vector< std::vector<double> > fiberprocessing::get_arc_length_parametrized_
     }
     else
     {
-        for (int a =0;a<8;a++)
+        for (int a =0;a<9;a++)
         {
             std::string tmp_parameter(parameter_std_list[a]);
-            std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
+            //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<tmp_parameter<<" a is "<<a<<" param_name is "<<param_name<<std::endl;
             if (Siequals(tmp_parameter, param_name))
             {
                 //std::cout<<"param_name is"<<param_name<<"parameter_std_list[a] is "<<parameter_std_list[a]<<"a is"<<a<<std::endl;
@@ -485,8 +488,8 @@ void fiberprocessing::AddValueParametrization( DTIPointListType::iterator &pit ,
     all[all_size].push_back((*pit).GetField("FRO"));
     all[all_size].push_back((*pit).GetField("RD"));	//RD
     all[all_size].push_back((*pit).GetField("GA"));
-    if (scalarName != "") {
-      all[all_size].push_back((*pit).GetField(scalarName));
+    if (m_scalarName != "NoScalar") {
+      all[all_size].push_back((*pit).GetField(m_scalarName));
     } else {
       all[all_size].push_back(0.0);
     }
@@ -637,6 +640,29 @@ itk::Vector<double, 3> fiberprocessing::get_plane_normal()
 {
     return(plane_normal);
 }
+
+
+void fiberprocessing::examineGroup(GroupType::Pointer group)
+{
+  ChildrenListType* pchildren = group->GetChildren(0);
+  ChildrenListType::iterator it;
+  DTIPointListType pointlist;
+  DTIPointListType::iterator pit;
+  
+  for(it=pchildren->begin(); it!=pchildren->end(); it++)
+    {
+      pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
+      for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
+	{
+	  if((*pit).GetField(m_scalarName) != 0)
+	    {
+	      cout << "found non-zero scalar value: " << (*pit).GetField(m_scalarName) << "\n" << endl;\
+	    }
+	  
+	}      
+    }
+}
+
 
 
 void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plane_origin)
@@ -945,6 +971,9 @@ void fiberprocessing::writeFiberFile(const std::string & filename, GroupType::Po
 GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
 {
 
+    int scalarCount = 0;
+    int nonscalarCount = 0;
+
     // ITK Spatial Object
     if(filename.rfind(".fib") != std::string::npos)
     {
@@ -1004,7 +1033,7 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
             std::vector<DTIPointType> pointsToAdd;
 
             vtkSmartPointer<vtkDataArray> fibtensordata = fibdata->GetPointData()->GetTensors();
-	    vtkSmartPointer<vtkDataArray> fibscalardata = fibdata->GetPointData()->GetArray(scalarName);
+	    vtkSmartPointer<vtkDataArray> fibscalardata = fibdata->GetPointData()->GetArray(m_scalarName);
 
             for(int j = 0; j < points->GetNumberOfPoints(); ++j)
             {
@@ -1019,10 +1048,14 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
 
 		if (fibscalardata != NULL)
 		  {
-		    // !mark debug
-		    std::cout << "target scalar: " << fibscalardata->GetName() << " is found.\n" << std::endl;
 		    vtkFloatingPointType scalar = fibscalardata->GetTuple1(pindex);
-		    pt.AddField(scalarName,scalar);
+		    pt.AddField(m_scalarName,scalar);
+		    scalarCount++;
+		  }
+		else
+		  {
+		    pt.AddField(m_scalarName,0);
+		    nonscalarCount++;
 		  }
 
 
@@ -1030,9 +1063,7 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
 		  {
 
 		  vtkFloatingPointType* vtktensor = fibtensordata->GetTuple9(pindex);
-		  // !mark: debug
-		  printf("tensor data is found at point index %d\n",pindex);
-
+		  
 		  float floattensor[6];
 		  ITKTensorType itktensor;
 
@@ -1080,8 +1111,10 @@ GroupType::Pointer fiberprocessing::readFiberFile(std::string filename)
 
             dtiTube->SetPoints(pointsToAdd);
             fibergroup->AddSpatialObject(dtiTube);
-
         }
+	std::cout << "# of points with scalar values: " << scalarCount << "; # of points without scalar values: " << nonscalarCount << "\n" << std::endl;
+
+
         return fibergroup;
     } // end process .vtk .vtp
     else

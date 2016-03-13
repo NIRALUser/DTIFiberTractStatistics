@@ -122,13 +122,14 @@
       <name>parameter_list</name>
       <longflag>--parameter_list</longflag>
       <label>scalar diffusion properties that are calculated</label>
-      <description>the list of scalar diffusion properties that are calculated. It can be one or multiple of the following: fa,md,ad(=l1),l2,l3,fro,rd,ga. </description>
+      <description>the list of scalar diffusion properties that are calculated. It can be one or multiple of the following: fa,md,ad(=l1),l2,l3,fro,rd,ga. It could contains a customized scalar name that should be the same as value passed into the option --scalarName</description>
       <default>fa,md,ad,l2,l3,fro,rd,ga</default>
     </string-vector>
     <string>
       <name> scalarName </name>
       <longflag>--scalarName</longflag>
-      <label> optional scalar properties present in fiber file </label>      
+      <label> optional scalar properties present in fiber file </label>
+      <description>specifies the user-defined scalar name if it is used for the analysis.</description>
     </string>
     <string-enumeration>
       <name>noise_model</name>
