@@ -36,7 +36,7 @@ set(${proj}_DEPENDENCIES "" )
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
 
-find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} COMPONENTS QtCore QtGui QtNetwork QtXml REQUIRED )
+find_package(${proj} ${${extProjName}_REQUIRED_VERSION} COMPONENTS QtCore QtGui QtNetwork QtXml REQUIRED )
 # The project is provided using ${extProjName}_DIR, nevertheless since other
 # project may depend on ${extProjName}, let's add an 'empty' one
 SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")

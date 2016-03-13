@@ -7,7 +7,12 @@
 /*********************************************************************************
  * Constructor
  ********************************************************************************/
-DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string pathToCurrentExecutable , bool debug, QWidget * parent , Qt::WFlags f  ): QMainWindow(parent, f)
+DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathToCurrentExecutable ,
+                                                               std::string configFile ,
+                                                               bool debug,
+                                                               QWidget * parent ,
+                                                               Qt::WFlags f
+                                                               ): QMainWindow(parent, f)
 {
     setupUi(this);
 
@@ -41,8 +46,6 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
 
     //Design
     CsvTitle->setFont(QFont("Courrier", 20,4));
-    Fiberprocesstitle->setFont(QFont("Courrier", 20,4));
-    Propertiestitle->setFont(QFont("Courrier", 20,4));
 
     //Disable every tab except the first one
     for(int i=1; i<4; i++)
@@ -146,6 +149,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow( std::string path
     connect(this->actionOpenConfigFile, SIGNAL( triggered() ), SLOT( SelectConfigFile() ) ) ;
     connect(this->actionSaveConfigFile, SIGNAL( triggered() ), SLOT( SaveConfigFile() ) ) ;
     this->pvalue->setText( "0.050" ) ;
+    m_ConfigFile = configFile ;
     ConfigDefault();
 }
 
@@ -171,6 +175,10 @@ void DTIAtlasFiberAnalyzerguiwindow::ConfigDefault()
     std::cout<<"| Searching the softwares..."<<std::endl; // command line display
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     QString pathToConfigFile = env.value("DTIAtlasFibExecConfig" , QString::null );
+    if( !m_ConfigFile.empty() )
+    {
+        pathToConfigFile = m_ConfigFile.c_str() ;
+    }
     if( pathToConfigFile.isEmpty() )
     {
         GUIFindExecutable( "fiberprocess" , FiberProcessLine ) ;
@@ -1736,7 +1744,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
         //Find path for dtitractstat
         pathdti_tract_stat = DTITractStatLine->text().toStdString() ;
         //Apply dti tract stat on CSV data
-        if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , this))
+        if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , removeFibersContainingNan->isChecked() , this))
         {
             std::cout<<"dtitractstat has been canceled"<<std::endl;
             QApplication::restoreOverrideCursor();

@@ -40,11 +40,11 @@ if(PLATFORM_CHECK)
   endif()
 endif()
 
+if( WIN32 )
+  set( fileextension ".exe" )
+endif()
 
-#-----------------------------------------------------------------------------
-# Build tests
-#-----------------------------------------------------------------------------
-option( BUILD_TESTING "Build the testing tree" ON )
+option( BUILD_TESTING   "Build the testing tree" ON )
 
 #-----------------------------------------------------------------------------
 # Set a default build type if none was specified
@@ -56,17 +56,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-#-----------------------------------------------------------------------------
-set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
-set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/dti_tract_stat")
-set(EXTENSION_CATEGORY "Diffusion")
-set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
-set(EXTENSION_DESCRIPTION "This extension provides the tool DTIAtlasFiberAnalyzer integrated in Slicer")
-set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=403&screenshot_id=768")
-set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/thumb/2/20/Screenshot-DTI_Atlas_Fiber_Analyser.png/745px-Screenshot-DTI_Atlas_Fiber_Analyser.png http://wiki.slicer.org/slicerWiki/images/thumb/6/6e/DTIAtlasFiberAnalyzerGenu_profile_FA.png/800px-DTIAtlasFiberAnalyzerGenu_profile_FA.png")
-set(EXTENSION_STATUS "Beta")
-set(EXTENSION_DEPENDS "DTIProcess") # Specified as a space separated list or 'NA' if any
-set(EXTENSION_BUILD_SUBDIRECTORY dti_tract_stat-build )
 #-----------------------------------------------------------------------------
 # Update CMake module path
 #------------------------------------------------------------------------------
@@ -87,7 +76,7 @@ include(SlicerExtensionsConfigureMacros)
 #-----------------------------------------------------------------------------
 include(CMakeParseArguments)
 
-include(ExternalData)
+
 
 include(SlicerMacroEmptyExternalProject)
 include(SlicerMacroCheckExternalProjectDependency)
@@ -97,7 +86,16 @@ if(CMAKE_EXTRA_GENERATOR)
 else()
   set(gen "${CMAKE_GENERATOR}")
 endif()
-
+#-----------------------------------------------------------------------------
+if(NOT COMMAND SETIFEMPTY)
+  macro(SETIFEMPTY)
+    set(KEY ${ARGV0})
+    set(VALUE ${ARGV1})
+    if(NOT ${KEY})
+      set(${ARGV})
+    endif()
+  endmacro()
+endif()
 #-------------------------------------------------------------------------
 # Augment compiler flags
 #-------------------------------------------------------------------------

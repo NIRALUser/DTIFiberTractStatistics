@@ -1,3 +1,6 @@
+#ifndef processing_h
+#define processing_h
+
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <sstream>
@@ -75,3 +78,5 @@ private:
     std::string LengthMatchFiber ;
     std::string ThresholdMode ;
 };
+
+#endif

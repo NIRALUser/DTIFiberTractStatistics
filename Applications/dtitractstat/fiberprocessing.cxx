@@ -325,11 +325,18 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
     Lines->InitTraversal();
     vtkSmartPointer< vtkDoubleArray > fiberReadArray = vtkSmartPointer< vtkDoubleArray >::New() ;
     fiberReadArray = vtkDoubleArray::SafeDownCast( PolyData->GetCellData()->GetArray( "NaNCases" ) ) ;
-    for( int i=0; Lines->GetNextCell( NumberOfPoints , Ids ) ; i++ )
+
+    if(fiberReadArray == NULL){
+        std::cout<<"Array 'NaNCases' not found, no fibers to remove. Returning same input polydata."<<std::endl;
+        return PolyData;
+    }
+    
+    for( int i=0; i < Lines->GetSize() ; i++ )        
     {
+        Lines->GetCell(i, NumberOfPoints , Ids );
         vtkSmartPointer<vtkPolyLine> NewLine=vtkSmartPointer<vtkPolyLine>::New() ;
         NewLine->GetPointIds()->SetNumberOfIds( NumberOfPoints ) ;
-        if( !fiberReadArray->GetValue( i ) )
+        if(!fiberReadArray->GetValue( i ) )
         {
             for( int j=0; j < NumberOfPoints ; j++ )
             {
@@ -345,7 +352,7 @@ vtkSmartPointer<vtkPolyData> fiberprocessing::RemoveNanFibers(std::string Filena
             }
             NewLines->InsertNextCell(NewLine);
         }
-    }
+    }    
     FinalPolyData->SetPoints(NewPoints);
     FinalPolyData->GetPointData()->SetTensors(NewTensors);
     FinalPolyData->GetPointData()->AddArray(Scalars);
@@ -532,7 +539,7 @@ int fiberprocessing::ParametrizesHalfFiber( DTIPointListType &pointlist ,
     DTIPointListType::iterator pit_first ;
     double distance_min ;
     distance_min = Find_First_Point( pointlist , increment , pit_first ) ;
-#if WIN32
+#ifdef WIN32
     if( _isnan( distance_min ) )
     {
         return 1 ;

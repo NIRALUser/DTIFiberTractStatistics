@@ -21,18 +21,9 @@ ENDIF(COMPILE_FIBERPOSTPROCESS)
 
 OPTION(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fiberprocess application)." ON)
 IF(COMPILE_EXTERNAL_DTIPROCESS)
-  if( EXTENSION )
-    set(DTIProcessVarExt 
-        -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=ON
-        -DSlicer_DIR:PATH=${Slicer_DIR}
-        -DSubversion_SVN_EXECUTABLE:FILEPATH=${Subversion_SVN_EXECUTABLE}
-        -DGIT_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
-        -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
-       )
-  endif()
   set(proj DTIProcess)
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG 9680fd40cfd762f125894a4be30d9ff065330844 )
+  set( ${proj}_GIT_TAG af6b0940e3c31647d50b35b74943ec143115b6c2 )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -51,17 +42,13 @@ IF(COMPILE_EXTERNAL_DTIPROCESS)
       -DVTK_DIR:PATH=${VTK_DIR}
       -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-      -DBUILD_PolyDataTransform:BOOL=FALSE
-      -DBUILD_PolyDataMerge:BOOL=FALSE
-      -DBUILD_CropDTI:BOOL=FALSE
-      ${DTIProcessVarExt}
-      -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
+      -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/DTIProcess-install
       -DINSTALL_RUNTIME_DESTINATION:STRING=${install_dir}
       -DINSTALL_LIBRARY_DESTINATION:STRING=${install_dir}
   )
 ENDIF(COMPILE_EXTERNAL_DTIPROCESS)
 
-OPTION(COMPILE_FIBERCOMPARE " Compile FiberCompare." OFF)
+OPTION(COMPILE_FIBERCOMPARE " Compile FiberCompare." ON)
 IF(COMPILE_FIBERCOMPARE)
   add_subdirectory( FiberCompare )
 ENDIF(COMPILE_FIBERCOMPARE)
