@@ -474,7 +474,7 @@ double fiberprocessing::Find_First_Point( DTIPointListType &pointlist ,
     return std::numeric_limits<double>::quiet_NaN(); ;
 }
 
-//!mark7
+
 void fiberprocessing::AddValueParametrization( DTIPointListType::iterator &pit , itk::Point<double,3> p1 , double distance)
 {
     size_t fiber_counter = parametrized_position.size() - 1 ;
