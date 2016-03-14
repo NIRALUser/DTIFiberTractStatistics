@@ -46,7 +46,6 @@ class fiberprocessing{
   void Write_parametrized_fiber_avg_position_and_arclength(std::string input_file, std::string output_parametrized_fiber_file, double step_size) ;
 
  private:
-  void examineGroup(GroupType::Pointer group);
   void arc_length_parametrization(GroupType::Pointer group);
   //IO functions
   bool read_plane_details(std::string plane_str);

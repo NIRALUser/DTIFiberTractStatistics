@@ -649,27 +649,6 @@ itk::Vector<double, 3> fiberprocessing::get_plane_normal()
 }
 
 
-void fiberprocessing::examineGroup(GroupType::Pointer group)
-{
-  ChildrenListType* pchildren = group->GetChildren(0);
-  ChildrenListType::iterator it;
-  DTIPointListType pointlist;
-  DTIPointListType::iterator pit;
-  
-  for(it=pchildren->begin(); it!=pchildren->end(); it++)
-    {
-      pointlist=dynamic_cast<DTITubeType*>((*it).GetPointer())->GetPoints();
-      for(pit = pointlist.begin(); pit != pointlist.end(); pit++)
-	{
-	  if((*pit).GetField(m_scalarName) != 0)
-	    {
-	      cout << "found non-zero scalar value: " << (*pit).GetField(m_scalarName) << "\n" << endl;\
-	    }
-	  
-	}      
-    }
-}
-
 
 
 void fiberprocessing::find_plane(GroupType::Pointer group, std::string auto_plane_origin)
