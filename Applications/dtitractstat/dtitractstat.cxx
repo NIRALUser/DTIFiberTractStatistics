@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
     }
       filecheck.close();
     }
+ 
 
   if(output_stats_file=="")
     {
@@ -201,12 +202,18 @@ int main(int argc, char* argv[])
   REG = new regression;
   int all_flag = -1;
   std::cout<<"there are "<<param<<" parameters"<<std::endl;
+  if(scalarName != "")
+    {
+    FP->fiberprocessing_main(input_fiber_file, output_stats_file, planeautoOn, plane_file, worldspace, auto_plane_origin, useNonCrossingFibers , bandwidth , removeCleanFibers, removeNanFibers, scalarName.c_str());
+    }
+  else
+    {  
+      FP->fiberprocessing_main(input_fiber_file, output_stats_file, planeautoOn, plane_file, worldspace, auto_plane_origin, useNonCrossingFibers , bandwidth , removeCleanFibers, removeNanFibers );
 
-  FP->fiberprocessing_main(input_fiber_file, output_stats_file, planeautoOn, plane_file, worldspace, auto_plane_origin, useNonCrossingFibers , bandwidth , removeCleanFibers, removeNanFibers );
-
+    }
   if (param == 8){
     all_flag=1;
-    std::vector< std::vector<double> > all_main = FP->get_arc_length_parametrized_fiber("all");
+    //std::vector< std::vector<double> > all_main = FP->get_arc_length_parametrized_fiber("all");
     for (size_t a=0; a<=param-1; a++)
     {
       all_flag = -1;
