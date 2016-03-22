@@ -9,7 +9,7 @@
   <description>
     This is a command line tool which allows the user to study the behavior of water diffusion (using DTI data) along the length of the white matter fiber-tracts.
   </description>
-  <version>1.3</version>
+  <version>1.4</version>
   <documentation-url>
     http://www.nitrc.org/projects/dti_tract_stat/
   </documentation-url>
