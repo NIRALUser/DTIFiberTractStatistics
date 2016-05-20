@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+   <title>ScalarFiberAnalyzer</title>
+   <description>A tool for the diffusion fiber based analysis of T1w/T2w ratio maps.</description>
+   <contributor>Haiwei Chen</contributor>
+   <version>1.0</version>
+</executable>
+
