@@ -193,7 +193,6 @@ if(verbose)
   endforeach()
 endif()
 
-message(STATUS dddd${COMMON_EXTERNAL_PROJECT_ARGS})
 set(proj DTIAtlasFiberAnalyzer-inner)
 ExternalProject_Add(${proj}
   DOWNLOAD_COMMAND ""
