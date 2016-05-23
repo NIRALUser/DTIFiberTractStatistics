@@ -36,7 +36,7 @@ set(${proj}_DEPENDENCIES "" )
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
 
-find_package(${proj} ${${extProjName}_REQUIRED_VERSION} COMPONENTS Core Gui Network Xml REQUIRED )
+find_package(${proj} ${${extProjName}_REQUIRED_VERSION} COMPONENTS Core Gui Network Xml Svg REQUIRED )
 # The project is provided using ${extProjName}_DIR, nevertheless since other
 # project may depend on ${extProjName}, let's add an 'empty' one
 SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
@@ -49,6 +49,8 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
 )
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
+
+set(QT_LIBRARIES ${Qt5_Widgets_LIBRARIES} Qt5::Svg CACHE INTERNAL "Qt5 libraries")
 
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)
