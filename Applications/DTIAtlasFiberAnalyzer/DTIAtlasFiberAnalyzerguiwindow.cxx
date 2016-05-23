@@ -11,7 +11,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
                                                                std::string configFile ,
                                                                bool debug,
                                                                QWidget * parent ,
-                                                               Qt::WFlags f
+                                                               Qt::WindowFlags f
                                                                ): QMainWindow(parent, f)
 {
     setupUi(this);
@@ -2108,18 +2108,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::OpenPlotWindow()
 
         m_statdata.push_back(fiberdata);
         fiberdata.clear();
-    }
-
-    //Open Plot Window
-    std::cout<<"Opening Plot Window..."<<std::endl;
-    m_plotwindow=new PlotWindow(m_casedata, m_atlasdata, m_statdata, m_parameters, this);
-    m_plotwindow->setWindowTitle("Selected curves' plot");
-    m_plotwindow->setAttribute(Qt::WA_DeleteOnClose, true);
-    if(m_plotwindow->getError())
-    {
-        QApplication::restoreOverrideCursor();
-        return false;
-    }
+    }    
 
     QApplication::restoreOverrideCursor();
     return true;

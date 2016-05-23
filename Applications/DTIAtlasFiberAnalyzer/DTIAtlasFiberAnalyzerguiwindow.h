@@ -19,7 +19,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QFileInfoListIterator>
+//#include <QFileInfoListIterator>
 #include <QProcessEnvironment>
 #include <QMap>
 #include <QtGlobal>
@@ -33,7 +33,6 @@
 #include "ui_DTIAtlasFiberAnalyzerguiwindow.h"
 #include "CSVClass.h"
 #include "GlobalFunction.h"
-#include "DTIPlotWindow.h"
 #include "XmlReader.h"
 #include "XmlWriter.h"
 
@@ -43,7 +42,7 @@ class DTIAtlasFiberAnalyzerguiwindow : public QMainWindow, public Ui::MainWindow
 {
     Q_OBJECT
 public:
-    DTIAtlasFiberAnalyzerguiwindow( std::string pathToCurrentExecutable , std::string configFile , bool debug=false , QWidget * parent = 0, Qt::WFlags f = 0 );
+    DTIAtlasFiberAnalyzerguiwindow( std::string pathToCurrentExecutable , std::string configFile , bool debug=false , QWidget * parent = 0, Qt::WindowFlags f = 0 );
     vstring getCases(){return m_Cases;}
     vstring getFibers(){return m_Fibers;}
     vstring getFiberInformations(std::string fiber, std::string parameter);

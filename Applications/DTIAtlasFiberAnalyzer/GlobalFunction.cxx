@@ -9,7 +9,7 @@
 
 /* QT librairies */
 #include <QProcess>
-
+#include <sstream>
 
 void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable , bool interactive )
 {
