@@ -51,12 +51,13 @@ add_subdirectory( Applications )
 find_package(DTIProcess REQUIRED)
 
 set( ToolsList
-  ${DTIProcess_BINARY_DIR}fiberprocess${fileextension}
+  ${DTIProcess_fiberprocess_EXECUTABLE}
 )
 
 
 if( EXECUTABLES_ONLY )
   foreach( tool ${ToolsList})
+    message(STATUS "Install: ${tool}")
     install(PROGRAMS ${tool} DESTINATION ${INSTALL_RUNTIME_DESTINATION})
   endforeach()
 endif()
