@@ -63,7 +63,7 @@ option(EXECUTABLES_ONLY "Build the tools and the tools' libraries statically" ON
 set(ITK_VERSION_MAJOR 4)
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 
-set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel DTIProcess)
+set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel DTIProcess QtToCppXML)
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
@@ -193,6 +193,7 @@ if(verbose)
   endforeach()
 endif()
 
+
 set(proj DTIAtlasFiberAnalyzer-inner)
 ExternalProject_Add(${proj}
   DOWNLOAD_COMMAND ""
@@ -211,6 +212,7 @@ ExternalProject_Add(${proj}
     -DEXECUTABLES_ONLY:BOOL=${EXECUTABLES_ONLY}
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
     -DCMAKE_PREFIX_PATH:PATH=${Qt5_DIR}
+    -DQtToCppXML_DIR:PATH=${QtToCppXML_DIR}
 )
 
 ## Force rebuilding of the main subproject every time building from super structure
