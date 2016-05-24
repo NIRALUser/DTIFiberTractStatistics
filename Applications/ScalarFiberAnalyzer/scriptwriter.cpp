@@ -61,7 +61,7 @@ bool ScriptWriter::writeData(QString outdir, QString fiber_dir, QString fiber_pr
         char out[64+outdir.size()];
         snprintf(out,sizeof out, "out_dir = \"%s\"\n",outdir.toStdString().c_str());
         file.write(out);
-        char fout[64+ outdir.size()];
+        char fout[64+ fiber_dir.size()];
         snprintf(fout,sizeof fout, "fiber_dir = \"%s\"\n",fiber_dir.toStdString().c_str());
         char fiberprocess[64+ fiber_process.size()];
         snprintf(fiberprocess,sizeof fiberprocess, "fiberprocess_path = \"%s\"\n",fiber_process.toStdString().c_str());
