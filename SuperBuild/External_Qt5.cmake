@@ -41,6 +41,8 @@ find_package(${proj} ${${extProjName}_REQUIRED_VERSION} COMPONENTS Core Gui Netw
 # project may depend on ${extProjName}, let's add an 'empty' one
 SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
 
+find_package(Qt5 COMPONENTS Core Widgets Svg OpenGL REQUIRED)
+
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS 
     QT_QMAKE_EXECUTABLE:PATH
     QT_MOC_EXECUTABLE:PATH
