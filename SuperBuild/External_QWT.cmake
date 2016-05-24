@@ -40,7 +40,7 @@ endif()
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
-  set(${proj}_DEPENDENCIES Qt4 )
+  set(${proj}_DEPENDENCIES Qt5 )
 
   # Include dependent projects if any
   SlicerMacroCheckExternalProjectDependency(${proj})
@@ -53,13 +53,14 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
   endif()
-
+  
   set(${proj}_CMAKE_OPTIONS
       -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
+      -DCMAKE_PREFIX_PATH:PATH=${Qt5_DIR}
     )
 
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY SVN_REPOSITORY http://svn.code.sf.net/p/qwt/code/branches/qwt-6.0)
+  set(${proj}_REPOSITORY SVN_REPOSITORY http://svn.code.sf.net/p/qwt/code/tags/qwt-6.1.2)
   ExternalProject_Add(${proj}
     SVN_REPOSITORY ${${proj}_REPOSITORY}
     SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}

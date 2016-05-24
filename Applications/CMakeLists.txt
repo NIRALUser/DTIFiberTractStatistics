@@ -19,39 +19,15 @@ IF(COMPILE_FIBERPOSTPROCESS)
   add_subdirectory( FiberPostProcess )
 ENDIF(COMPILE_FIBERPOSTPROCESS)
 
-OPTION(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fiberprocess application)." ON)
-IF(COMPILE_EXTERNAL_DTIPROCESS)
-  set(proj DTIProcess)
-  set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG af6b0940e3c31647d50b35b74943ec143115b6c2 )
-  ExternalProject_Add(${proj}
-    GIT_REPOSITORY ${${proj}_REPOSITORY}
-    GIT_TAG ${${proj}_GIT_TAG}
-    SOURCE_DIR ${proj}
-    BINARY_DIR ${proj}-build
-    DEPENDS ${ITK_DEPEND} ${VTK_DEPEND} ${SlicerExecutionModel_DEPEND}
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      -DBUILD_dwiAtlas:BOOL=OFF
-      -DBUILD_TESTING:BOOL=OFF
-      ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
-      ${COMMON_EXTERNAL_PROJECT_ARGS}
-      -DEXECUTABLES_ONLY:BOOL=${EXECUTABLES_ONLY}
-      -DDTIProcess_SUPERBUILD:BOOL=FALSE
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-      -DVTK_VERSION_MAJOR:STRING=${VTK_VERSION_MAJOR}
-      -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-      -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/DTIProcess-install
-      -DINSTALL_RUNTIME_DESTINATION:STRING=${install_dir}
-      -DINSTALL_LIBRARY_DESTINATION:STRING=${install_dir}
-  )
-ENDIF(COMPILE_EXTERNAL_DTIPROCESS)
-
 OPTION(COMPILE_FIBERCOMPARE " Compile FiberCompare." ON)
 IF(COMPILE_FIBERCOMPARE)
   add_subdirectory( FiberCompare )
 ENDIF(COMPILE_FIBERCOMPARE)
+
+OPTION(COMPILE_SCALARFIBERANALYZER " Compile ScalarFiberAnalyzer." ON)
+IF(COMPILE_SCALARFIBERANALYZER)
+  add_subdirectory( ScalarFiberAnalyzer )
+ENDIF(COMPILE_SCALARFIBERANALYZER)
 
 IF(BUILD_TESTING)
   ADD_SUBDIRECTORY(Testing)

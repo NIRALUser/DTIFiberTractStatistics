@@ -128,7 +128,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
         -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
         )
     endif()
-    find_package(Qt4 REQUIRED)
+    find_package(Qt5 COMPONENTS Core Widgets Svg OpenGL REQUIRED)
   else()
     set(VTK_QT_ARGS
         -DVTK_USE_GUISUPPORT:BOOL=OFF

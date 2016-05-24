@@ -24,8 +24,8 @@ ProjectDependancyPush(CACHED_proj ${proj})
 # Make sure that the ExtProjName/IntProjName variables are unique globally
 # even if other External_${ExtProjName}.cmake files are sourced by
 # SlicerMacroCheckExternalProjectDependency
-set(extProjName DTIProcess) #The find_package known name
-set(proj        DTIProcess) #This local name
+set(extProjName QtToCppXML) #The find_package known name
+set(proj        QtToCppXML) #This local name
 set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
 
 #if(${USE_SYSTEM_${extProjName}})
@@ -40,10 +40,7 @@ endif()
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel )
-  if( BUILD_DWIAtlas )
-    list( APPEND ${proj}_DEPENDENCIES Boost )
-  endif()
+  set(${proj}_DEPENDENCIES SlicerExecutionModel Qt5 )  
 
   # Include dependent projects if any
   SlicerMacroCheckExternalProjectDependency(${proj})
@@ -55,28 +52,15 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
   endif()
-  if( BUILD_DWIAtlas )
-    set( DWIAtlasVars
-        -DBOOST_ROOT:PATH=${BOOST_ROOT}
-        -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
-        -DBUILD_dwiAtlas:BOOL=ON
-       )
-  endif()
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
-    ${DWIAtlasVars}
-    -DBOOST_ROOT:PATH=${BOOST_ROOT}
-    -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
-    -DUSE_SYSTEM_ITK:BOOL=ON
-    -DUSE_SYSTEM_VTK:BOOL=ON
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
-    -DDTIProcess_SUPERBUILD:BOOL=OFF
-    -DEXECUTABLES_ONLY:BOOL=ON
+    -DQt5Widgets_DIR:PATH=${Qt5Widgets_DIR}
     )
 
   ### --- End Project specific additions
-  set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG 6afd509c8ece539b379d5a61bccdd6e68092109c )
+  set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/QTGUI.git)
+  set( ${proj}_GIT_TAG b1872562d56ca132a29bde0caaea2c0e1aaf3269 )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

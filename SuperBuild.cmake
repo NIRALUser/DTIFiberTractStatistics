@@ -23,8 +23,7 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   find_package(Slicer REQUIRED)
   set( EXTENSION TRUE)
   set( COMPILE_EXTERNAL_DTIPROCESS OFF CACHE BOOL "Compile external DTIProcess package (for fiberprocess application)." FORCE )
-  set( Slicer_USE_PYTHONQT FALSE )
-  set( USE_SYSTEM_QWT OFF CACHE BOOL "Use system QWT" FORCE )
+  set( Slicer_USE_PYTHONQT FALSE )  
   set( USE_SYSTEM_ITK ON CACHE BOOL "Build using an externally defined version of ITK" FORCE )
   set( USE_SYSTEM_VTK ON CACHE BOOL "Build using an externally defined version of VTK" FORCE )
   #VTK_VERSION_MAJOR is define but not a CACHE variable
@@ -34,12 +33,10 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   include( ${DTIProcess_DIR}/ImportDTIProcessExtensionExecutables.cmake )
 endif()
 
-OPTION(COMPILE_EXTERNAL_DTIPROCESS "Compile external DTIProcess package (for fiberprocess application)." ON)
-
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
-option(USE_SYSTEM_QWT "Build using an externally defined version of QWT" OFF)
+option(USE_SYSTEM_DTIProcess "Build using an externally defined version of DTIProcess" OFF)
 
 #-----------------------------------------------------------------------------
 # Superbuild option(s)
@@ -66,7 +63,7 @@ option(EXECUTABLES_ONLY "Build the tools and the tools' libraries statically" ON
 set(ITK_VERSION_MAJOR 4)
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 
-set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES QWT ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel)
+set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel DTIProcess QtToCppXML)
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
@@ -204,8 +201,7 @@ ExternalProject_Add(${proj}
   BINARY_DIR ${proj}-build
   DEPENDS ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}
   CMAKE_GENERATOR ${gen}
-  CMAKE_ARGS
-    -DCOMPILE_EXTERNAL_DTIPROCESS:BOOL=${COMPILE_EXTERNAL_DTIPROCESS}
+  CMAKE_ARGS    
     -DCOMPILE_MERGERSTATWITHFIBER:BOOL=ON
     -DCOMPILE_FIBERCOMPARE:BOOL=ON
     -DCOMPILE_DTITRACTSTAT:BOOL=ON
@@ -215,6 +211,8 @@ ExternalProject_Add(${proj}
      ${COMMON_EXTERNAL_PROJECT_ARGS}
     -DEXECUTABLES_ONLY:BOOL=${EXECUTABLES_ONLY}
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+    -DCMAKE_PREFIX_PATH:PATH=${Qt5_DIR}
+    -DQtToCppXML_DIR:PATH=${QtToCppXML_DIR}
 )
 
 ## Force rebuilding of the main subproject every time building from super structure

@@ -33,13 +33,10 @@ if( VTK_MAJOR_VERSION VERSION_GREATER 5 )
   endif()
 endif()
 
-find_package(Qt4 REQUIRED)
-if(QT_USE_FILE)
-  include_directories(${QT_INCLUDE_DIR})
-  include(${QT_USE_FILE})
-else(QT_USE_FILE)
-  message(FATAL_ERROR, "QT not found. Please set QT_DIR.")
-endif(QT_USE_FILE)
+find_package(Qt5 COMPONENTS Core Gui Network Xml REQUIRED)
+
+add_definitions(${Qt5Widgets_DEFINITIONS})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
 option(EXECUTABLES_ONLY "Build only executables (CLI)" ON)
 if( ${EXECUTABLES_ONLY} )
@@ -51,14 +48,16 @@ endif()
 
 add_subdirectory( Applications )
 
-if( COMPILE_EXTERNAL_DTIPROCESS )
-  set( ToolsList
-    ${CMAKE_BINARY_DIR}/DTIProcess-install/bin/fiberprocess${fileextension}
-  )
-endif()
+find_package(DTIProcess REQUIRED)
+
+set( ToolsList
+  ${DTIProcess_fiberprocess_EXECUTABLE}
+)
+
 
 if( EXECUTABLES_ONLY )
   foreach( tool ${ToolsList})
+    message(STATUS "Install: ${tool}")
     install(PROGRAMS ${tool} DESTINATION ${INSTALL_RUNTIME_DESTINATION})
   endforeach()
 endif()

@@ -5,13 +5,13 @@
 
 #include <iostream>
 
-#include <QtXml>
+//#include <QtXml>
 #include <QXmlStreamWriter>
 #include <QString>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QFileInfoListIterator>
+//#include <QFileInfoListIterator>
 #include <QProcessEnvironment>
 #include <QMap>
 #include <QtGlobal>
