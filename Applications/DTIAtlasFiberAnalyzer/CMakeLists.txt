@@ -21,7 +21,7 @@ QT5_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
 
 set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx XmlReader.cxx XmlWriter.cxx ${MOC_FILES} ${UI_FILES})
 
-set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} ${QWT_LIBRARIES} )
+set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} )
 
 if( EXTENSION )
   ADD_DEFINITIONS(-DSlicerExtension)
