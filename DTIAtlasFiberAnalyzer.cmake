@@ -50,8 +50,11 @@ add_subdirectory( Applications )
 
 find_package(DTIProcess REQUIRED)
 
+find_package(FADTTS REQUIRED)
+
 set( ToolsList
   ${DTIProcess_fiberprocess_EXECUTABLE}
+  ${FADTTSter_EXECUTABLE}
 )
 
 

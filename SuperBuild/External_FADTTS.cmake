@@ -63,7 +63,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/FADTTS.git)
-  set( ${proj}_GIT_TAG 02f5b9236267bac7e306b1750e82ca265dac86d6 )
+  set( ${proj}_GIT_TAG 1cb2bbae40085ff139da4763cece99054ca1dede )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
