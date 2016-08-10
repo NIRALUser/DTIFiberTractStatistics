@@ -24,12 +24,7 @@ ProjectDependancyPush(CACHED_proj ${proj})
 set(extProjName VTK) #The find_package known name
 set(proj        VTK) #This local name
 
-
-set(VTK_VERSION_MAJOR 6 CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
-# Set the possible values of VTK major version for cmake-gui
-set_property(CACHE VTK_VERSION_MAJOR PROPERTY STRINGS "5" "6")
-
-set(${extProjName}_REQUIRED_VERSION "6.3.0")  #If a required version is necessary, then set this, else leave blank
+set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
 
 # Sanity checks
 #if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
@@ -58,9 +53,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(${proj}_CMAKE_OPTIONS
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
       -DBUILD_EXAMPLES:BOOL=OFF
-      -DBUILD_TESTING:BOOL=OFF
-      -DVTK_USE_PARALLEL:BOOL=ON      
-      -DVTK_INSTALL_LIB_DIR:PATH=${${PROJECT_NAME}_INSTALL_LIB_DIR}
+      -DBUILD_TESTING:BOOL=OFF      
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       -DVTK_Group_Qt:BOOL=ON 
       -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
@@ -69,7 +62,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   ### --- End Project specific additions
 
-  set(${proj}_GIT_TAG "v6.3.0")
+  set(${proj}_GIT_TAG "v7.0.0")
   set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
 
   ExternalProject_Add(${proj}
@@ -94,7 +87,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
 
 
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/vtk-6.3)
+  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/vtk-7.0)
   
 
 else()
