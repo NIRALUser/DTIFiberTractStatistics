@@ -59,11 +59,12 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     -DINSTALL_RUNTIME_DESTINATION:PATH=bin
     -DINSTALL_LIBRARY_DESTINATION:PATH=lib
     -DINSTALL_ARCHIVE_DESTINATION:PATH=lib
+    -DBUILD_TESTING:BOOL=OFF
     )
 
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/FADTTS.git)
-  set( ${proj}_GIT_TAG 1cb2bbae40085ff139da4763cece99054ca1dede )
+  set( ${proj}_GIT_TAG release )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
