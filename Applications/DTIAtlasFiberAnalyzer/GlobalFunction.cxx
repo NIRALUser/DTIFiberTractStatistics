@@ -644,11 +644,11 @@ int CallFiberProcess(std::string pathFiberProcess,
         /* put arguments for each call of fiberprocess */
         //Fiber
         QString qs = (AtlasFolder + "/" + Fiber).c_str();
-        arguments.append("--fiber_file" );
+        arguments.append("--fiberFile" );
         arguments.append(qs );
         //Data
         qs =  Data.c_str();
-        arguments.append("--tensor_volume");
+        arguments.append("--tensorVolume");
         arguments.append(qs);
         //Deformation field
         if(DeformationField.compare("no")!=0 && DeformationField.compare("no deformation")!=0)
@@ -656,18 +656,18 @@ int CallFiberProcess(std::string pathFiberProcess,
             qs =  DeformationField.c_str();
             if(FieldType)
             {
-                arguments.append("--h_field");
+                arguments.append("--hField");
             }
             else
             {
-                arguments.append("--displacement_field");
+                arguments.append("--displacementField");
             }
             arguments.append(qs);
         }
-        arguments.append("--no_warp");
+        arguments.append("--noWarp");
         //output
         qs = outputname.c_str();
-        arguments.append("--fiber_output");
+        arguments.append("--fiberOutput");
         arguments.append(qs);
         //verbose
         arguments.append("--verbose");
