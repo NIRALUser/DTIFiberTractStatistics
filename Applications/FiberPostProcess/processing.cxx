@@ -296,7 +296,7 @@ vtkSmartPointer< vtkPolyData > processing::CheckNaN( vtkSmartPointer< vtkPolyDat
     cellData->SetNumberOfComponents( 1 ) ;
     cellData->SetName( "NaNCases" ) ;
     int nbArrays = polyData->GetPointData()->GetNumberOfArrays() ;
-    std::vector< int > NanFiberId ;//std::cout<<"nbArrays = "<<nbArrays<<std::endl ;
+    std::map< vtkIdType, bool > NanFiberIds ;//std::cout<<"nbArrays = "<<nbArrays<<std::endl ;
     /*for( int i = 0 ; i < nbArrays ; i++ )
      {*/
     /*if( strcmp( polyData->GetPointData()->GetArray( i )->GetName() , "tensors" ) == 0 )
@@ -305,69 +305,147 @@ vtkSmartPointer< vtkPolyData > processing::CheckNaN( vtkSmartPointer< vtkPolyDat
              nbComponents = polyData->GetPointData()->GetArray( i )->GetNumberOfComponents() ;
              nbTuples = polyData->GetPointData()->GetArray( i )->GetNumberOfTuples() ;*/
     //for( int j = 0 ; j < polyData->GetNumberOfPoints() ; j++ )
-    int nbLines = polyData->GetNumberOfLines() ;
-    int tmpPoint = 0;
-    for( int i = 0 ; i < nbLines ; i++ )
-    {
-        int nbPoints = polyData->GetCell( i )->GetNumberOfPoints() ;
-        for( int j = 0 ; j < nbPoints ; j++ )
-        {
-            //std::cout<<j<<std::endl;
-            double eigenValues[ 3 ] ;
-            double **eigenVectors = create_matrix< double >( 3, 3 ) ;
-            double **tensors = create_matrix< double >( 3, 3 ) ;
-            tensors[ 0 ][ 0 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 0 ) ;
-            tensors[ 0 ][ 1 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 1 ) ;
-            tensors[ 0 ][ 2 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 2 ) ;
+    
+    vtkDataArray * tensorsdata = polyData->GetPointData()->GetTensors();
 
-            tensors[ 1 ][ 0 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 3 ) ;
-            tensors[ 1 ][ 1 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 4 ) ;
-            tensors[ 1 ][ 2 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 5 ) ;
+    double eigenValues[ 3 ] ;
 
-            tensors[ 2 ][ 0 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 6 ) ;
-            tensors[ 2 ][ 1 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 7 ) ;
-            tensors[ 2 ][ 2 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 8 ) ;
-            vtkMath::Jacobi( tensors , eigenValues , eigenVectors ) ;
-            for( int  k = 0 ; k < 3 ; k ++ )
+    double **tensors = create_matrix< double >( 3, 3 ) ;
+    double **eigenVectors = create_matrix< double >( 3, 3 ) ;
+    
+    for( int i = 0 ; i < tensorsdata->GetNumberOfTuples() ; i++ ){        
+
+        tensors[ 0 ][ 0 ] = tensorsdata->GetComponent( i , 0 ) ;
+        tensors[ 0 ][ 1 ] = tensorsdata->GetComponent( i , 1 ) ;
+        tensors[ 0 ][ 2 ] = tensorsdata->GetComponent( i , 2 ) ;
+
+        tensors[ 1 ][ 0 ] = tensorsdata->GetComponent( i , 3 ) ;
+        tensors[ 1 ][ 1 ] = tensorsdata->GetComponent( i , 4 ) ;
+        tensors[ 1 ][ 2 ] = tensorsdata->GetComponent( i , 5 ) ;
+
+        tensors[ 2 ][ 0 ] = tensorsdata->GetComponent( i , 6 ) ;
+        tensors[ 2 ][ 1 ] = tensorsdata->GetComponent( i , 7 ) ;
+        tensors[ 2 ][ 2 ] = tensorsdata->GetComponent( i , 8 ) ;
+
+        vtkMath::Jacobi( tensors , eigenValues , eigenVectors ) ;
+        for( int  k = 0 ; k < 3 ; k ++ )
+        {            
+            if( eigenValues [ k ] <= 0 )
             {
-                //std::cout<<"eigenValues["<<k<<"]="<<eigenValues [ k ]<<" ";
-                if( eigenValues [ k ] <= 0 )
-                {//std::cout<<j<<std::endl;
-                    NanFiberId.push_back( i ) ;
+                vtkSmartPointer<vtkIdList> cellids = vtkSmartPointer<vtkIdList>::New();
+                polyData->GetPointCells(i, cellids);
+                for(int n = 0; n < cellids->GetNumberOfIds(); n++){
+                    NanFiberIds[cellids->GetId(n)] = true;
                 }
-            }//std::cout<<std::endl;
-            free_matrix ( tensors ) ;
-            //}
-            //}
-            /* vtkSmartPointer< vtkDataArray > dataArray = polyData->GetPointData()->GetArray( i ) ;
-         std::vector< std::vector< float > > dataVector = convertDataToVector( dataArray ) ;
-         CheckNaN( cleanedPolyData , dataVector ) ;*/
-            tmpPoint ++ ;
+            }
         }
+        
     }
-    vtkCellArray* lines = polyData->GetLines() ;
-    vtkIdType numberOfPoints ;
-    vtkIdType* ids ;
-    lines->InitTraversal() ;
-    //std::vector < int > NanFiberId ;
-    //for(int i = 0 ; i < NanFiberPointId.size() ; i++ )
-    //{
-     //   std::cout<<locateFiber->FindCell( polyData->GetPoint())<<std::endl;
-        /*NanFiberId.push_back(locateFiber->FindCell( polyData->GetPoint(NanFiberId[i])));*/
-    //}
-    for( int i = 0 ; lines->GetNextCell( numberOfPoints , ids ) ; i++ )
-    {
-        if( std::find(NanFiberId.begin(), NanFiberId.end(), i ) != NanFiberId.end() )
-         {
-             cellData->InsertNextValue( 1 ) ;
-         }
-         else
-         {
-             cellData->InsertNextValue( 0 ) ;
-         }
-    }
+
+    free_matrix ( tensors ) ;
+    free_matrix ( eigenVectors ) ;
+
+    vtkCellArray* lines = polyData->GetLines();    
+    for( int i = 0 ; i < lines->GetNumberOfCells(); i++ ){
+        if(NanFiberIds[i]){
+            cellData->InsertNextValue(1);
+        }else{
+            cellData->InsertNextValue(0);
+        }
+    }    
+
     cleanedPolyData->GetCellData()->AddArray( cellData ) ;
     return cleanedPolyData ;
+
+    // int nbLines = polyData->GetNumberOfLines() ;
+    // int tmpPoint = 0;
+    // vtkIdType numberOfPoints ;
+    // vtkIdType* ids ;
+    // lines->InitTraversal() ;
+    // //std::vector < int > NanFiberId ;
+    // //for(int i = 0 ; i < NanFiberPointId.size() ; i++ )
+    // //{
+    //  //   std::cout<<locateFiber->FindCell( polyData->GetPoint())<<std::endl;
+    //  //   NanFiberId.push_back(locateFiber->FindCell( polyData->GetPoint(NanFiberId[i])));
+    // //}
+    // for( int i = 0 ; lines->GetNextCell( numberOfPoints , ids ) ; i++ )
+    // {
+    //     if( std::find(NanFiberId.begin(), NanFiberId.end(), i ) != NanFiberId.end() )
+    //      {NanFiberIds
+    //          cellData->InsertNextValue( 1 ) ;
+    //      }
+    //      else
+    //      {
+    //          cellData->InsertNextValue( 0 ) ;
+    //      }
+    // }
+    // cleanedPolyData->GetCellData()->AddArray( cellData ) ;
+    // return cleanedPolyData ;
+
+    // for( int i = 0 ; i < nbLines ; i++ )
+    // {
+    //     int nbPoints = polyData->GetCell( i )->GetNumberOfPoints() ;
+        
+    //     //cout<<"Number of points cell: "<<polyData->GetCell( i )->GetNumberOfPoints()<<endl;
+
+    //     for( int j = 0 ; j < nbPoints ; j++ )
+    //     {
+    //         //std::cout<<j<<std::endl;
+    //         double eigenValues[ 3 ] ;
+    //         double **eigenVectors = create_matrix< double >( 3, 3 ) ;
+    //         double **tensors = create_matrix< double >( 3, 3 ) ;
+    //         tensors[ 0 ][ 0 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 0 ) ;
+    //         tensors[ 0 ][ 1 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 1 ) ;
+    //         tensors[ 0 ][ 2 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 2 ) ;
+
+    //         tensors[ 1 ][ 0 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 3 ) ;
+    //         tensors[ 1 ][ 1 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 4 ) ;
+    //         tensors[ 1 ][ 2 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 5 ) ;
+
+    //         tensors[ 2 ][ 0 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 6 ) ;
+    //         tensors[ 2 ][ 1 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 7 ) ;
+    //         tensors[ 2 ][ 2 ] = polyData->GetPointData()->GetTensors()->GetComponent( tmpPoint , 8 ) ;
+    //         vtkMath::Jacobi( tensors , eigenValues , eigenVectors ) ;
+    //         for( int  k = 0 ; k < 3 ; k ++ )
+    //         {
+    //             //std::cout<<"eigenValues["<<k<<"]="<<eigenValues [ k ]<<" ";
+    //             if( eigenValues [ k ] <= 0 )
+    //             {//std::cout<<j<<std::endl;
+    //                 NanFiberId.push_back( i ) ;
+    //             }
+    //         }//std::cout<<std::endl;
+    //         free_matrix ( tensors ) ;
+    //         //}
+    //         //}
+    //         /* vtkSmartPointer< vtkDataArray > dataArray = polyData->GetPointData()->GetArray( i ) ;
+    //      std::vector< std::vector< float > > dataVector = convertDataToVector( dataArray ) ;
+    //      CheckNaN( cleanedPolyData , dataVector ) ;*/
+    //         tmpPoint ++ ;
+    //     }
+    // }
+    // vtkCellArray* lines = polyData->GetLines() ;
+    // vtkIdType numberOfPoints ;
+    // vtkIdType* ids ;
+    // lines->InitTraversal() ;
+    // //std::vector < int > NanFiberId ;
+    // //for(int i = 0 ; i < NanFiberPointId.size() ; i++ )
+    // //{
+    //  //   std::cout<<locateFiber->FindCell( polyData->GetPoint())<<std::endl;
+    //  //   NanFiberId.push_back(locateFiber->FindCell( polyData->GetPoint(NanFiberId[i])));
+    // //}
+    // for( int i = 0 ; lines->GetNextCell( numberOfPoints , ids ) ; i++ )
+    // {
+    //     if( std::find(NanFiberId.begin(), NanFiberId.end(), i ) != NanFiberId.end() )
+    //      {
+    //          cellData->InsertNextValue( 1 ) ;
+    //      }
+    //      else
+    //      {
+    //          cellData->InsertNextValue( 0 ) ;
+    //      }
+    // }
+    // cleanedPolyData->GetCellData()->AddArray( cellData ) ;
+    // return cleanedPolyData ;
 }
 
 
