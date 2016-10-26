@@ -3,8 +3,8 @@
    <category>Diffusion.FiberAnalysis</category>
    <title>Fiber Post Processing</title>
    <description>Removes fibers outside of a mask</description>
-   <version>1.2</version>
-   <contributor>Jean-Yves Yang</contributor>
+   <version>1.2.2</version>
+   <contributor>Jean-Yves Yang, Juan Carlos Prieto</contributor>
    <parameters>
 
       <label>IO</label>
