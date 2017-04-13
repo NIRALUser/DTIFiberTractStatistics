@@ -154,7 +154,7 @@ bool CommandLine( std::string pathCurrentToExecutable ,
             //Find path for fiberpostprocess
             FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
             //Call fiberpostrocess
-            ApplyFiberPostProcess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
+            ApplyFiberPostProcess(CSVFile, pathFiberPostProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
         }
         /* Looking for dti_tract_stat */
         FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
@@ -187,7 +187,7 @@ bool CommandLine( std::string pathCurrentToExecutable ,
             //Find path for fiberpostprocess
             FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
             //Call fiberpostrocess
-            ApplyFiberPostProcess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
+            ApplyFiberPostProcess(CSVFile, pathFiberPostProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
         }
         /* Looking for dti_tract_stat */
         FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
@@ -364,7 +364,7 @@ bool Applyfiberprocess(CSVClass* CSV,
 }
 
 bool ApplyFiberPostProcess(CSVClass* CSV,
-                           std::string pathFiberProcess,
+                           std::string pathFiberPostProcess,
                            std::string AtlasFiberDir,
                            std::string OutputFolder,
                            int DataCol,
@@ -439,7 +439,7 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                         if(DefCol!=-1)
                         {
                             /* If fiberpostprocess worked */
-                            if(CallFiberPostProcess(pathFiberProcess, inputName, outputname, (*CSV->getData())[row][DataCol] ) == 0 )
+                            if(CallFiberPostProcess(pathFiberPostProcess, inputName, outputname, (*CSV->getData())[row][DataCol] ) == 0 )
                             {
                                 //Check if the output exist
                                 if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -451,7 +451,7 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                         else
                         {
                             /* If fiberpostprocess worked */
-                            if(CallFiberPostProcess(pathFiberProcess, AtlasFiberDir,
+                            if(CallFiberPostProcess(pathFiberPostProcess, AtlasFiberDir,
                                                     outputname,
                                                     (*CSV->getData())[row][DataCol] ) == 0 )
                             {
