@@ -1,8 +1,7 @@
 
 
 #QtXML lib
-find_package(Qt5 COMPONENTS Svg)
-set(QT_LIBRARIES Qt5::Svg)
+
 
 #if ( NOT QT_FOUND)
 #message(FATAL_ERROR "Package Qt not found!")
@@ -14,10 +13,20 @@ set(QT_LIBRARIES Qt5::Svg)
 #include(${QT_USE_FILE})
 #include_directories(${QT_INCLUDES})
 
+if(USE_QT4)
+  find_package(Qt4 COMPONENTS QtXml)
+  include(${QT_USE_FILE})
+  include_directories(${QT_INCLUDES})
+  QT4_WRAP_CPP(MOC_FILES DTIAtlasFiberAnalyzerguiwindow.h)
+  QT4_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
+else()
+  find_package(Qt5 COMPONENTS Svg)
+  set(QT_LIBRARIES Qt5::Svg)
+  QT5_WRAP_CPP(MOC_FILES DTIAtlasFiberAnalyzerguiwindow.h)
+  QT5_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
+endif()
 
 
-QT5_WRAP_CPP(MOC_FILES DTIAtlasFiberAnalyzerguiwindow.h)
-QT5_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
 
 set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx XmlReader.cxx XmlWriter.cxx ${MOC_FILES} ${UI_FILES})
 

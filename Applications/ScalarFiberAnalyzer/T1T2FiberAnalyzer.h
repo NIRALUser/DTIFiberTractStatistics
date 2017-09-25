@@ -122,8 +122,8 @@ private:
 
 
 protected:
-    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
-    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 };
 

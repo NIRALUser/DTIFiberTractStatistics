@@ -40,8 +40,11 @@ endif()
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
-  set(${proj}_DEPENDENCIES SlicerExecutionModel Qt5 )  
-
+  if(USE_QT4)
+  	set(${proj}_DEPENDENCIES SlicerExecutionModel Qt4 )  
+  else()
+	set(${proj}_DEPENDENCIES SlicerExecutionModel Qt5 )
+  endif()
   # Include dependent projects if any
   SlicerMacroCheckExternalProjectDependency(${proj})
   # Set CMake OSX variable to pass down the external project
