@@ -32,7 +32,15 @@ set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, th
 #endif()
 
 # Set dependency list
-set(${proj}_DEPENDENCIES Qt5)
+
+option(USE_QT4 "Build using Qt4" ON)
+if(USE_QT4)
+  set(${proj}_DEPENDENCIES Qt4)
+  set(VTK_QT_VERSION 4)
+else()
+  set(VTK_QT_VERSION 5)
+  set(${proj}_DEPENDENCIES Qt5)
+endif()
 
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
@@ -58,7 +66,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DVTK_Group_Qt:BOOL=ON 
       -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
       -DCMAKE_PREFIX_PATH=${Qt5_DIR}
-      -DVTK_QT_VERSION:STRING=5
+      -DVTK_QT_VERSION:STRING=${VTK_QT_VERSION}
     )
   ### --- End Project specific additions
 

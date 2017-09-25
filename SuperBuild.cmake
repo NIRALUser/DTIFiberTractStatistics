@@ -37,6 +37,7 @@ option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DTIProcess "Build using an externally defined version of DTIProcess" OFF)
+option(USE_SYSTEM_FADTTS "Build using an externally defined version of FADTTS" OFF)
 
 #-----------------------------------------------------------------------------
 # Superbuild option(s)
