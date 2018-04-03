@@ -67,7 +67,7 @@ if(CREATE_BUNDLE)
     set(OS_BUNDLE WIN32)
   endif()
 
-  set(version 1.7.1)
+  set(version 1.8.0)
   set(bundle_name DTIAtlasFiberAnalyzer)
 
   #--------------------------------------------------------------------------------
