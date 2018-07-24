@@ -32,15 +32,6 @@ set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx
 
 set(DTIAtlasFiberAnalyzer_lib  ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${QT_LIBRARIES} )
 
-#if( EXTENSION )
-#  ADD_DEFINITIONS(-DSlicerExtension)
-#  generateclp(Launcher_CLP DTIAtlasFiberAnalyzer.xml )
-#  add_executable( DTIAtlasFiberAnalyzerLauncher Launcher.cxx ${Launcher_CLP} )
-#  install(TARGETS DTIAtlasFiberAnalyzerLauncher
-#    RUNTIME DESTINATION ${INSTALL_RUNTIME_DESTINATION} COMPONENT RuntimeLibraries
-#    )
-#endif()
-
 
 SEMMacroBuildCLI(
     NAME DTIAtlasFiberAnalyzer
