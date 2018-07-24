@@ -237,6 +237,21 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
   set( CLIs DTIAtlasFiberAnalyzer dtitractstat FiberCompare FiberPostProcess MergeStatWithFiber )
+
+  if(FADTTS_DIR AND NOT FADTTSter_EXECUTABLE)
+    find_program(FADTTSter_EXECUTABLE
+      NAMES FADTTSter
+      PATHS
+        "${FADTTS_DIR}/../../../bin"
+      NO_DEFAULT_PATH
+      )
+  endif()
+
+  if(FADTTSter_EXECUTABLE)
+    message(STATUS "Using FADTTS: ${FADTTSter_EXECUTABLE}")
+    install(PROGRAMS ${FADTTSter_EXECUTABLE} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
+  endif()
+
   foreach( VAR ${CLIs})
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/${VAR}${fileextension} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
   endforeach()
