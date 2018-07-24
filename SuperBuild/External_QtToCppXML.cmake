@@ -63,7 +63,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/QTGUI.git)
-  set( ${proj}_GIT_TAG 417244bbafd626c10b709bbc413ff702333c5692 )
+  set( ${proj}_GIT_TAG release )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

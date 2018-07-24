@@ -910,7 +910,7 @@ void fiberprocessing::writeFiberFile(const std::string & filename, GroupType::Po
                 vtktensor[7] = sopt->GetTensorMatrix()[4];
                 vtktensor[8] = sopt->GetTensorMatrix()[5];
 
-                tensorsdata->InsertNextTupleValue(vtktensor);
+                tensorsdata->InsertNextTypedTuple(vtktensor);
 
             }
             polydata->InsertNextCell(VTK_POLY_LINE, nPointsOnFiber, ids->GetPointer(currentId));
