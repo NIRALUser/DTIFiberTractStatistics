@@ -57,7 +57,9 @@ else()
   set( STATIC_LIB "SHARED" )
 endif()
 
-
+if(APPLE)
+  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 
 option(CREATE_BUNDLE "Create bundle" OFF)
 if(CREATE_BUNDLE)

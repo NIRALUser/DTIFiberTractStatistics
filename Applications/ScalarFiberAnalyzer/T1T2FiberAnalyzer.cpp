@@ -3,6 +3,7 @@
 #include <functional>
 #include <typeinfo>
 #include "T1T2FiberAnalyzer.h"
+#include <itksys/SystemTools.hxx>
 
 T1T2FiberAnalyzer::T1T2FiberAnalyzer(QWidget *parent) :
     QMainWindow(parent),
@@ -23,84 +24,60 @@ T1T2FiberAnalyzer::~T1T2FiberAnalyzer()
     writer->close();
 }
 
-void T1T2FiberAnalyzer::initializeConfPath()
+void T1T2FiberAnalyzer::initializeConfPath(std::string app_path)
 {
     // write to version.py
     // tool::writePyVersion()
     writer = ScriptWriter::getInstance("tool.py","pipeline.py");
     writer->writePreliminary();
 
-    std::string pypath;
+    std::vector< std::string > listDir ;
+    listDir.push_back(app_path);
+    
+    std::string pypath = "";
 
-    if(std::getenv("TFA_PYTHON"))
+    if(std::getenv("TFA_PYTHON")){
         pypath = std::string((std::getenv("TFA_PYTHON")));
-    else
-        pypath = "";
-
-    if (ui->conf_pypath->text() != ""){
-        pypath = ui->conf_pypath->text().toStdString();
+    }else{
+        pypath = itksys::SystemTools::FindProgram( "python", listDir ) ;
     }
 
-    if(pypath == "")
-    {
-        char* path = std::getenv("PATH");
-        std::vector<std::string> checkpath;
-        tool::tokenize(path,":",checkpath);
-        if(checkpath.empty())
-            ErrorReporter::fire("Failed to locate a python compiler in $PATH! Please configure it manually.");
-        else
-        {
-            for(std::vector<std::string>::iterator pit = checkpath.begin(); pit != checkpath.end(); ++pit){
-                QDirIterator dirit(QString::fromStdString(*pit));
-                while(dirit.hasNext()){
-                    QString fn = dirit.next();
-                    if(tool::checkExecutable(fn.toStdString()) && fn.toStdString().find("python") != std::string::npos){
-                        //qDebug() << fn;
-                        if(checkPyVersion(fn.toStdString())){
-                            ui->conf_pypath->setText(fn);
-                            return;
-                        }
-                    }
-                }
-            }
-
-            // failed to find python compiler
-            ErrorReporter::fire("Failed to locate a python compiler in $PATH! Please configure it manually.");
-            return;
-        }
-
-    }
-    else if(tool::checkExecutable(pypath)){
+    if (ui->conf_pypath->text().compare("") == 0 && pypath.compare("") != 0){
         QString str_pypath = QString::fromStdString(pypath);
         // to-do: codes need cleanup here. Python version should be checked first before populating it to gui
         ui->conf_pypath->setText(str_pypath);
     }
-    else{
-        ErrorReporter::fire("Given python path is not executable!");
-        return;
-    }
-
-    std::string vc = ui->conf_pypath->text().toStdString();
-    tool::checkNewLine(vc);
-    if(!checkPyVersion(vc)){
-        ErrorReporter::fire("Given executable is unsupported, or python version is below minimum requirement (2.5.0)!");
-        ui->conf_pypath->clear();
-    }
 
 
-    if(ui->conf_FiberProcessPath->text() != "")
-    {
-       if(!tool::checkExecutable(ui->conf_FiberProcessPath->text().toStdString()))
-       {
-        ErrorReporter::fire("Given FiberProcess path is not executable!");
-       }
+    std::string fiberprocess = "";
 
+    if(std::getenv("TFA_FIBERPROCESS")){
+        fiberprocess = std::string((std::getenv("TFA_FIBERPROCESS")));
     }else{
-        char* fp_path = std::getenv("TFA_FIBERPROCESS");
-        if(fp_path && !(tool::checkExecutable(fp_path))){
-            ErrorReporter::fire("Given FiberProcess path is not executable!");
-        }
+        fiberprocess = itksys::SystemTools::FindProgram( "fiberprocess", listDir ) ;
     }
+
+    if (ui->conf_FiberProcessPath->text().compare("") == 0 && fiberprocess.compare("") != 0){
+        QString str_fiberprocess = QString::fromStdString(fiberprocess);
+        // to-do: codes need cleanup here. Python version should be checked first before populating it to gui
+        ui->conf_FiberProcessPath->setText(str_fiberprocess);
+    }
+
+
+    std::string dtitractstat = "";
+
+    if(std::getenv("TFA_DTISTAT")){
+        dtitractstat = std::string((std::getenv("TFA_DTISTAT")));
+    }else{
+        dtitractstat = itksys::SystemTools::FindProgram( "dtitractstat", listDir ) ;
+    }
+
+    if (ui->conf_DTIStatPath->text().compare("") == 0 && dtitractstat.compare("") != 0){
+        QString str_dtitractstat = QString::fromStdString(dtitractstat);
+        // to-do: codes need cleanup here. Python version should be checked first before populating it to gui
+        ui->conf_DTIStatPath->setText(str_dtitractstat);
+    }
+    
 }
 
 // private methods
@@ -122,6 +99,8 @@ void T1T2FiberAnalyzer::InitializeState()
 
     atlas = NULL;
     tracts = NULL;
+
+    this->initializeConfPath(QCoreApplication::applicationDirPath().toStdString());
 
     // default path of file dialog
     if(tool::checkDirExist(DEFAULT_DIR))

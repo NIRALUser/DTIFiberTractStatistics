@@ -46,7 +46,7 @@ class T1T2FiberAnalyzer : public QMainWindow
 public:
     explicit T1T2FiberAnalyzer(QWidget *parent = 0);
     ~T1T2FiberAnalyzer();
-    void initializeConfPath();
+    void initializeConfPath(std::string app_path);
 
 
 private slots:

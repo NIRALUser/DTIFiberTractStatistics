@@ -17,7 +17,6 @@ set(srcfiles
 tfatool.cpp
 errorreporter.cpp
 T1T2FiberAnalyzer.cpp
-ScalarFiberAnalyzer.cpp
 csvbrowser.cpp
 csvbrowsemodel.cpp
 fibertractmodel.cpp
@@ -69,7 +68,7 @@ SEMMacroBuildCLI(
   NAME ScalarFiberAnalyzer
   EXECUTABLE_ONLY
   ADDITIONAL_SRCS ${srcfiles}
-  TARGET_LIBRARIES ${QT_LIBRARIES}
+  TARGET_LIBRARIES ${QT_LIBRARIES} ${ITK_LIBRARIES}
   INCLUDE_DIRECTORIES ${QT_INCLUDE_DIRS}
   INSTALL_RUNTIME_DESTINATION ${INSTALL_RUNTIME_DESTINATION}
   INSTALL_LIBRARY_DESTINATION ${INSTALL_LIBRARY_DESTINATION}
