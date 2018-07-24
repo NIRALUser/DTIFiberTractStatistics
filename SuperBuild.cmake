@@ -22,7 +22,7 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   set(EXTENSION_BUILD_SUBDIRECTORY . )
   find_package(Slicer REQUIRED)
   set( EXTENSION TRUE)
-  set( COMPILE_EXTERNAL_DTIPROCESS OFF CACHE BOOL "Compile external DTIProcess package (for fiberprocess application)." FORCE )
+  #set( COMPILE_EXTERNAL_DTIPROCESS OFF CACHE BOOL "Compile external DTIProcess package (for fiberprocess application)." FORCE )
   set( Slicer_USE_PYTHONQT FALSE )  
   set( USE_SYSTEM_ITK ON CACHE BOOL "Build using an externally defined version of ITK" FORCE )
   set( USE_SYSTEM_VTK ON CACHE BOOL "Build using an externally defined version of VTK" FORCE )
@@ -30,7 +30,8 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   set( VTK_VERSION_MAJOR ${VTK_VERSION_MAJOR} CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
   set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Build using an externally defined version of SlicerExecutionModel" FORCE )
   # DTIProcess_DIR is set because DTI-Reg is defined as dependent of the extension DTIProcess
-  include( ${DTIProcess_DIR}/ImportDTIProcessExtensionExecutables.cmake )
+  set(USE_SYSTEM_DTIProcess ON CACHE BOOL "Build using an externally defined version of DTIProcess" FORCE)
+  
 endif()
 
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
