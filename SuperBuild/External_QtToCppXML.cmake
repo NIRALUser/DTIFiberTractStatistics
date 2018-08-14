@@ -59,6 +59,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(${proj}_CMAKE_OPTIONS
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
     -DQt5Widgets_DIR:PATH=${Qt5Widgets_DIR}
+    -DQt5_DIR:PATH=${DQt5_DIR}
     )
 
   ### --- End Project specific additions
