@@ -19,3 +19,24 @@ See License.txt
 
 Find the tool on [NITRC](https://www.nitrc.org/projects/dti_tract_stat)
 
+## Building from source
+
+### Install Qt5
+
+Building using Qt5 is recommended. This version has been build with Qt5.5.1 but it may work with newer version. You can download Qt5 from [here](https://download.qt.io/archive/qt/5.5/5.5.1/)
+
+### Clone this repository and build
+
+```bash
+  git clone https://github.com/NIRALUser/DTIFiberTractStatistics.git
+  mkdir DTIFiberTractStatistics-build
+  cd DTIFiberTractStatistics-build
+  cmake -DUSE_QT4:BOOL=OFF -DQt5_DIR:PATH=/your/install/directory/Qt5.5.1/lib/cmake/Qt5 ../DTIFiberTractStatistics
+```
+
+If you want to build FADTTS you should use the following settings
+
+```bash
+  cmake -DUSE_QT4:BOOL=OFF -DBUILD_FADTTS:BOOL=ON -DQt5_DIR:PATH=/your/install/directory/Qt5.5.1/lib/cmake/Qt5 ../DTIFiberTractStatistics
+```
+  
