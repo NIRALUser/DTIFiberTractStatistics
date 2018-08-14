@@ -10,7 +10,7 @@ CSVBrowser::CSVBrowser(QWidget *parent) :
     ui->setupUi(this);
 }
 
-void CSVBrowser::loadTable(std::vector<std::vector<std::string>> csv_results, std::vector<std::string> headers){
+void CSVBrowser::loadTable(std::vector< std::vector<std::string> > csv_results, std::vector<std::string> headers){
     CSVBrowseModel *mm = new CSVBrowseModel(0,csv_results,headers);
     ui->BrowseTable->setModel(mm);
     ui->BrowseTable->horizontalHeader()->setStretchLastSection(true);

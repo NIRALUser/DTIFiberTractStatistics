@@ -6,13 +6,28 @@ if(BUILD_TESTING)
   include( CTest )
 endif(BUILD_TESTING)
 
+if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
+  #-----------------------------------------------------------------------------
+  set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
+  set(EXTENSION_HOMEPAGE "http://www.nitrc.org/projects/dti_tract_stat")
+  set(EXTENSION_CATEGORY "Diffusion")
+  set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
+  set(EXTENSION_DESCRIPTION "This extension provides the tool DTIAtlasFiberAnalyzer integrated in Slicer")
+  set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=403&screenshot_id=768")
+  set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/thumb/2/20/Screenshot-DTI_Atlas_Fiber_Analyser.png/745px-Screenshot-DTI_Atlas_Fiber_Analyser.png http://wiki.slicer.org/slicerWiki/images/thumb/6/6e/DTIAtlasFiberAnalyzerGenu_profile_FA.png/800px-DTIAtlasFiberAnalyzerGenu_profile_FA.png")
+  set(EXTENSION_STATUS "")
+  set(EXTENSION_DEPENDS "DTIProcess") # Specified as a space separated list or 'NA' if any
+  set(EXTENSION_BUILD_SUBDIRECTORY . )
+  unsetForSlicer( NAMES QT_QMAKE_EXECUTABLE SlicerExecutionModel_DIR ITK_DIR VTK_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  resetForSlicer( NAMES CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
+endif()
+
 SETIFEMPTY( ARCHIVE_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib/static )
 SETIFEMPTY( LIBRARY_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib )
 SETIFEMPTY( RUNTIME_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin )
 
-SETIFEMPTY(INSTALL_RUNTIME_DESTINATION bin)
-SETIFEMPTY(INSTALL_LIBRARY_DESTINATION lib)
-SETIFEMPTY(INSTALL_ARCHIVE_DESTINATION lib)
 set( install_dir ${INSTALL_RUNTIME_DESTINATION} )
 
 find_package(SlicerExecutionModel REQUIRED)
@@ -55,10 +70,6 @@ if( ${EXECUTABLES_ONLY} )
   set( STATIC_LIB "STATIC" )
 else()
   set( STATIC_LIB "SHARED" )
-endif()
-
-if(APPLE)
-  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
 option(CREATE_BUNDLE "Create bundle" OFF)
@@ -198,19 +209,7 @@ endif()
 
 add_subdirectory( Applications )
 
-find_package(DTIProcess REQUIRED)
-
-find_package(FADTTS REQUIRED)
-
-set( ToolsList
-  ${DTIProcess_fiberprocess_EXECUTABLE}
-  ${FADTTSter_EXECUTABLE}
-)
-
-
-if( EXECUTABLES_ONLY )
-  foreach( tool ${ToolsList})
-    message(STATUS "Install: ${tool}")
-    install(PROGRAMS ${tool} DESTINATION ${INSTALL_RUNTIME_DESTINATION})
-  endforeach()
+if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+  include(${Slicer_EXTENSION_CPACK})
 endif()

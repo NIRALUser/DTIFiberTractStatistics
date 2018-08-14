@@ -17,7 +17,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 if( NOT DTIAtlasFiberAnalyzer_SuperBuild )
   add_executable(FiberPostProcessTest vtkTest.cxx)
   target_link_libraries(FiberPostProcessTest FiberPostProcessLib)
-  install( TARGETS FiberPostProcessTest RUNTIME DESTINATION ${INSTALL_RUNTIME_DESTINATION} )
+  install( TARGETS FiberPostProcessTest RUNTIME DESTINATION bin )
 endif()
 
 # Attribute at 0 Mask at 0 Crop at 0 Clean at 0 -> checkNan

@@ -8,6 +8,7 @@ set(EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Select whe
 #-----------------------------------------------------------------------------
 # Extension option(s)
 #-----------------------------------------------------------------------------
+set(USE_QT4 OFF)
 if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   #-----------------------------------------------------------------------------
   set(EXTENSION_NAME DTIAtlasFiberAnalyzer)
@@ -31,7 +32,7 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Build using an externally defined version of SlicerExecutionModel" FORCE )
   # DTIProcess_DIR is set because DTI-Reg is defined as dependent of the extension DTIProcess
   set(USE_SYSTEM_DTIProcess ON CACHE BOOL "Build using an externally defined version of DTIProcess" FORCE)
-  
+  set(USE_QT4 ON)
 endif()
 
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
@@ -65,7 +66,7 @@ option(EXECUTABLES_ONLY "Build the tools and the tools' libraries statically" ON
 set(ITK_VERSION_MAJOR 4)
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 
-set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel DTIProcess QtToCppXML FADTTS)
+set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel DTIProcess QtToCppXML)
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${PRIMARY_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
@@ -195,7 +196,6 @@ if(verbose)
   endforeach()
 endif()
 
-
 set(proj DTIAtlasFiberAnalyzer-inner)
 ExternalProject_Add(${proj}
   DOWNLOAD_COMMAND ""
@@ -204,6 +204,7 @@ ExternalProject_Add(${proj}
   DEPENDS ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES}
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS    
+    -DDTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION:BOOL=${DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION}
     -DCOMPILE_MERGERSTATWITHFIBER:BOOL=ON
     -DCOMPILE_FIBERCOMPARE:BOOL=ON
     -DCOMPILE_DTITRACTSTAT:BOOL=ON
@@ -214,17 +215,10 @@ ExternalProject_Add(${proj}
     -DEXECUTABLES_ONLY:BOOL=${EXECUTABLES_ONLY}
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
     -DCMAKE_PREFIX_PATH:PATH=${Qt5_DIR}
+    -DUSE_QT4:BOOL=${USE_QT4}
     -DQtToCppXML_DIR:PATH=${QtToCppXML_DIR}
+  INSTALL_COMMAND ""
 )
-
-## Force rebuilding of the main subproject every time building from super structure
-ExternalProject_Add_Step(${proj} forcebuild
-    COMMAND ${CMAKE_COMMAND} -E remove
-    ${CMAKE_CURRENT_BUILD_DIR}/${proj}-prefix/src/${proj}-stamp/${proj}-build
-    DEPENDEES configure
-    DEPENDERS build
-    ALWAYS 1
-  )
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
@@ -252,12 +246,7 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
     install(PROGRAMS ${FADTTSter_EXECUTABLE} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
   endif()
 
-  foreach( VAR ${CLIs})
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/${VAR}${fileextension} DESTINATION ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION})
-  endforeach()
-  #set( NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules)
-  #install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/bin/DTIAtlasFiberAnalyzer${fileextension} DESTINATION ${NOCLI_INSTALL_DIR})
-  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR}/DTIAtlasFiberAnalyzer-inner-build;${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
   # For the tests, we manually import the targets built in the inner-build directory
   foreach( VAR ${CLIs} FiberPostProcessTest)

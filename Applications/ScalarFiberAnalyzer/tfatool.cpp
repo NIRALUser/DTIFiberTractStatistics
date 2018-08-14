@@ -108,14 +108,14 @@ bool tool::checkExecutable(char* path){
 }
 
 // generic parsing of csv files
-vector<vector<string>> tool::parseCSV(string dir, vector<string> &attrs){
+vector< vector<string> > tool::parseCSV(string dir, vector<string> &attrs){
     csvparser scanner(QString::fromStdString(dir));
     attrs.clear();
     // header line                       
     char line[10000];
     scanner.next_line(line,sizeof(line));
     tokenize(line,",",attrs);
-    vector<vector<string>> results;
+    vector< vector<string> > results;
     // content
     // to-do: check for csv consistency
     while (scanner.next_line(line,sizeof(line))){

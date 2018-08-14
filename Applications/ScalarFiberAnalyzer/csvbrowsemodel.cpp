@@ -1,7 +1,7 @@
 #include "csvbrowsemodel.h"
 #include <iostream>
 
-CSVBrowseModel::CSVBrowseModel (QObject *parent,  vector<vector<string>> csv_results, vector<string> h)
+CSVBrowseModel::CSVBrowseModel (QObject *parent,  vector< vector<string> > csv_results, vector<string> h)
     :QAbstractTableModel(parent){
     headers = h;
     table =csv_results;
