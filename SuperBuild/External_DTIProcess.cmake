@@ -104,7 +104,6 @@ else()
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED
       HINTS ${DTIProcess_BINARY_DIR}/DTIProcess-install/lib/CMake/DTIProcess)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
-    include( ${DTIProcess_BINARY_DIR}/ImportDTIProcessExtensionExecutables.cmake )
   endif()
   # The project is provided using ${extProjName}_DIR, nevertheless since other
   # project may depend on ${extProjName}, let's add an 'empty' one
