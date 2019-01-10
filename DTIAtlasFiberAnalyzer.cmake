@@ -50,7 +50,7 @@ if( VTK_MAJOR_VERSION VERSION_LESS 6 AND NOT VTK_USE_QT )
   message( FATAL_ERROR "DTIAtlasFiberAnalyzer needs VTK to be built with Qt" )
 endif()
 
-OPTION(COMPILE_DTIATLASFIBERANALYZER "Compile DTIAtlasFiberAnalyzer." ON)
+
 if( VTK_MAJOR_VERSION VERSION_GREATER 5 ) 
   if(COMPILE_DTIATLASFIBERANALYZER)
     list( FIND VTK_MODULES_ENABLED "vtkGUISupportQt" vtkQtpos )
