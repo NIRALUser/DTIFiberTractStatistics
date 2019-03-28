@@ -33,7 +33,7 @@ set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, th
 
 # Set dependency list
 
-option(USE_QT4 "Build using Qt4" ON)
+option(USE_QT4 "Build using Qt4" OFF)
 if(USE_QT4)
   set(${proj}_DEPENDENCIES Qt4)
   set(VTK_QT_VERSION 4)
@@ -70,7 +70,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   ### --- End Project specific additions
 
-  set(${proj}_GIT_TAG "v7.0.0")
+  set(${proj}_GIT_TAG "v8.2.0")
   set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
 
   ExternalProject_Add(${proj}
