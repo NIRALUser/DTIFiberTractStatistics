@@ -88,8 +88,7 @@ void tool::parseMapContent(QString filename, map<string,TractData> &data, string
             QString::fromStdString(path),
             QString::fromStdString(sid)
         };
-        auto element = std::make_pair(sid,newTract);
-        data.insert(element);
+        data.insert(std::make_pair(sid,newTract));
     }
 
 }

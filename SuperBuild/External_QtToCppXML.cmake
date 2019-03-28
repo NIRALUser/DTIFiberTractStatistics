@@ -40,10 +40,24 @@ endif()
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
+
+  set(${proj}_CMAKE_OPTIONS
+    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+    )
+
   if(USE_QT4)
   	set(${proj}_DEPENDENCIES SlicerExecutionModel Qt4 )  
+    set(${proj}_CMAKE_OPTIONS
+      ${${proj}_CMAKE_OPTIONS} 
+      -DQT_VERSION=4
+      )
   else()
-	set(${proj}_DEPENDENCIES SlicerExecutionModel Qt5 )
+	 set(${proj}_DEPENDENCIES SlicerExecutionModel Qt5 )
+   set(${proj}_CMAKE_OPTIONS
+    ${${proj}_CMAKE_OPTIONS} 
+    -DQt5Widgets_DIR:PATH=${Qt5Widgets_DIR}
+    -DQt5_DIR:PATH=${Qt5_DIR}
+    )
   endif()
   # Include dependent projects if any
   SlicerMacroCheckExternalProjectDependency(${proj})
@@ -55,12 +69,6 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
   endif()
-  ### --- Project specific additions here
-  set(${proj}_CMAKE_OPTIONS
-    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
-    -DQt5Widgets_DIR:PATH=${Qt5Widgets_DIR}
-    -DQt5_DIR:PATH=${Qt5_DIR}
-    )
 
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/QTGUI.git)
