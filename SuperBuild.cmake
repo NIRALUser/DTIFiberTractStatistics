@@ -221,7 +221,6 @@ ExternalProject_Add(${proj}
     -DCMAKE_PREFIX_PATH:PATH=${Qt5_DIR}
     -DUSE_QT4:BOOL=${USE_QT4}
     -DQtToCppXML_DIR:PATH=${QtToCppXML_DIR}
-  INSTALL_COMMAND ""
 )
 
 #-----------------------------------------------------------------------------

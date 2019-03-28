@@ -3,7 +3,6 @@ IF(COMPILE_DTITRACTSTAT)
   add_subdirectory( dtitractstat )
 ENDIF(COMPILE_DTITRACTSTAT)
 
-
 OPTION(COMPILE_DTIATLASFIBERANALYZER "Compile DTIAtlasFiberAnalyzer." ON)
 IF(COMPILE_DTIATLASFIBERANALYZER)
   add_subdirectory( DTIAtlasFiberAnalyzer )
