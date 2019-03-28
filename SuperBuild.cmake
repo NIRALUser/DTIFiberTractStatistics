@@ -32,7 +32,6 @@ if( DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Build using an externally defined version of SlicerExecutionModel" FORCE )
   # DTIProcess_DIR is set because DTI-Reg is defined as dependent of the extension DTIProcess
   set(USE_SYSTEM_DTIProcess ON CACHE BOOL "Build using an externally defined version of DTIProcess" FORCE)
-  set(USE_QT4 ON)
 endif()
 
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)

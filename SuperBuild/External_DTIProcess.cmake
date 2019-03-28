@@ -28,10 +28,6 @@ set(extProjName DTIProcess) #The find_package known name
 set(proj        DTIProcess) #This local name
 set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
 
-if(${USE_SYSTEM_${extProjName}})
-  unset(${extProjName}_DIR CACHE)
-endif()
-
 # Sanity checks
 if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
   message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
@@ -104,7 +100,6 @@ else()
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED
       HINTS ${DTIProcess_BINARY_DIR}/DTIProcess-install/lib/CMake/DTIProcess)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
-    include( ${DTIProcess_BINARY_DIR}/ImportDTIProcessExtensionExecutables.cmake )
   endif()
   # The project is provided using ${extProjName}_DIR, nevertheless since other
   # project may depend on ${extProjName}, let's add an 'empty' one

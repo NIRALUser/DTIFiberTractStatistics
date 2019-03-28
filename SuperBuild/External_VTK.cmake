@@ -33,7 +33,6 @@ set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, th
 
 # Set dependency list
 
-option(USE_QT4 "Build using Qt4" ON)
 if(USE_QT4)
   set(${proj}_DEPENDENCIES Qt4)
   set(VTK_QT_VERSION 4)
