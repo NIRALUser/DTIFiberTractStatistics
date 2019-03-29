@@ -97,7 +97,6 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/CMake/${proj})
 else()
   if(${USE_SYSTEM_${extProjName}})
-    message(STATUS dddddfffff${${extProjName}_DIR})
     find_package(${extProjName} REQUIRED)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
