@@ -13,6 +13,8 @@ if(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED)
 endif()
 set(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED 1)
 
+include(${CMAKE_CURRENT_LIST_DIR}/EP_Autoconf_Utils.cmake)
+
 ## External_${extProjName}.cmake files can be recurisvely included,
 ## and cmake variables are global, so when including sub projects it
 ## is important make the extProjName and proj variables
@@ -24,29 +26,47 @@ ProjectDependancyPush(CACHED_proj ${proj})
 # Make sure that the ExtProjName/IntProjName variables are unique globally
 # even if other External_${ExtProjName}.cmake files are sourced by
 # SlicerMacroCheckExternalProjectDependency
-set(extProjName DTIProcess) #The find_package known name
-set(proj        DTIProcess) #This local name
-set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
+set(extProjName TIFF) #The find_package known name
+set(proj        TIFF) #This local name
 
-
-
-
+#if(${USE_SYSTEM_${extProjName}})
+#  unset(${extProjName}_DIR CACHE)
+#endif()
 
 # Sanity checks
 if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
   message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
 endif()
 
+# Set dependency list
+set(${proj}_DEPENDENCIES "")
+
+# Include dependent projects if any
+SlicerMacroCheckExternalProjectDependency(${proj})
+
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
-  # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel )
-  if( BUILD_DWIAtlas )
-    list( APPEND ${proj}_DEPENDENCIES Boost )
+  if( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES zlib)
   endif()
-
+  if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES JPEG)
+  endif()
   # Include dependent projects if any
   SlicerMacroCheckExternalProjectDependency(${proj})
+
+  if( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
+    set(${proj}_ZLIB_ARGS 
+        --with-zlib-include-dir=${ZLIB_INCLUDE_DIR}
+        --with-zlib-lib-dir=${zlib_DIR}/lib
+      )
+  endif()
+  if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+    set(${proj}_JPEG_ARGS
+        --with-jpeg-lib-dir=${JPEG_LIB_DIR}
+        --with-jpeg-include-dir=${JPEG_INCLUDE_DIR}
+      )
+  endif()
   # Set CMake OSX variable to pass down the external project
   set(CMAKE_OSX_EXTERNAL_PROJECT_ARGS)
   if(APPLE)
@@ -54,52 +74,47 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
+    set(APPLE_CFLAGS " -DHAVE_APPLE_OPENGL_FRAMEWORK")
   endif()
-  if( BUILD_DWIAtlas )
-    set( DWIAtlasVars
-        -DBOOST_ROOT:PATH=${BOOST_ROOT}
-        -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
-        -DBUILD_dwiAtlas:BOOL=ON
-       )
-  endif()
-  ### --- Project specific additions here
-  set(${proj}_CMAKE_OPTIONS
-    ${DWIAtlasVars}
-    -DBOOST_ROOT:PATH=${BOOST_ROOT}
-    -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
-    -DUSE_SYSTEM_ITK:BOOL=ON
-    -DUSE_SYSTEM_VTK:BOOL=ON
-    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
-    -DDTIProcess_SUPERBUILD:BOOL=OFF
-    -DEXECUTABLES_ONLY:BOOL=ON
-    )
 
-  
+  ### --- Project specific additions here
+
+  AutoConf_FLAGS(${proj}_CFLAGS C "${APPLE_CFLAGS}")
+  AutoConf_FLAGS(${proj}_CXXFLAGS CXX "${APPLE_CFLAGS}")
+
   ### --- End Project specific additions
-  set( ${proj}_REPOSITORY ${git_protocol}://github.com/niralUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG master )
+  set(${proj}_URL "http://download.osgeo.org/libtiff/tiff-4.0.4.tar.gz")
+  set(${proj}_MD5 "9aee7107408a128c0c7b24286c0db900")
   ExternalProject_Add(${proj}
-    GIT_REPOSITORY ${${proj}_REPOSITORY}
-    GIT_TAG ${${proj}_GIT_TAG}
+    URL ${${proj}_URL}
+    ${URL_HASH_CLAUSE}
+    URL_MD5 ${${proj}_MD5}
     SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
+    INSTALL_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
     LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
     LOG_INSTALL   0  # Wrap install in script to to ignore log output from dashboards
-    ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
-      ${COMMON_EXTERNAL_PROJECT_ARGS}
-      ${${proj}_CMAKE_OPTIONS}
-      ## We really do want to install to remove uncertainty about where the tools are
-      ## (on Windows, tools might be in subfolders, like "Release", "Debug",...)
-      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
+    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+    --enable-shared=No
+    --enable-static=Yes
+    --disable-lzma
+    ${${proj}_ZLIB_ARGS}
+    ${${proj}_JPEG_ARGS}
+    CC=${CMAKE_C_COMPILER}
+    CXX=${CMAKE_CXX_COMPILER}
+    "CFLAGS=${${proj}_CFLAGS}"
+    "CXXFLAGS=${${proj}_CXXFLAGS}"
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/CMake/${proj})
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install)
+  set(${extProjName}_INCLUDE_DIR
+    ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include)
+  set(${extProjName}_LIBRARY
+    ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/libtiff.a)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} REQUIRED)
@@ -114,4 +129,3 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
 
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)
-

@@ -70,7 +70,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ### --- End Project specific additions
 
   set(${proj}_GIT_TAG "v8.2.0")
-  set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
+  set(${proj}_REPOSITORY ${git_protocol}://github.com/Kitware/VTK.git)
 
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
@@ -94,8 +94,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
 
 
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/vtk-8.2)
-  
+  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib64/cmake/vtk-8.2)
+  #set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
 else()
   if(${USE_SYSTEM_${extProjName}})

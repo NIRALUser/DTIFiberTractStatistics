@@ -29,9 +29,12 @@ if(NOT DEFINED KWStyle_EXE AND NOT ${USE_SYSTEM_KWStyle})
       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
   endif()
 
+
+  set(${proj}_REPOSITORY ${git_protocol}://github.com/Kitware/KWStyle)
+  set(${proj}_GIT_TAG master)
   ExternalProject_add(${proj}
-    CVS_REPOSITORY :pserver:anoncvs@public.kitware.com:/cvsroot/KWStyle
-    CVS_MODULE KWStyle
+    GIT_REPOSITORY ${${proj}_REPOSITORY}  
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     "${cmakeversion_external_update}"
@@ -44,6 +47,7 @@ if(NOT DEFINED KWStyle_EXE AND NOT ${USE_SYSTEM_KWStyle})
     DEPENDS
       ${KWStyle_DEPENDENCIES}
     )
+
 
   set(KWStyle_EXE ${CMAKE_BINARY_DIR}/Utils/bin/KWStyle)
 else()

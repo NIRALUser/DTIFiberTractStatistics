@@ -65,13 +65,16 @@ option(EXECUTABLES_ONLY "Build the tools and the tools' libraries statically" ON
 set(ITK_VERSION_MAJOR 4)
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 
-set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel QtToCppXML)
+set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES                      ${ITK_EXTERNAL_NAME} 
+                                                              VTK 
+                                                              SlicerExecutionModel 
+                                                              QtToCppXML)
 
 if( NOT DTIAtlasFiberAnalyzer_BUILD_SLICER_EXTENSION )
-  set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES} DTIProcess)  
+  set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES} JPEG TIFF DCMTK DTIProcess)  
 endif()
 
-option(BUILD_FADTTS "Build FADTTS during superbuild" OFF)
+option(BUILD_FADTTS "Build FADTTS during superbuild" ON)
 if(BUILD_FADTTS)
   set(${PRIMARY_PROJECT_NAME}_DEPENDENCIES ${${PRIMARY_PROJECT_NAME}_DEPENDENCIES} FADTTS)
 endif()

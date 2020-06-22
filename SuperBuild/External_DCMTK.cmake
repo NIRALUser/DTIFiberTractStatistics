@@ -24,13 +24,13 @@ ProjectDependancyPush(CACHED_proj ${proj})
 # Make sure that the ExtProjName/IntProjName variables are unique globally
 # even if other External_${ExtProjName}.cmake files are sourced by
 # SlicerMacroCheckExternalProjectDependency
-set(extProjName DTIProcess) #The find_package known name
-set(proj        DTIProcess) #This local name
+set(extProjName DCMTK) #The find_package known name
+set(proj        DCMTK) #This local name
 set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
 
-
-
-
+#if(${USE_SYSTEM_${extProjName}})
+#  unset(${extProjName}_DIR CACHE)
+#endif()
 
 # Sanity checks
 if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
@@ -38,15 +38,47 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
-  #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel )
-  if( BUILD_DWIAtlas )
-    list( APPEND ${proj}_DEPENDENCIES Boost )
+  set(${proj}_DEPENDENCIES "" )
+
+  #message(STATUS "${__indent}Adding project ${proj}")
+################################################################
+###            # see CTK github issue #25#                   ###
+################################################################
+#  if( ${PRIMARY_PROJECT_NAME}_BUILD_TIFF_SUPPORT )
+#    list(APPEND ${proj}_DEPENDENCIES TIFF)
+#  endif()
+#  if( ${PRIMARY_PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+#    list(APPEND ${proj}_DEPENDENCIES JPEG)
+#  endif()
+  if( ${PRIMARY_PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES zlib)
+  endif()
+  SlicerMacroCheckExternalProjectDependency(${proj})
+################################################################
+###            # see CTK github issue #25#                   ###
+################################################################
+#  if( ${PRIMARY_PROJECT_NAME}_BUILD_TIFF_SUPPORT )
+#    set(${proj}_TIFF_ARGS
+#      -DDCMTK_WITH_TIFF:BOOL=ON
+#       )
+#  else()
+#    set(${proj}_TIFF_ARGS
+#      -DDCMTK_WITH_TIFF:BOOL=OFF
+#       )
+#  endif()
+#  if( ${PRIMARY_PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+#    set(${proj}_JPEG_ARGS
+#      -DDCMTK_WITH_JPEG:BOOL=ON
+#      )
+#  endif()
+  if( ${PRIMARY_PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
+    set(${proj}_ZLIB_ARGS
+      -DDCMTK_WITH_ZLIB:BOOL=ON
+      )
   endif()
 
-  # Include dependent projects if any
-  SlicerMacroCheckExternalProjectDependency(${proj})
+
   # Set CMake OSX variable to pass down the external project
   set(CMAKE_OSX_EXTERNAL_PROJECT_ARGS)
   if(APPLE)
@@ -55,34 +87,43 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
   endif()
-  if( BUILD_DWIAtlas )
-    set( DWIAtlasVars
-        -DBOOST_ROOT:PATH=${BOOST_ROOT}
-        -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
-        -DBUILD_dwiAtlas:BOOL=ON
-       )
+
+  set(CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG)
+  if(CTEST_USE_LAUNCHERS)
+    set(CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG
+      "-DCMAKE_PROJECT_DCMTK_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake")
   endif()
+
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
-    ${DWIAtlasVars}
-    -DBOOST_ROOT:PATH=${BOOST_ROOT}
-    -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
-    -DUSE_SYSTEM_ITK:BOOL=ON
-    -DUSE_SYSTEM_VTK:BOOL=ON
-    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
-    -DDTIProcess_SUPERBUILD:BOOL=OFF
-    -DEXECUTABLES_ONLY:BOOL=ON
-    )
-
-  
+      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
+      #-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+      ${CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG}
+      -DBUILD_EXAMPLES:BOOL=OFF
+      -DBUILD_TESTING:BOOL=OFF
+      -DDCMTK_WITH_DOXYGEN:BOOL=OFF
+      -DDCMTK_WITH_OPENSSL:BOOL=OFF # see CTK github issue #25
+      -DDCMTK_WITH_PNG:BOOL=OFF # see CTK github issue #25
+      -DDCMTK_WITH_XML:BOOL=OFF  # see CTK github issue #25
+      -DDCMTK_WITH_ICONV:BOOL=OFF  # see CTK github issue #178
+      -DDCMTK_WITH_JPEG:BOOL=OFF  # see CTK github issue #25
+      -DDCMTK_WITH_TIFF:BOOL=OFF  # see CTK github issue #25
+      -DDCMTK_FORCE_FPIC_ON_UNIX:BOOL=ON
+      -DDCMTK_OVERWRITE_WIN32_COMPILER_FLAGS:BOOL=OFF
+      -DDCMTK_WITH_WRAP:BOOL=OFF   # CTK does not build on Mac with this option turned ON due to library dependencies missing
+      ${${proj}_TIFF_ARGS}
+      ${${proj}_JPEG_ARGS}
+      ${${proj}_ZLIB_ARGS}
+  )
   ### --- End Project specific additions
-  set( ${proj}_REPOSITORY ${git_protocol}://github.com/niralUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG master )
+  set(${proj}_REPOSITORY ${git_protocol}://github.com/commontk/DCMTK.git)
+  set(${proj}_GIT_TAG "f461865d1759854db56e4c840991c81c77e45bb9")
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
+    INSTALL_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
     LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
@@ -93,25 +134,25 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${${proj}_CMAKE_OPTIONS}
-      ## We really do want to install to remove uncertainty about where the tools are
-      ## (on Windows, tools might be in subfolders, like "Release", "Debug",...)
-      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
+## We really do want to install in order to limit # of include paths INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/CMake/${proj})
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/cmake/dcmtk)
 else()
   if(${USE_SYSTEM_${extProjName}})
-    find_package(${extProjName} REQUIRED)
+    find_package(${extProjName} REQUIRED NO_MODULE)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
   # The project is provided using ${extProjName}_DIR, nevertheless since other
   # project may depend on ${extProjName}, let's add an 'empty' one
   SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
 endif()
-
+set( ${PRIMARY_PROJECT_NAME}_BUILD_DICOM_SUPPORT ON )
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
+list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${PRIMARY_PROJECT_NAME}_BUILD_DICOM_SUPPORT:BOOL)
+_expand_external_project_vars()
+set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)
-

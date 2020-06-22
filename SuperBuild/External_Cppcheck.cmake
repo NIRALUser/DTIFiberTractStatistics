@@ -21,7 +21,7 @@ set(proj Cppcheck)
 if(NOT DEFINED Cppcheck_EXE AND NOT ${USE_SYSTEM_Cppcheck})
 
   set(Cppcheck_REPOSITORY git://github.com/danmar/cppcheck.git)
-  set(Cppcheck_GIT_TAG origin/master)
+  set(Cppcheck_GIT_TAG 2.0)
 
   ExternalProject_add(${proj}
     GIT_REPOSITORY ${Cppcheck_REPOSITORY}
