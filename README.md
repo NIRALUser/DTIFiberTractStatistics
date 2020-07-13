@@ -11,6 +11,24 @@ This package is also available as a 3D Slicer extension (http://www.slicer.org) 
 
 Some documentation about the features available in this package are available here: http://www.na-mic.org/Wiki/index.php/Projects:dtistatisticsfibers
 
+
+## Dockerfile for developers
+
+Use below command in source directory to build docker image (Currently having only CentOS7 image.
+
+```
+$ docker build . -t <image-name>
+$ docker run --rm -it -v $PWD/../:/work -w /work <image-name> 
+```
+
+## Change Log:
+
+#### [v1.7.3](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3) (07/13/2020)
+- CSV Table is now able to remove a selection of table. (Previously available only line by line)
+- Tabs are now all enabled without having processed the previous step.
+- Build script fixed , users can build the tool suite with the standard environment described in Dockerfile. (CentOS7 only)
+
+
 ## License
 
 See License.txt
