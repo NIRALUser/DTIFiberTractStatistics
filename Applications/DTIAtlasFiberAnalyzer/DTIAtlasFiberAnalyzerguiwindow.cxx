@@ -3,7 +3,8 @@
 #include "DTIAtlasFiberAnalyzerguiwindow.h"
 
 #include <sstream>
-
+#include <vector>
+#include <set>
 /*********************************************************************************
  * Constructor
  ********************************************************************************/
@@ -49,7 +50,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
 
     //Disable every tab except the first one
     for(int i=1; i<4; i++)
-        PrincipalWidget->setTabEnabled (i,false);
+        PrincipalWidget->setTabEnabled (i,true);
     PrincipalWidget->setTabEnabled(4,true);
     PrincipalWidget->setCurrentIndex(0);
 
@@ -667,7 +668,8 @@ void DTIAtlasFiberAnalyzerguiwindow::ClearDataInformation()
     //Disable every tab except the first one
     for(int i=1; i<4; i++)
     {
-        PrincipalWidget->setTabEnabled (m_numberstep + i,false);
+        //PrincipalWidget->setTabEnabled (m_numberstep + i,false);
+        PrincipalWidget->setTabEnabled (m_numberstep + i,true);
     }
     m_DataCol = -1;
     m_DeformationCol = -1;
@@ -922,17 +924,40 @@ void DTIAtlasFiberAnalyzerguiwindow::AddR()
  ********************************************************************************/
 void DTIAtlasFiberAnalyzerguiwindow::DeleteR()
 {
-    if(m_currentRow != -1)
-    {
-        /* Delete the row */
-        CSVtable->removeRow (m_currentRow);
-        m_currentRow = -1;
-        m_currentColumn = -1;
+
+    QList<QTableWidgetItem*> ql=CSVtable->selectedItems();
+    std::set<int> rowSet;
+    int rowIdx;
+    
+    foreach(QTableWidgetItem* x, ql){
+        //std::cout << x->row() <<std::endl;
+        rowSet.insert(x->row());
     }
-    else
-    {
-        QMessageBox::information(this, "Warning", "Select a line!");
+
+    foreach(int x, rowSet){
+        //std::cout << x << std::endl;
     }
+
+    for(auto i=rowSet.rbegin(); i != rowSet.rend();i++ ){
+        //std::cout << *i << std::endl;
+        rowIdx=*i;
+        CSVtable->removeRow(rowIdx);
+    }
+
+    m_currentRow = -1;
+    m_currentColumn=-1 ;
+
+    // if(m_currentRow != -1)
+    // {
+    //     /* Delete the row */
+    //     CSVtable->removeRow (m_currentRow);
+    //     m_currentRow = -1;
+    //     m_currentColumn = -1;
+    // }
+    // else
+    // {
+    //     QMessageBox::information(this, "Warning", "Select a line!");
+    // }
 }
 
 /* Set Data column number */
