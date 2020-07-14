@@ -40,7 +40,7 @@ endif()
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel )
+  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel DCMTK)
   if( BUILD_DWIAtlas )
     list( APPEND ${proj}_DEPENDENCIES Boost )
   endif()
