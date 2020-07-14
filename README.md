@@ -23,7 +23,7 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
-#### [v1.7.3](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3) (07/13/2020)
+#### [v1.7.3a](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3a) (07/13/2020)
 - CSV Table is now able to remove a selection of table. (Previously available only line by line)
 - Tabs are now all enabled without having processed the previous step.
 - Build script fixed , users can build the tool suite with the standard environment described in Dockerfile. (CentOS7 only)
