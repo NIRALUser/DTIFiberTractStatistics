@@ -24,7 +24,7 @@ ProjectDependancyPush(CACHED_proj ${proj})
 set(extProjName VTK) #The find_package known name
 set(proj        VTK) #This local name
 
-set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
+set(${extProjName}_REQUIRED_VERSION "5.10")  #If a required version is necessary, then set this, else leave blank
 
 # Sanity checks
 #if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
@@ -59,6 +59,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   set(${proj}_CMAKE_OPTIONS
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+      -DCMAKE_INSTALL_LIBDIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/lib
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF      
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
@@ -69,9 +70,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   ### --- End Project specific additions
 
-  set(${proj}_GIT_TAG "v8.2.0")
+  
   set(${proj}_REPOSITORY ${git_protocol}://github.com/Kitware/VTK.git)
-
+  set(${proj}_GIT_TAG "v8.2.0")
+  # set(${proj}_GIT_TAG "v5.10.0")
+  
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -93,8 +96,15 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_DEPENDENCIES}
     )
 
-
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib64/cmake/vtk-8.2)
+  set(LIB_DIR lib)
+  # if(EXISTS ${CMAKE_BINARY_DIR}/${proj}-install/${LIB_DIR})
+  #   set(LIB_DIR lib)
+  # else()
+  #   set(LIB_DIR lib64)
+  # endif()
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/cmake/vtk-8.2)
+  set(${extProjName}_INCLUDE_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include/vtk-8.2)
+  # set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/vtk-5.10)
   #set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
 else()
@@ -108,6 +118,9 @@ else()
 endif()
 
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
+list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_INCLUDE_DIR:PATH)
+_expand_external_project_vars()
+set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)

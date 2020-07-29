@@ -152,6 +152,8 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   Subversion_SVN_EXECUTABLE:FILEPATH
   GIT_EXECUTABLE:FILEPATH
   USE_GIT_PROTOCOL:BOOL
+  ITK_DIR:PATH
+  VTK_DIR:PATH
   )
 
 _expand_external_project_vars()
@@ -228,6 +230,7 @@ ExternalProject_Add(${proj}
     -DCMAKE_PREFIX_PATH:PATH=${Qt5_DIR}
     -DUSE_QT4:BOOL=${USE_QT4}
     -DQtToCppXML_DIR:PATH=${QtToCppXML_DIR}
+    -DVTK_DIR:PATH=${VTK_DIR}
 )
 
 #-----------------------------------------------------------------------------

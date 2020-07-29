@@ -72,12 +72,14 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
     -DDTIProcess_SUPERBUILD:BOOL=OFF
     -DEXECUTABLES_ONLY:BOOL=ON
+    -DITK_DIR:PATH=${ITK_DIR}
+    -DVTK_DIR:PATH=${VTK_DIR}
     )
 
-  
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/niralUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG master )
+  set( ${proj}_GIT_TAG release)
+  # set( ${proj}_GIT_TAG master )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

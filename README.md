@@ -21,7 +21,15 @@ $ docker build . -t <image-name>
 $ docker run --rm -it -v $PWD/../:/work -w /work <image-name> 
 ```
 
+## Build comment
+
+- In OSX,  Qt5_DIR environment variable needs to be set (e.g. /usr/local/opt/qt5/lib/cmake/Qt5)
+
 ## Change Log:
+
+#### [v1.7.3b](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3b) (07/27/2020)
+- FADTTSter repository chaneged to master
+- Build script bug fixed for OSX
 
 #### [v1.7.3a](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3a) (07/13/2020)
 - CSV Table is now able to remove a selection of table. (Previously available only line by line)
