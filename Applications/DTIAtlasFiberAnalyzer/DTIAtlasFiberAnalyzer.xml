@@ -82,6 +82,13 @@
          <label>Fiber sampling step</label>
          <default>1.0</default>
       </double>
+      <integer>
+         <name>bandwidth</name>
+         <longflag>BandWitdh</longflag>
+         <description> Bandwidth in dti tract statistics </description>
+         <label> bandwidth </label>
+         <default> -1 </default>
+      </integer>
       <file>
          <name>configFile</name>
          <longflag>configFile</longflag>

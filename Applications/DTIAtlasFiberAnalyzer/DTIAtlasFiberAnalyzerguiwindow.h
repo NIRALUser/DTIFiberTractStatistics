@@ -80,6 +80,7 @@ private slots:
     bool Computefiberprocess();
     bool ComputeFiberPostProcess();
     bool Computedti_tract_stat();
+    bool toggleBandWidth(int event);
     bool OpenPlotWindow();
     void OpenDataFile();
     void OpenAnalysisFile();
@@ -90,16 +91,17 @@ private slots:
     void EnterCsvFileName();
     void ApplySlot();
     void TabChanged(int);
-    void BrowserDTIPCsvFilename();
-    void BrowserDTIPVtkFilename();
-    void BrowserDTIPOutputFilename();
-    bool ComputeDTIParametrization();
+    //void BrowserDTIPCsvFilename();
+    //void BrowserDTIPVtkFilename();
+    //void BrowserDTIPOutputFilename();
+    //bool ComputeDTIParametrization();
     void BrowseSoft(int); //in the soft dialog window
     void ResetSoft(int);
     void ConfigDefault();
     void OpenConfigFile( QString filename ) ;
     void SelectConfigFile() ;
     void SaveConfigFile() ;
+
 
 
 protected:

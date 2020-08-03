@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         if(debug)
             std::cout<<"DTI Atlas Fiber Analyser WITHOUT GUI"<<std::endl;
 
-        if(!CommandLine( pathToExecutable , loadCSV, datafile, analysisfile, debug , sampling , rodent , removeCleanFibers , removeNanFibers , configFile ))
+        if(!CommandLine( pathToExecutable , loadCSV, datafile, analysisfile, bandwidth , debug , sampling , rodent , removeCleanFibers , removeNanFibers , configFile ))
             std::cout<<"Stop DTIAtlasFiberAnalyzer ..."<<std::endl;
 
         return 0;

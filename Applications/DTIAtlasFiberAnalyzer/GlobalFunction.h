@@ -13,7 +13,8 @@ typedef QVector<qv2double> qv3double;
 /* Get the XML file containing paths to each executable used in the program
 void setExecutablesConfigFile() ;*/
 /* Call when there is nogui */
-bool CommandLine( std::string pathToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, bool debug , double sampling , bool rodent , bool removeCleanFibers, bool removeNanFibers , std::string configFile );
+bool CommandLine( std::string pathToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, int bandWidth, 
+					bool debug , double sampling , bool rodent , bool removeCleanFibers, bool removeNanFibers , std::string configFile );
 
 /* Create a Directory */
 bool CreateDirectoryForData(std::string outputfolder, std::string name);
@@ -64,11 +65,12 @@ std::string ExtensionofFile(std::string filename);
 
 /* Compute dti_tract_stat : take the parameters and call the software for every fiber selected with its plane */
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-             std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
-             int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, QWidget *parent=NULL);
+             std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, int bandWidth,
+             int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth, QWidget *parent=NULL);
 
 /* Call dti_tract_stat */
-int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirectory, std::string Input_fiber_file, std::string Output_fiber_file, std::string plane, std::string parameter, bool CoG, double sampling , bool rodent , bool clean , bool noNan, bool Parametrized=true);
+int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirectory, std::string Input_fiber_file, std::string Output_fiber_file, std::string plane, std::string parameter, int bandWidth,
+			bool CoG, double sampling , bool rodent , bool clean , bool noNan, bool useBandWidth, bool Parametrized=true);
 
 /* Gather the fiber profile in different output file */
 std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int DataCol, int NameCol, bool transposeColRow, vstring fibers, bool& success);

@@ -47,6 +47,7 @@ bool CommandLine( std::string pathCurrentToExecutable ,
                   std::string CSVFilename ,
                   std::string datafile ,
                   std::string analysisfile ,
+                  int bandWidth,
                   bool debug ,
                   double sampling ,
                   bool rodent ,
@@ -63,6 +64,11 @@ bool CommandLine( std::string pathCurrentToExecutable ,
     DefCol = -1;
     NameCol = -1;
     bool transposeColRow, success=false, CoG=false, FieldType=true; //FieldType=true -> H-Field false -> D-Field
+    bool useBandWidth=true;
+    if (bandWidth == -1)
+    {
+        useBandWidth=true;
+    }
 
     //read the parameters from the file
     if(!ReadParametersFromFiles(datafile, analysisfile, csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol, FieldType, NameCol,SelectedFibers, SelectedPlanes, transposeColRow, CoG))
@@ -166,6 +172,7 @@ bool CommandLine( std::string pathCurrentToExecutable ,
                             SelectedFibers ,
                             Selectedfibersplane ,
                             parameters ,
+                            bandWidth,
                             DataCol ,
                             NameCol ,
                             true ,
@@ -173,7 +180,8 @@ bool CommandLine( std::string pathCurrentToExecutable ,
                             sampling ,
                             rodent ,
                             removeCleanFibers ,
-                            removeNanFibers
+                            removeNanFibers,
+                            useBandWidth
                             ) ;
     }
     else
@@ -199,6 +207,7 @@ bool CommandLine( std::string pathCurrentToExecutable ,
                             fibers ,
                             fibersplane ,
                             parameters ,
+                            bandWidth,
                             DataCol ,
                             NameCol ,
                             true ,
@@ -206,7 +215,8 @@ bool CommandLine( std::string pathCurrentToExecutable ,
                             sampling ,
                             rodent ,
                             removeCleanFibers,
-                            removeNanFibers
+                            removeNanFibers,
+                            useBandWidth
                             ) ;
     }
 
@@ -791,8 +801,8 @@ std::string ExtensionofFile(std::string filename)
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-                         std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters,
-                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, QWidget *parent)
+                         std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, int bandWidth,
+                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth , QWidget *parent)
 {
     int col=-1;
     bool DataAdded = false;
@@ -873,7 +883,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                             }
                             if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
                                                   input_fiber, globalFile, fibersplane[j],
-                                                  param[i], CoG, sampling , rodent , removeCleanFibers , noNan , false ) == 0 )
+                                                  param[i], bandWidth, CoG, sampling , rodent , removeCleanFibers , noNan , useBandWidth,false ) == 0 )
                             {
                                 if(FileExisted(outputname))
                                 {
@@ -919,7 +929,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                     removeCleanFibersAtlas = true ;
                 }
                 noNan = 1 ;
-                if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , CoG , sampling , rodent , noNan , removeCleanFibersAtlas ) != 0 )
+                if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , bandWidth, CoG , sampling , rodent , noNan , useBandWidth, removeCleanFibersAtlas ) != 0 )
                 {
                     std::cout << "Fail during dti_tract_stat!" << std::endl ;
                     return false ;
@@ -949,11 +959,13 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
                        std::string Output_fiber_file,
                        std::string plane,
                        std::string parameter,
+                       int bandWidth,
                        bool CoG,
                        double sampling,
                        bool rodent,
                        bool clean ,
                        bool noNan,
+                       bool useBandWidth,
                        bool Parametrized
                       )
 {
@@ -987,6 +999,11 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
         if( noNan == 0 )
         {
             arguments.append( QString( "--remove_nan_fibers" ) ) ;
+        }
+        if (useBandWidth)
+        {
+            arguments.append( QString( "--bandwidth"));
+            arguments.append( QString(bandWidth));
         }
         //Plane
         if(plane!="")

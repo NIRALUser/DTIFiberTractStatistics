@@ -49,10 +49,11 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
     CsvTitle->setFont(QFont("Courrier", 20,4));
 
     //Disable every tab except the first one
-    for(int i=1; i<4; i++)
+    for(int i=1; i<3; i++)
         PrincipalWidget->setTabEnabled (i,true);
-    PrincipalWidget->setTabEnabled(4,true);
+    PrincipalWidget->setTabEnabled(3,true);
     PrincipalWidget->setCurrentIndex(0);
+    //PrincipalWidget->removeTab(3);
 
     //Load last saved Analysis and Data files
     LoadAnalysisFile("AutoSave_Analysis.txt");
@@ -65,7 +66,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
     connect(this->AutomatedComputation, SIGNAL(clicked()), this, SLOT(AutoCompute()));
     connect(this->PrincipalWidget, SIGNAL(currentChanged(int)), this, SLOT(TabChanged(int)));
 
-    //Tab 1
+    //Tab 1 Data definition
 
     connect(this->csvfilename, SIGNAL(editingFinished()), this, SLOT(EnterCsvFileName()));
     connect(this->browsercsvfilename, SIGNAL(clicked()), this, SLOT(BrowserCSVFilename()));
@@ -85,7 +86,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
     connect(this->browserOutputFolder, SIGNAL(clicked()), this, SLOT(BrowserOutputFolder()));
     connect(this->outputfolder, SIGNAL(editingFinished()), this, SLOT(EnterOutputFolder()));
 
-    /* Tab 2 */
+    /* Tab 2 Attribute fibers */
     connect(this->browserAtlasFiberFolder, SIGNAL(clicked()), this, SLOT(BrowserAtlasFiberFolder()));
     connect(this->AtlasFiberFolder, SIGNAL(editingFinished()), this, SLOT(EnteronAtlasFiberFolder()));
     connect(this->Apply, SIGNAL(clicked()), this, SLOT(ApplySlot()));
@@ -94,7 +95,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
     connect(this->RemoveFiber, SIGNAL(clicked()), this, SLOT(RemoveFiberInList()));
     connect(this->Removeallfiber, SIGNAL(clicked()), this, SLOT(RemoveAllFiber()));
 
-    /* Tab 3 */
+    /* Tab 3 Fibers properties */
     connect(this->FABox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
     connect(this->MDBox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
     connect(this->FroBox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
@@ -103,20 +104,21 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
     connect(this->l3Box, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
     connect(this->RDBox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
     connect(this->GABox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
-
+    connect(this->checkBandwidth, SIGNAL(stateChanged(int)), this, SLOT(toggleBandWidth(int)));
     /* Tab 4 deleted*/
     //connect(this->PlotButton, SIGNAL(clicked()), this, SLOT(OpenPlotWindow()));
 
-    /* Tab 5 */
-    connect(this->DTIPbrowsercsv, SIGNAL(clicked()), this, SLOT(BrowserDTIPCsvFilename()));
-    connect(this->DTIPbrowservtk, SIGNAL(clicked()), this, SLOT(BrowserDTIPVtkFilename()));
-    connect(this->DTIPbrowseroutput, SIGNAL(clicked()), this, SLOT(BrowserDTIPOutputFilename()));
-    connect(this->DTIPcsvfilename, SIGNAL(editingFinished()), this, SLOT(CheckNextStep()));
-    connect(this->DTIPvtkfilename, SIGNAL(editingFinished()), this, SLOT(CheckNextStep()));
-    connect(this->DTIPoutputfilename, SIGNAL(editingFinished()), this, SLOT(CheckNextStep()));
-    connect(this->DTIPcomputes, SIGNAL(clicked()), this, SLOT(ComputeDTIParametrization()));
+    /* Tab 4  MergeStatWithFiber */
+    // connect(this->DTIPbrowsercsv, SIGNAL(clicked()), this, SLOT(BrowserDTIPCsvFilename()));
+    // connect(this->DTIPbrowservtk, SIGNAL(clicked()), this, SLOT(BrowserDTIPVtkFilename()));
+    // connect(this->DTIPbrowseroutput, SIGNAL(clicked()), this, SLOT(BrowserDTIPOutputFilename()));
+    // connect(this->DTIPcsvfilename, SIGNAL(editingFinished()), this, SLOT(CheckNextStep()));
+    // connect(this->DTIPvtkfilename, SIGNAL(editingFinished()), this, SLOT(CheckNextStep()));
+    // connect(this->DTIPoutputfilename, SIGNAL(editingFinished()), this, SLOT(CheckNextStep()));
+    // connect(this->DTIPcomputes, SIGNAL(clicked()), this, SLOT(ComputeDTIParametrization()));
+    // this->pvalue->setText( "0.050" ) ;
 
-    /* Tab 6 */
+    /* Tab 4  Software configuration */
     //Browse paths
     QSignalMapper *SoftButtonMapper = new QSignalMapper() ;
     connect(SoftButtonMapper, SIGNAL(mapped(int)) , this, SLOT(BrowseSoft(int)));
@@ -149,7 +151,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
     connect(this->actionOpen_analysis_file, SIGNAL(triggered()), SLOT(OpenAnalysisFile()));
     connect(this->actionOpenConfigFile, SIGNAL( triggered() ), SLOT( SelectConfigFile() ) ) ;
     connect(this->actionSaveConfigFile, SIGNAL( triggered() ), SLOT( SaveConfigFile() ) ) ;
-    this->pvalue->setText( "0.050" ) ;
+    
     m_ConfigFile = configFile ;
     ConfigDefault();
 }
@@ -463,7 +465,7 @@ void DTIAtlasFiberAnalyzerguiwindow::SetNewDialogDirFromFileName( QString filena
 }
 
 /***************************************************
- * 					TAB 1
+ * 					TAB 1 Data definition
  ***************************************************/
 
 /* CSV Load */
@@ -666,7 +668,7 @@ void DTIAtlasFiberAnalyzerguiwindow::ClearDataInformation()
     m_currentColumn = -1;
     m_numberstep = 0;
     //Disable every tab except the first one
-    for(int i=1; i<4; i++)
+    for(int i=1; i<3; i++)
     {
         //PrincipalWidget->setTabEnabled (m_numberstep + i,false);
         PrincipalWidget->setTabEnabled (m_numberstep + i,true);
@@ -1386,7 +1388,7 @@ void DTIAtlasFiberAnalyzerguiwindow::EnterOutputFolder()
 
 
 /***************************************************
- * 					TAB 2
+ * 					TAB 2 Attribute Fibers
  ***************************************************/
 
 /*********************************************************************************
@@ -1728,7 +1730,7 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeFiberPostProcess()
 
 
 /***************************************************
- * 					TAB 3
+ * 					TAB 3 Fiber properties
  ***************************************************/
 /*********************************************************************************
  * Compute dti_tract_stat
@@ -1769,7 +1771,9 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
         //Find path for dtitractstat
         pathdti_tract_stat = DTITractStatLine->text().toStdString() ;
         //Apply dti tract stat on CSV data
-        if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , removeKeepCleanFibers->isChecked() , removeFibersContainingNan->isChecked() , this))
+        if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, sbBandwidth->value(),
+                        m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , 
+                        removeKeepCleanFibers->isChecked() , removeFibersContainingNan->isChecked() , checkBandwidth->isChecked(), this))
         {
             std::cout<<"dtitractstat has been canceled"<<std::endl;
             QApplication::restoreOverrideCursor();
@@ -1826,6 +1830,19 @@ void DTIAtlasFiberAnalyzerguiwindow::FillSelectedPlane()
         }
         found=false;
     }
+}
+
+bool DTIAtlasFiberAnalyzerguiwindow::toggleBandWidth(int event)
+{
+    std::cout << event << std::endl;
+    if(event == 0){
+        sbBandwidth->setEnabled(false);
+        return false;
+    }
+    else{
+        sbBandwidth->setEnabled(true);
+        return true;
+    } 
 }
 
 /*********************************************************************************
@@ -2185,72 +2202,72 @@ vstring DTIAtlasFiberAnalyzerguiwindow::getFiberInformations(std::string fiber, 
 
 
 /***************************************************
- * 				MergeStatWithFiber Tab
+ * 				MergeStatWithFiber Tab (Deleted)
  ***************************************************/
 
 
-void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPCsvFilename()
-{
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+// void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPCsvFilename()
+// {
+//     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    QString type;
-    QString filename = QFileDialog::getOpenFileName( this , "Open CSV File" , m_DialogDir , "Text (*.csv)" , &type ) ;
-    SetNewDialogDirFromFileName( filename ) ;
-    DTIPcsvfilename->setText(filename);
-    CheckNextStep();
+//     QString type;
+//     QString filename = QFileDialog::getOpenFileName( this , "Open CSV File" , m_DialogDir , "Text (*.csv)" , &type ) ;
+//     SetNewDialogDirFromFileName( filename ) ;
+//     DTIPcsvfilename->setText(filename);
+//     CheckNextStep();
 
-    QApplication::restoreOverrideCursor();
-}
+//     QApplication::restoreOverrideCursor();
+// }
 
-void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPVtkFilename()
-{
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+// void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPVtkFilename()
+// {
+//     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    QString type;
-    QString filename=QFileDialog::getOpenFileName( this , "Open VTK File" , m_DialogDir , "VTK (*.vtk)" , &type ) ;
-    SetNewDialogDirFromFileName( filename ) ;
-    DTIPvtkfilename->setText(filename);
-    CheckNextStep();
+//     QString type;
+//     QString filename=QFileDialog::getOpenFileName( this , "Open VTK File" , m_DialogDir , "VTK (*.vtk)" , &type ) ;
+//     SetNewDialogDirFromFileName( filename ) ;
+//     DTIPvtkfilename->setText(filename);
+//     CheckNextStep();
 
-    QApplication::restoreOverrideCursor();
-}
+//     QApplication::restoreOverrideCursor();
+// }
 
-void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPOutputFilename()
-{
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+// void DTIAtlasFiberAnalyzerguiwindow::BrowserDTIPOutputFilename()
+// {
+//     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    QString type;
-    QString output;
-    if( !m_OutputFolder.empty() )
-    {
-        output = m_OutputFolder.c_str() ;
-    }
-    else
-    {
-        output = m_DialogDir ;
-    }
-    QString filename = QFileDialog::getSaveFileName( this , "Save File" , output , "VTK (*.vtk)" ) ;
-    DTIPoutputfilename->setText(filename);
-    CheckNextStep();
+//     QString type;
+//     QString output;
+//     if( !m_OutputFolder.empty() )
+//     {
+//         output = m_OutputFolder.c_str() ;
+//     }
+//     else
+//     {
+//         output = m_DialogDir ;
+//     }
+//     QString filename = QFileDialog::getSaveFileName( this , "Save File" , output , "VTK (*.vtk)" ) ;
+//     DTIPoutputfilename->setText(filename);
+//     CheckNextStep();
 
-    QApplication::restoreOverrideCursor();
-}
+//     QApplication::restoreOverrideCursor();
+// }
 
-bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
-{
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    std::string pathMergeStatWithFiber = MergeStatWithFiberLine->text().toStdString() ; ;
-    if(CallMergeStatWithFiber(pathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString() , pvalue->text().toStdString() ) != 0  )
-    {
-        std::cout<<"Fail during MergeStatWithFiber!"<<std::endl;
-        return false;
-    }
-    QApplication::restoreOverrideCursor();
-    return true;
-}
+// bool DTIAtlasFiberAnalyzerguiwindow::ComputeDTIParametrization()
+// {
+//     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+//     std::string pathMergeStatWithFiber = MergeStatWithFiberLine->text().toStdString() ; ;
+//     if(CallMergeStatWithFiber(pathMergeStatWithFiber, DTIPcsvfilename->text().toStdString(), DTIPvtkfilename->text().toStdString(), DTIPoutputfilename->text().toStdString(), DTIP_LE_Min->text().toStdString(), DTIP_LE_Max->text().toStdString() , pvalue->text().toStdString() ) != 0  )
+//     {
+//         std::cout<<"Fail during MergeStatWithFiber!"<<std::endl;
+//         return false;
+//     }
+//     QApplication::restoreOverrideCursor();
+//     return true;
+// }
 
 /***************************************************
- * 					Tab 5
+ * 					Tab 4 Software Configuration
  ***************************************************/
 /*********************************************************************************
 * Open a dialog to search the name of the vector's path and write it in the GUI
