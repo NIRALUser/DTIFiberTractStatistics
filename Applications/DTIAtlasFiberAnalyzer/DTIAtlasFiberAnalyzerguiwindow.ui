@@ -1613,7 +1613,7 @@
                        <set>Qt::AlignCenter</set>
                       </property>
                       <property name="decimals">
-                       <number>0</number>
+                       <number>4</number>
                       </property>
                       <property name="value">
                        <double>3.000000000000000</double>

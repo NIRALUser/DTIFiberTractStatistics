@@ -65,11 +65,11 @@ std::string ExtensionofFile(std::string filename);
 
 /* Compute dti_tract_stat : take the parameters and call the software for every fiber selected with its plane */
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-             std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, int bandWidth,
+             std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
              int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth, QWidget *parent=NULL);
 
 /* Call dti_tract_stat */
-int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirectory, std::string Input_fiber_file, std::string Output_fiber_file, std::string plane, std::string parameter, int bandWidth,
+int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirectory, std::string Input_fiber_file, std::string Output_fiber_file, std::string plane, std::string parameter, double bandWidth,
 			bool CoG, double sampling , bool rodent , bool clean , bool noNan, bool useBandWidth, bool Parametrized=true);
 
 /* Gather the fiber profile in different output file */

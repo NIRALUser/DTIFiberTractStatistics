@@ -1834,7 +1834,7 @@ void DTIAtlasFiberAnalyzerguiwindow::FillSelectedPlane()
 
 bool DTIAtlasFiberAnalyzerguiwindow::toggleBandWidth(int event)
 {
-    std::cout << event << std::endl;
+    //std::cout << event << std::endl;
     if(event == 0){
         sbBandwidth->setEnabled(false);
         return false;

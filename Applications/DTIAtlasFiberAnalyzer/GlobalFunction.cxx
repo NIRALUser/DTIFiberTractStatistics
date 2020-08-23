@@ -801,7 +801,7 @@ std::string ExtensionofFile(std::string filename)
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-                         std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, int bandWidth,
+                         std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
                          int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth , QWidget *parent)
 {
     int col=-1;
@@ -907,8 +907,28 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                         CSV->AddData("no",row,col);
                 }
             }
+            // Add Calldti_tract_stat with parametrized = true , also change output folder that stores the parametrized vtk file NOTE
+            // refere the output path in below commented lines of call_dti
+            
             std::string inputname=AtlasDirectory+"/"+fibers[j];
             outputname=OutputFolder+"/Fibers/"+header;
+            if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory ,
+                             inputname , 
+                             outputname , 
+                             fibersplane[ j ] , 
+                             param[ i ] , 
+                             bandWidth, 
+                             CoG , 
+                             sampling , 
+                             rodent ,
+                             removeCleanFibers, 
+                             1 ,  //noNan
+                             useBandWidth, 
+                             true) != 0 ) // parametrized file generation
+            {
+                std::cout << "Fail during dti_tract_stat!" << std::endl ;
+                return false ;
+            } // NOTE (outputname )
             if( FileExisted( outputname ) )
             {
                 ExistedFile = true ;
@@ -916,6 +936,7 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                 {
                     skipdata = MessageExistedFile(nogui, header, parent);
                 }
+
             }
             if( skipdata[ 2 ] == true )
             {
@@ -929,11 +950,11 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
                     removeCleanFibersAtlas = true ;
                 }
                 noNan = 1 ;
-                if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , bandWidth, CoG , sampling , rodent , noNan , useBandWidth, removeCleanFibersAtlas ) != 0 )
-                {
-                    std::cout << "Fail during dti_tract_stat!" << std::endl ;
-                    return false ;
-                }
+                // if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , bandWidth, CoG , sampling , rodent ,removeCleanFibers, noNan , useBandWidth, removeCleanFibersAtlas ) != 0 )
+                // {
+                //     std::cout << "Fail during dti_tract_stat!" << std::endl ;
+                //     return false ;
+                // } NOTE (outputname )
             }
 
         }
@@ -959,14 +980,14 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
                        std::string Output_fiber_file,
                        std::string plane,
                        std::string parameter,
-                       int bandWidth,
+                       double bandWidth,
                        bool CoG,
                        double sampling,
                        bool rodent,
                        bool clean ,
                        bool noNan,
                        bool useBandWidth,
-                       bool Parametrized
+                       bool Parametrized // NOTE
                       )
 {
     int state=0;
@@ -1003,7 +1024,7 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
         if (useBandWidth)
         {
             arguments.append( QString( "--bandwidth"));
-            arguments.append( QString(bandWidth));
+            arguments.append( QString::number(bandWidth));
         }
         //Plane
         if(plane!="")
