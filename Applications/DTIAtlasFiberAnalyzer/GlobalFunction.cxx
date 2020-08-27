@@ -577,25 +577,25 @@ std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget
         Box.setWindowTitle("Existed File");
         Box.setIcon(QMessageBox::Question);
         Box.setText(File);
-        Box.setInformativeText("Do you want to skip the computation?");
+        Box.setInformativeText("Do you want to overwrite the computation?");
         Box.setStandardButtons(QMessageBox::Yes | QMessageBox::No |
                                QMessageBox::YesToAll | QMessageBox::NoToAll | QMessageBox::Cancel);
         Box.setDefaultButton(QMessageBox::Yes);
         int ret = Box.exec();
         switch (ret) {
         case QMessageBox::Yes:
-            skip = true;
+            skip = false;
             break;
         case QMessageBox::No:
-            skip = false;
+            skip = true;
             break;
         case QMessageBox::YesToAll:
             alldata = true;
-            skip = true;
+            skip = false;
             break;
         case QMessageBox::NoToAll:
             alldata = true;
-            skip = false;
+            skip = true;
             break;
         case QMessageBox::Cancel:
             cancel = true;
@@ -608,22 +608,22 @@ std::vector<bool> MessageExistedFile(bool nogui, std::string nameoffile, QWidget
     else
     {
         std::string answer;
-        std::cout<<"The file "<< (nameoffile).c_str()<<" already exists. Skip computation? Enter 'yes' or 'no' or  'yes_all' for yes to all or 'no_all' for no to all."<<std::endl;
+        std::cout<<"The file "<< (nameoffile).c_str()<<" already exists. Overwrite computation? Enter 'yes' or 'no' or  'yes_all' for yes to all or 'no_all' for no to all."<<std::endl;
         std::cin>>answer;
 
         if(answer.compare("yes")==0)
-            skip = true;
-        else if(answer.compare("no")==0)
             skip = false;
+        else if(answer.compare("no")==0)
+            skip = true;
         else if(answer.compare("yes_all")==0)
         {
             alldata = true;
-            skip = true;
+            skip = false;
         }
         else if(answer.compare("no_all")==0)
         {
             alldata = true;
-            skip = false;
+            skip = true;
         }
     }
     value.push_back(skip);
