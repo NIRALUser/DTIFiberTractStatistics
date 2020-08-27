@@ -26,7 +26,11 @@ else()
   QT5_WRAP_UI(UI_FILES DTIAtlasFiberAnalyzerguiwindow.ui)
 endif()
 
-
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/DTIAtlasFiberAnalyzer.xml var)
+string(REGEX MATCH "<version>.*</version>" ext "${var}")
+string(REPLACE "<version>" "" version_number ${ext} )
+string(REPLACE "</version>" "" version_number ${version_number})
+ADD_DEFINITIONS(-DDTIAtlasFiberAnalyzer_VERSION="${version_number}")
 
 set(DTIAtlasFiberAnalyzer_source DTIAtlasFiberAnalyzerguiwindow.cxx CSVClass.cxx GlobalFunction.cxx XmlReader.cxx XmlWriter.cxx ${MOC_FILES} ${UI_FILES})
 

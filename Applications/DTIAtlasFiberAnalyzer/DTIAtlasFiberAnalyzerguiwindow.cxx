@@ -5,6 +5,11 @@
 #include <sstream>
 #include <vector>
 #include <set>
+
+#ifndef DTIAtlasFiberAnalyzer_VERSION
+#define DTIAtlasFiberAnalyzer_VERSION "Unknown version"
+#endif
+
 /*********************************************************************************
  * Constructor
  ********************************************************************************/
@@ -44,6 +49,10 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
     centralwidget->setLayout(PrincipalLayout);
     scroll->setWidget(centralwidget);
     setCentralWidget(scroll);
+    
+    // Title
+    QStringList version = QString(DTIAtlasFiberAnalyzer_VERSION).split("|");
+    setWindowTitle( "DTI Atlas Fiber Analyzer: " + version[0] ) ;
 
     //Design
     CsvTitle->setFont(QFont("Courrier", 20,4));
