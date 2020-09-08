@@ -159,6 +159,23 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QLabel" name="lbl_numThreads">
+          <property name="text">
+           <string>Number of Threades</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="sb_numThreads">
+          <property name="toolTip">
+           <string>Number of threads to use</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="4" column="0">
@@ -211,7 +228,7 @@
          <string notr="true"/>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <property name="usesScrollButtons">
          <bool>true</bool>
@@ -1865,7 +1882,7 @@
      <x>0</x>
      <y>0</y>
      <width>1025</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
