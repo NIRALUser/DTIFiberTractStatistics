@@ -3,8 +3,13 @@
 
 #include <QWidget>
 #include <QVector>
+#include <QThread>
 /* Specific librairies */
 #include "CSVClass.h"
+
+/* STL */
+#include <queue>
+#include <vector>
 
 typedef QVector<QVector<double> > qv2double;
 typedef QVector<qv2double> qv3double;
@@ -14,20 +19,219 @@ typedef QVector<qv2double> qv3double;
 void setExecutablesConfigFile() ;*/
 /* Call when there is nogui */
 bool CommandLine( std::string pathToExecutable , std::string CSVFilename, std::string datafile, std::string analysisfile, int bandWidth, 
-					bool debug , double sampling , bool rodent , bool removeCleanFibers, bool removeNanFibers , std::string configFile );
+					bool debug , double sampling , bool rodent , bool removeCleanFibers, bool removeNanFibers , std::string configFile, int numThreads=1);
 
 /* Create a Directory */
 bool CreateDirectoryForData(std::string outputfolder, std::string name);
 
+
+/* Tab 2 Thread Related */
+
+
+// Fiber process
+class CFPParams{ // Parameter class for Calldti_tract_stat
+  public:
+    CFPParams(std::string _pathFiberProcess,
+              std::string _AtlasFolder,
+              std::string _outputname,
+              std::string _Data,
+              std::string _DeformationField,
+              bool _FieldType,
+              std::string _Fiber,
+              bool _isFinalOutput,
+              std::string _name_of_fiber,
+              int _col,
+              int _row,
+              int _DataCol, 
+              int _NameCol, 
+              std::string _OutputFolder){
+      
+      pathFiberProcess=_pathFiberProcess;
+      AtlasFolder=_AtlasFolder;
+      outputname=_outputname;
+      Data=_Data;
+      DeformationField=_DeformationField;
+      FieldType=_FieldType;
+      Fiber=_Fiber;    
+
+      /* For threading*/
+      isFinalOutput=_isFinalOutput;
+      name_of_fiber=_name_of_fiber;
+      col=_col;
+      row=_row;
+      DataCol=_DataCol;
+      NameCol=_NameCol;
+      OutputFolder=_OutputFolder;
+
+    };
+    CFPParams(const CFPParams& params){
+      init(params.pathFiberProcess,
+           params.AtlasFolder,
+           params.outputname,
+           params.Data,
+           params.DeformationField,
+           params.FieldType,
+           params.Fiber,
+           params.isFinalOutput,
+           params.name_of_fiber,
+           params.col,
+           params.row,
+           params.DataCol,
+           params.NameCol,
+           params.OutputFolder
+           );
+    };
+    ~CFPParams(){};
+
+    void init(std::string _pathFiberProcess,
+              std::string _AtlasFolder,
+              std::string _outputname,
+              std::string _Data,
+              std::string _DeformationField,
+              bool _FieldType,
+              std::string _Fiber,
+              bool _isFinalOutput,
+              std::string _name_of_fiber,
+              int _col,
+              int _row,
+              int _DataCol, 
+              int _NameCol, 
+              std::string _OutputFolder){
+
+      pathFiberProcess=_pathFiberProcess;
+      AtlasFolder=_AtlasFolder;
+      outputname=_outputname;
+      Data=_Data;
+      DeformationField=_DeformationField;
+      FieldType=_FieldType;
+      Fiber=_Fiber;
+
+      //For Threading
+      isFinalOutput=_isFinalOutput;
+      name_of_fiber=_name_of_fiber;
+      col=_col;
+      row=_row;
+      DataCol=_DataCol;
+      NameCol=_NameCol;
+      OutputFolder=_OutputFolder;
+    };
+
+    std::string pathFiberProcess;
+    std::string AtlasFolder;
+    std::string outputname;
+    std::string Data;
+    std::string DeformationField;
+    bool FieldType;
+    std::string Fiber;
+    /* For Threading */
+      
+    bool isFinalOutput;
+    std::string name_of_fiber;
+    int col;
+    int row;
+    int DataCol;
+    int NameCol;
+    std::string OutputFolder;
+
+    void showParams();
+};
+
+class FiberWorker: public QObject{
+  Q_OBJECT
+  public:
+    FiberWorker(QObject* _parent,CFPParams* p,int _index,CSVClass* _CSV){
+      params=p;
+      index=_index;
+      parent=_parent;
+      CSV=_CSV;
+    };
+    ~FiberWorker(){};
+  public slots:
+    void process();
+    void done();
+  signals:
+    void finished();
+    void error(QString err);
+  private:
+    CFPParams* params;
+    QObject* parent;
+    int index;
+    CSVClass* CSV;
+};
+
+class FiberProcessor : public QObject{
+  Q_OBJECT
+  public:
+   FiberProcessor(std::queue<CFPParams>,int,CSVClass*);
+    ~FiberProcessor(){};
+    void run();
+  public slots:
+    void childFinished();
+  private:
+    std::queue<CFPParams> paramsQueue;
+    int numThreads;
+    int currentThreads;
+    CSVClass* CSV;
+};
+
+// Fiber Post Process
+
+class FiberPostWorker: public QObject{
+  Q_OBJECT
+  public:
+    FiberPostWorker(QObject* _parent,CFPParams* p,int _index,CSVClass* _CSV){
+      params=p;
+      index=_index;
+      parent=_parent;
+      CSV=_CSV;
+    };
+    ~FiberPostWorker(){};
+  public slots:
+    void process();
+    void done();
+  signals:
+    void finished();
+    void error(QString err);
+  private:
+    CFPParams* params;
+    QObject* parent;
+    int index;
+    CSVClass* CSV;
+};
+
+class FiberPostProcessor : public QObject{
+  Q_OBJECT
+  public:
+   FiberPostProcessor(std::queue<CFPParams>,int,CSVClass*);
+    ~FiberPostProcessor(){};
+    void run();
+  public slots:
+    void childFinished();
+  private:
+    std::queue<CFPParams> paramsQueue;
+    int numThreads;
+    int currentThreads;
+    CSVClass* CSV;
+};
+
 /* Compute fiber process : take the parameters and call the software for every fiber/data */
 bool Applyfiberprocess(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
                std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
-           bool nogui, QWidget* parent=NULL);
+           bool nogui, int numThreads,QWidget* parent=NULL);
+
+bool Applyfiberprocess_mt(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
+               std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
+           bool nogui, int numThreads,QWidget* parent=NULL);
 
 /* Compute FiberPostProcess : take the parameters and call the software for every fiber/data */
 bool ApplyFiberPostProcess(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
                std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
-           bool nogui, QWidget* parent=NULL);
+           bool nogui, int numThreads, QWidget* parent=NULL);
+
+bool ApplyFiberPostProcess_mt(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
+               std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
+           bool nogui, int numThreads, QWidget* parent=NULL);
+
 /* Check if the header existed */
 int HeaderExisted(CSVClass* CSV, std::string header);
 
@@ -63,13 +267,172 @@ std::string takeoffPath(std::string filename);
 /* Keep just the extension of the filename */
 std::string ExtensionofFile(std::string filename);
 
+/* Thread class (QT) */
+
+class CTSParams{ // Parameter class for Calldti_tract_stat
+  public:
+    CTSParams(std::string _pathdti_tract_stat, std::string _AtlasDirectory, std::string _Input_fiber_file, 
+      std::string _Output_fiber_file, std::string _plane, std::string _parameter, double _bandWidth,
+      bool _CoG, double _sampling , bool _rodent , bool _clean , bool _noNan, bool _useBandWidth, bool _Parametrized,
+      bool _isFinalOutput,std::string _name_of_fiber,int _col, int _row, int _DataCol,int _NameCol,std::string _OutputFolder){
+    
+      pathdti_tract_stat=_pathdti_tract_stat;
+      AtlasDirectory=_AtlasDirectory;
+      Input_fiber_file=_Input_fiber_file;
+      Output_fiber_file=_Output_fiber_file;
+      plane=_plane;
+      parameter=_parameter;
+      bandWidth=_bandWidth;
+      CoG=_CoG;
+      sampling=_sampling;
+      rodent=_rodent;
+      clean=_clean;
+      noNan=_noNan;
+      useBandWidth=_useBandWidth;
+      Parametrized=_Parametrized;
+
+      isFinalOutput=_isFinalOutput;
+      name_of_fiber=_name_of_fiber;
+      col=_col;
+      row=_row;
+      DataCol=_DataCol;
+      NameCol=_NameCol;
+      OutputFolder=_OutputFolder;
+
+    };
+    CTSParams(const CTSParams& params){
+      init(params.pathdti_tract_stat,
+                           params.AtlasDirectory,
+                           params.Input_fiber_file,
+                           params.Output_fiber_file,
+                           params.plane,
+                           params.parameter,
+                           params.bandWidth,
+                           params.CoG,
+                           params.sampling,
+                           params.rodent,
+                           params.clean,
+                           params.noNan,
+                           params.useBandWidth,
+                           params.Parametrized,
+                           params.isFinalOutput,
+                           params.name_of_fiber,
+                           params.col,
+                           params.row,
+                           params.DataCol,
+                           params.NameCol,
+                           params.OutputFolder);
+    };
+    ~CTSParams(){};
+
+    void init(std::string _pathdti_tract_stat, std::string _AtlasDirectory, std::string _Input_fiber_file, 
+      std::string _Output_fiber_file, std::string _plane, std::string _parameter, double _bandWidth,
+      bool _CoG, double _sampling , bool _rodent , bool _clean , bool _noNan, bool _useBandWidth, bool _Parametrized,
+      bool _isFinalOutput,std::string _name_of_fiber,int _col,int _row,int _DataCol, int _NameCol, std::string _OutputFolder){
+
+            pathdti_tract_stat=_pathdti_tract_stat;
+            AtlasDirectory=_AtlasDirectory;
+            Input_fiber_file=_Input_fiber_file;
+            Output_fiber_file=_Output_fiber_file;
+            plane=_plane;
+            parameter=_parameter;
+            bandWidth=_bandWidth;
+            CoG=_CoG;
+            sampling=_sampling;
+            rodent=_rodent;
+            clean=_clean;
+            noNan=_noNan;
+            useBandWidth=_useBandWidth;
+            Parametrized=_Parametrized;
+
+            isFinalOutput=_isFinalOutput;
+            name_of_fiber=_name_of_fiber;
+            col=_col;
+            row=_row;
+            DataCol=_DataCol;
+            NameCol=_NameCol;
+            OutputFolder=_OutputFolder;
+    }
+    std::string pathdti_tract_stat;
+    std::string AtlasDirectory;
+    std::string Input_fiber_file;
+    std::string Output_fiber_file;
+    std::string plane;
+    std::string parameter;
+    double bandWidth;
+    bool CoG;
+    double sampling;
+    bool rodent;
+    bool clean;
+    bool noNan;
+    bool useBandWidth;
+    bool Parametrized;
+
+    /*apply dti params  */
+    bool isFinalOutput;
+    std::string name_of_fiber;
+    int col;
+    int row;
+    int DataCol;
+    int NameCol;
+    std::string OutputFolder;
+
+    void showParams();
+};
+
+class Worker: public QObject{
+  Q_OBJECT
+  public:
+    Worker(QObject* _parent,CTSParams* p,int _index,CSVClass* _CSV){
+      params=p;
+      index=_index;
+      parent=_parent;
+      CSV=_CSV;
+    };
+    ~Worker(){};
+  public slots:
+    void process();
+    void done();
+  signals:
+    void finished();
+    void error(QString err);
+  private:
+    CTSParams* params;
+    QObject* parent;
+    int index;
+    CSVClass* CSV;
+};
+
+class DTITractWorker : public QObject{
+  Q_OBJECT
+  public:
+    DTITractWorker(std::queue<CTSParams>,int,CSVClass* _CSV);
+    ~DTITractWorker(){};
+    void run();
+  public slots:
+    void childFinished();
+  private:
+    std::queue<CTSParams> paramsQueue;
+    int numThreads;
+    int currentThreads;
+    CSVClass* CSV;
+};
+
+
+
 /* Compute dti_tract_stat : take the parameters and call the software for every fiber selected with its plane */
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
              std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
              int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth, QWidget *parent=NULL);
 
+bool Applydti_tract_stat_mt(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
+             std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
+             int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth, int numThread=1,QWidget *parent=NULL);
+
+
 /* Call dti_tract_stat */
-int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirectory, std::string Input_fiber_file, std::string Output_fiber_file, std::string plane, std::string parameter, double bandWidth,
+int Calldti_tract_stat(std::string pathdti_tract_stat, std::string AtlasDirectory, std::string Input_fiber_file, 
+      std::string Output_fiber_file, std::string plane, std::string parameter, double bandWidth,
 			bool CoG, double sampling , bool rodent , bool clean , bool noNan, bool useBandWidth, bool Parametrized=true);
 
 /* Gather the fiber profile in different output file */

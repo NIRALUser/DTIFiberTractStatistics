@@ -1680,7 +1680,9 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computefiberprocess()
         AddDataFromTableToCSV();
         pathFiberProcess = FiberProcessLine->text().toStdString() ;
         //Apply fiberprocess on CSV data
-        if(!Applyfiberprocess(m_CSV, pathFiberProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
+        if(!Applyfiberprocess_mt(m_CSV, pathFiberProcess, m_AtlasFiberDir, 
+                        m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, 
+                        m_FiberSelectedname, false, sb_numThreads->value() ,this))
         {
             std::cout<<"fiberprocess has been canceled"<<std::endl;
             QApplication::restoreOverrideCursor();
@@ -1721,7 +1723,9 @@ bool DTIAtlasFiberAnalyzerguiwindow::ComputeFiberPostProcess()
         std::string pathFiberPostProcess;
         pathFiberPostProcess = FiberPostProcessLine->text().toStdString() ;
         //Apply fiberprocess on CSV data
-        if(!ApplyFiberPostProcess(m_CSV, pathFiberPostProcess, m_AtlasFiberDir, m_OutputFolder,m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, m_FiberSelectedname, false, this))
+        if(!ApplyFiberPostProcess_mt(m_CSV, pathFiberPostProcess, m_AtlasFiberDir, m_OutputFolder,
+                                    m_DataCol, m_DeformationCol, RB_HField->isChecked(), m_NameCol, 
+                                    m_FiberSelectedname, false, sb_numThreads->value(), this))
         {
             std::cout<<"fiberpostprocess has been canceled"<<std::endl;
             QApplication::restoreOverrideCursor();
@@ -1780,9 +1784,9 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
         //Find path for dtitractstat
         pathdti_tract_stat = DTITractStatLine->text().toStdString() ;
         //Apply dti tract stat on CSV data
-        if(!Applydti_tract_stat(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, sbBandwidth->value(),
+        if(!Applydti_tract_stat_mt(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, sbBandwidth->value(),
                         m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , 
-                        removeKeepCleanFibers->isChecked() , removeFibersContainingNan->isChecked() , checkBandwidth->isChecked(), this))
+                        removeKeepCleanFibers->isChecked() , removeFibersContainingNan->isChecked() , checkBandwidth->isChecked(), sb_numThreads->value(), this))
         {
             std::cout<<"dtitractstat has been canceled"<<std::endl;
             QApplication::restoreOverrideCursor();

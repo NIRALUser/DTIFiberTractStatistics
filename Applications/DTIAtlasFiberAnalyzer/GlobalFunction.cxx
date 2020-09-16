@@ -11,6 +11,10 @@
 #include <QProcess>
 #include <sstream>
 
+/* STL */
+#include <exception>
+
+
 void FindExecutable( const char* name , std::string pathToCurrentExecutable , std::string &pathToExecutable , bool interactive )
 {
     // If path already set, we just do nothing.
@@ -53,7 +57,8 @@ bool CommandLine( std::string pathCurrentToExecutable ,
                   bool rodent ,
                   bool removeCleanFibers ,
                   bool removeNanFibers ,
-                  std::string configFile
+                  std::string configFile,
+                  int numThreads
                   )
 {
     //variables
@@ -154,18 +159,22 @@ bool CommandLine( std::string pathCurrentToExecutable ,
         //Find path for fiberprocess
         FindExecutable( "fiberprocess" , pathCurrentToExecutable , pathFiberProcess ) ;
         //Call fiberprocess
-        Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
+        Applyfiberprocess_mt(CSVFile, pathFiberProcess, AtlasFiberDir, 
+                            OutputFolder, DataCol, DefCol, FieldType,NameCol, 
+                            SelectedFibers,true , numThreads);
         if( removeNanFibers == true )
         {
             //Find path for fiberpostprocess
             FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
             //Call fiberpostrocess
-            ApplyFiberPostProcess(CSVFile, pathFiberPostProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
+            ApplyFiberPostProcess_mt(CSVFile, pathFiberPostProcess, AtlasFiberDir, 
+                             OutputFolder, DataCol, DefCol, FieldType,NameCol, 
+                             SelectedFibers,true, numThreads);
         }
         /* Looking for dti_tract_stat */
         FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
         //Call dti_tract_stat
-        Applydti_tract_stat(CSVFile ,
+        Applydti_tract_stat_mt(CSVFile ,
                             pathdti_tract_stat ,
                             AtlasFiberDir ,
                             OutputFolder ,
@@ -181,7 +190,8 @@ bool CommandLine( std::string pathCurrentToExecutable ,
                             rodent ,
                             removeCleanFibers ,
                             removeNanFibers,
-                            useBandWidth
+                            useBandWidth,
+                            numThreads
                             ) ;
     }
     else
@@ -189,18 +199,22 @@ bool CommandLine( std::string pathCurrentToExecutable ,
         //Find path for fiberprocess
         FindExecutable( "fiberprocess" , pathCurrentToExecutable , pathFiberProcess ) ;
         //Call fiberprocess
-        Applyfiberprocess(CSVFile, pathFiberProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, fibers,true);
+        Applyfiberprocess_mt(CSVFile, pathFiberProcess, AtlasFiberDir, 
+                            OutputFolder, DataCol, DefCol, FieldType,NameCol, 
+                            fibers,true,numThreads);
         if( removeNanFibers == true )
         {
             //Find path for fiberpostprocess
             FindExecutable( "FiberPostProcess" , pathCurrentToExecutable , pathFiberPostProcess ) ;
             //Call fiberpostrocess
-            ApplyFiberPostProcess(CSVFile, pathFiberPostProcess, AtlasFiberDir, OutputFolder, DataCol, DefCol, FieldType,NameCol, SelectedFibers,true);
+            ApplyFiberPostProcess_mt(CSVFile, pathFiberPostProcess, AtlasFiberDir, 
+                                OutputFolder, DataCol, DefCol, FieldType,NameCol, 
+                                SelectedFibers,true,numThreads);
         }
         /* Looking for dti_tract_stat */
         FindExecutable( "dtitractstat" , pathCurrentToExecutable , pathdti_tract_stat ) ;
         //Call dti_tract_stat
-        Applydti_tract_stat(CSVFile ,
+        Applydti_tract_stat_mt(CSVFile ,
                             pathdti_tract_stat ,
                             AtlasFiberDir ,
                             OutputFolder ,
@@ -216,7 +230,8 @@ bool CommandLine( std::string pathCurrentToExecutable ,
                             rodent ,
                             removeCleanFibers,
                             removeNanFibers,
-                            useBandWidth
+                            useBandWidth,
+                            numThreads
                             ) ;
     }
 
@@ -249,6 +264,219 @@ bool CreateDirectoryForData(std::string outputfolder, std::string name)
     return false;
 }
 
+/*********************************************************************************
+ * Thread classes
+ ********************************************************************************/
+
+void CFPParams::showParams(){
+    std::cout << "------------------------------" << std::endl;
+    std::cout << "pathFiberProces : "<< pathFiberProcess << std::endl;
+    std::cout << "AtlasFolder : "<< AtlasFolder << std::endl;
+    std::cout << "outputname : "<< outputname << std::endl;
+    std::cout << "Data : "<< Data << std::endl;
+    std::cout << "DeformationField : "<< DeformationField << std::endl;
+    std::cout << "FieldType : "<< FieldType << std::endl;
+    std::cout << "Fiber : "<< Fiber << std::endl;
+    std::cout << "------------------------------" << std::endl;
+}
+
+//Fiber Post Process
+void FiberPostWorker::process(){
+    try{
+
+                        //Check if the output exist
+        std::string outputcasefolder = "Cases";
+        std::string outputCase = params->OutputFolder + "/" + outputcasefolder + "/" ;
+        std::string name_of_fiber=params->name_of_fiber;
+        std::string namecase = NameOfCase(CSV,params->row,params->NameCol,params->DataCol);
+        std::string nameoffile= namecase + "_" + name_of_fiber +"_processed.vtk" ;
+                namecase + "_" + name_of_fiber + "_processed.vtk";
+        std::string inputName = outputCase + namecase + "/" +
+                namecase + "_" + name_of_fiber + ".vtk" ;
+        std::string gzoutputname = params->outputname + ".gz";
+
+        if(CallFiberPostProcess(params->pathFiberProcess,
+                         inputName,
+                         params->outputname,
+                         (*CSV->getData())[params->row][params->DataCol])==0)
+        {
+
+            if(FileExisted(params->outputname) || FileExisted(gzoutputname))
+                CSV->AddData(params->outputname,params->row,params->col);
+        }
+        else
+            std::cout<<"Fail during fiberprocess!"<< std::endl;
+
+
+    }catch(int e){
+        std::cout << "Exception : " << e << std::endl;
+        emit error("Exception at Fiberworker::process");
+    }
+
+    emit finished();
+}
+
+void FiberPostWorker::done(){
+    std::cout << "Work done : " << index << std::endl;
+    delete params;
+    ((FiberPostProcessor*)parent)->childFinished();
+}
+
+FiberPostProcessor::FiberPostProcessor(std::queue<CFPParams> q,int _numThreads,CSVClass* _CSV){
+  paramsQueue=q;
+  numThreads=_numThreads;
+  currentThreads=0;
+  CSV=_CSV;
+};
+
+void FiberPostProcessor::run(){
+
+    // std::vector<Worker*> workers;
+    // std::vector<QThread*> threads;
+    int index=0;
+    while( (!paramsQueue.empty()) || (currentThreads>0)){
+        if(currentThreads<numThreads){
+            //execute thread
+            if(!paramsQueue.empty()){
+                CFPParams* params=new CFPParams(paramsQueue.front());
+                FiberPostWorker* worker=new FiberPostWorker(this,params,index,CSV);
+                QThread* thread=new QThread();
+                params->showParams();
+                paramsQueue.pop();
+                std::cout << "Thread begins ..." << std::endl;
+                
+                try{
+                    worker->moveToThread(thread);
+                    connect(thread, SIGNAL (started()), worker, SLOT (process()));
+                    connect(worker, SIGNAL (finished()), worker, SLOT (done()));
+                    connect(worker, SIGNAL (finished()), thread, SLOT (quit()));
+                    connect(worker, SIGNAL (finished()), this, SLOT(childFinished()));
+                    connect(worker, SIGNAL (finished()), worker, SLOT (deleteLater()));
+                    connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+                    thread->start();
+                    currentThreads++;
+                    index++;                     
+                }catch(int e){
+                    std::cout << "Exception in run() : " << e << std::endl;
+                }
+                std::cout << "Thread sarted" << std::endl;
+                QThread::sleep(0.1);
+            }else{
+                QThread::sleep(1);
+            }
+
+        }else{
+            //sleep
+            //std::cout << "Current number of threads running : " << currentThreads << std::endl;
+            QThread::sleep(1);
+        }
+    }
+}
+
+void FiberPostProcessor::childFinished(){
+    std::cout <<"Child finished" << std::endl;
+    currentThreads--;
+}
+
+
+// Fiber Process
+void FiberWorker::process(){
+    try{
+        if(CallFiberProcess(params->pathFiberProcess,
+                         params->AtlasFolder,
+                         params->outputname,
+                         params->Data,
+                         params->DeformationField,
+                         params->FieldType,
+                         params->Fiber)==0){
+
+                    //Check if the output exist
+            std::string outputcasefolder = "Cases";
+            std::string name_of_fiber=params->name_of_fiber;
+            // std::string header=params->name_of_fiber +".fvp";
+            std::string namecase = NameOfCase(CSV,params->row,params->NameCol,params->DataCol);
+            std::string nameoffile=namecase + "_" + name_of_fiber + ".vtk";
+            std::string outputname = params->OutputFolder + "/" + outputcasefolder + "/" + namecase + "/" +
+                    namecase + "_" + name_of_fiber + ".vtk";
+            std::string gzoutputname = outputname + ".gz";
+
+            if(FileExisted(outputname) || FileExisted(gzoutputname))
+                CSV->AddData(outputname,params->row,params->col);
+        }
+        else
+            std::cout<<"Fail during fiberprocess!"<< std::endl;
+
+
+    }catch(int e){
+        std::cout << "Exception : " << e << std::endl;
+        emit error("Exception at Fiberworker::process");
+    }
+
+    emit finished();
+}
+
+void FiberWorker::done(){
+    std::cout << "Work done : " << index << std::endl;
+    delete params;
+    ((FiberProcessor*)parent)->childFinished();
+}
+
+FiberProcessor::FiberProcessor(std::queue<CFPParams> q,int _numThreads,CSVClass* _CSV){
+  paramsQueue=q;
+  numThreads=_numThreads;
+  currentThreads=0;
+  CSV=_CSV;
+};
+
+void FiberProcessor::run(){
+
+    // std::vector<Worker*> workers;
+    // std::vector<QThread*> threads;
+    int index=0;
+    while( (!paramsQueue.empty()) || (currentThreads>0)){
+        if(currentThreads<numThreads){
+            //execute thread
+            if(!paramsQueue.empty()){
+                CFPParams* params=new CFPParams(paramsQueue.front());
+                FiberWorker* worker=new FiberWorker(this,params,index,CSV);
+                QThread* thread=new QThread();
+                params->showParams();
+                paramsQueue.pop();
+                std::cout << "Thread begins ..." << std::endl;
+                
+                try{
+                    worker->moveToThread(thread);
+                    connect(thread, SIGNAL (started()), worker, SLOT (process()));
+                    connect(worker, SIGNAL (finished()), worker, SLOT (done()));
+                    connect(worker, SIGNAL (finished()), thread, SLOT (quit()));
+                    connect(worker, SIGNAL (finished()), this, SLOT(childFinished()));
+                    connect(worker, SIGNAL (finished()), worker, SLOT (deleteLater()));
+                    connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+                    thread->start();
+                    currentThreads++;
+                    index++;                     
+                }catch(int e){
+                    std::cout << "Exception in run() : " << e << std::endl;
+                }
+                std::cout << "Thread sarted" << std::endl;
+                QThread::sleep(0.1);
+            }else{
+                QThread::sleep(1);
+            }
+
+        }else{
+            //sleep
+            //std::cout << "Current number of threads running : " << currentThreads << std::endl;
+            QThread::sleep(1);
+        }
+    }
+}
+
+void FiberProcessor::childFinished(){
+    std::cout <<"Child finished" << std::endl;
+    currentThreads--;
+}
+
 
 /*********************************************************************************
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
@@ -263,6 +491,7 @@ bool Applyfiberprocess(CSVClass* CSV,
                        int NameCol,
                        vstring fibers,
                        bool nogui,
+                       int numThreads,
                        QWidget* parent)
 {
     int col=-1;
@@ -276,6 +505,9 @@ bool Applyfiberprocess(CSVClass* CSV,
     /* create the output folder where there will be all of the case output fibers and informations */
     outputcasefolder = "Cases";
     CreateDirectoryForData(OutputFolder,outputcasefolder);
+
+    // Multi Threading qork queue
+    std::queue<CFPParams> paramsQueue;
 
     /* Loop for all the fibers */
     for(unsigned int j=0;j<fibers.size();j++)
@@ -329,7 +561,12 @@ bool Applyfiberprocess(CSVClass* CSV,
                         if(DefCol!=-1)
                         {
                             /* If fiberprocess worked */
-                            if(CallFiberProcess(pathFiberProcess, AtlasFiberDir, outputname, (*CSV->getData())[row][DataCol], (*CSV->getData())[row][DefCol], FieldType,fibers[j] ) == 0 )
+                            if(CallFiberProcess(pathFiberProcess, 
+                                                AtlasFiberDir, 
+                                                outputname, 
+                                                (*CSV->getData())[row][DataCol], 
+                                                (*CSV->getData())[row][DefCol], 
+                                                FieldType,fibers[j] ) == 0 )
                             {
                                 //Check if the output exist
                                 if(FileExisted(outputname) || FileExisted(gzoutputname))
@@ -373,6 +610,152 @@ bool Applyfiberprocess(CSVClass* CSV,
     return true;
 }
 
+bool Applyfiberprocess_mt(CSVClass* CSV,
+                       std::string pathFiberProcess,
+                       std::string AtlasFiberDir,
+                       std::string OutputFolder,
+                       int DataCol,
+                       int DefCol,
+                       bool FieldType,
+                       int NameCol,
+                       vstring fibers,
+                       bool nogui,
+                       int numThreads,
+                       QWidget* parent)
+{
+    int col=-1;
+    std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false,2  cancel
+    skipdata.push_back(false);
+    skipdata.push_back(false);
+    skipdata.push_back(false);
+    bool ExistedFile,DataAdded;
+    std::string outputname, name_of_fiber,header, namecase, nameoffile, gzoutputname, outputcasefolder;
+
+    /* create the output folder where there will be all of the case output fibers and informations */
+    outputcasefolder = "Cases";
+    CreateDirectoryForData(OutputFolder,outputcasefolder);
+
+    // Multi Threading qork queue
+    std::queue<CFPParams> paramsQueue;
+    
+    /* Loop for all the fibers */
+    for(unsigned int j=0;j<fibers.size();j++)
+    {
+        DataAdded = false;
+        name_of_fiber=fibers[j];
+        header = name_of_fiber;
+        name_of_fiber = takeoffExtension(fibers[j]);
+        col = HeaderExisted(CSV,header);
+        if(col==-1)
+        {
+            CSV->AddData(header,0,col);
+            DataAdded = true;
+        }
+        /* Loop for all the Data */
+        for(unsigned int row=1;row<CSV->getRowSize();row++)
+        {
+            ExistedFile = false;
+            //Set the namecas and the outputname
+            namecase = NameOfCase(CSV,row,NameCol,DataCol);
+            outputname = OutputFolder + "/" + outputcasefolder + "/" + namecase + "/" +
+                    namecase + "_" + name_of_fiber + ".vtk";
+            nameoffile = namecase + "_" + name_of_fiber + ".vtk";
+            gzoutputname = outputname + ".gz";
+            if(FileExisted(outputname) || FileExisted(gzoutputname))
+            {
+                ExistedFile = true;
+                if(!skipdata[1])
+                    skipdata = MessageExistedFile(nogui, nameoffile, parent);
+            }
+
+            if(skipdata[2] == true)
+            {
+                if(DataAdded)
+                    (*CSV->getData())[0].pop_back();
+                return false;
+            }
+            else if(skipdata[0] && ExistedFile)
+            {
+                if(!DataExistedInFiberColumn(CSV,row,col,outputname))
+                    CSV->AddData(outputname,row,col);
+            }
+            else
+            {
+                //if there is a name
+                if(namecase.compare("")!=0)
+                {
+                    /* If the file is created */
+                    if(CreateDirectoryForData(OutputFolder+ "/" + outputcasefolder,namecase))
+                    {
+                        // if(DefCol!=-1)
+                        // {
+                        //     /* If fiberprocess worked */
+                        //     if(CallFiberProcess(pathFiberProcess, 
+                        //                         AtlasFiberDir, 
+                        //                         outputname, 
+                        //                         (*CSV->getData())[row][DataCol], 
+                        //                         (*CSV->getData())[row][DefCol], 
+                        //                         FieldType,fibers[j] ) == 0 )
+                        //     {
+                        //         //Check if the output exist
+                        //         if(FileExisted(outputname) || FileExisted(gzoutputname))
+                        //             CSV->AddData(outputname,row,col);
+                        //     }
+                        //     else
+                        //         std::cout<<"Fail during fiberprocess!"<< std::endl;
+                        // }
+                        // else
+                        // {
+                        //     /* If fiberprocess worked */
+                        //     if(CallFiberProcess(pathFiberProcess, AtlasFiberDir,
+                        //                         outputname,
+                        //                         (*CSV->getData())[row][DataCol],"no",FieldType,fibers[j] ) == 0 )
+                        //     {
+                        //         //Check if the output exist
+                        //         if(FileExisted(outputname) || FileExisted(gzoutputname))
+                        //             CSV->AddData(outputname,row,col);
+                        //     }
+                        //     else
+                        //         std::cout<<"Fail during fiberprocess!"<< std::endl;
+                        // }
+                        paramsQueue.push(CFPParams(pathFiberProcess,
+                                                   AtlasFiberDir,
+                                                   outputname,
+                                                   (*CSV->getData())[row][DataCol],
+                                                   (*CSV->getData())[row][DefCol],
+                                                   FieldType,
+                                                   fibers[j],
+                                                   false,name_of_fiber,col,row,DataCol,NameCol,OutputFolder
+                                                    ));
+
+
+                    }
+                    else
+                        std::cout<<"ERROR : Unable to create the output directory!"
+                                <<std::endl;
+                }
+                else
+                    CSV->AddData("no",row,col);
+            }
+        }
+    }
+
+    //run Thread
+    std::cout << "Generating thread queue is finished" << std::endl;
+    //run queue in multithreaded way
+    FiberProcessor threadRunner(paramsQueue,numThreads,CSV);
+    threadRunner.run();
+
+    std::cout << "Threads are executed" << std::endl;
+    //save
+    std::string filename;
+    filename = takeoffPath(CSV->getFilename());
+    filename = takeoffExtension(filename);
+    filename = OutputFolder+ "/" + filename + "_computed.csv";
+    CSV->SaveFile(filename);
+
+    return true;
+}
 bool ApplyFiberPostProcess(CSVClass* CSV,
                            std::string pathFiberPostProcess,
                            std::string AtlasFiberDir,
@@ -383,6 +766,7 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
                            int NameCol,
                            vstring fibers,
                            bool nogui,
+                           int numThreads,
                            QWidget* parent)
 {
     int col=-1;
@@ -482,6 +866,148 @@ bool ApplyFiberPostProcess(CSVClass* CSV,
             }
         }
     }
+
+    //save
+    std::string filename;
+    filename = takeoffPath(CSV->getFilename());
+    filename = takeoffExtension(filename);
+    filename = OutputFolder+ "/" + filename + "_computed.csv";
+    CSV->SaveFile(filename);
+
+    return true;
+}
+
+bool ApplyFiberPostProcess_mt(CSVClass* CSV,
+                           std::string pathFiberPostProcess,
+                           std::string AtlasFiberDir,
+                           std::string OutputFolder,
+                           int DataCol,
+                           int DefCol,
+                           bool FieldType,
+                           int NameCol,
+                           vstring fibers,
+                           bool nogui,
+                           int numThreads,
+                           QWidget* parent)
+{
+    int col=-1;
+    std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false,2  cancel
+    skipdata.push_back(false);
+    skipdata.push_back(false);
+    skipdata.push_back(false);
+    bool ExistedFile,DataAdded;
+    std::string outputname, name_of_fiber,header, namecase, nameoffile, gzoutputname, outputcasefolder, outputCase , inputName;
+    /* use the output folder where there will be all of the case output fibers and informations */
+    outputcasefolder = "Cases";
+    outputCase = OutputFolder + "/" + outputcasefolder + "/" ;
+
+    std::queue<CFPParams> paramsQueue;
+
+    /* Loop for all the fibers */
+    for(unsigned int j=0;j<fibers.size();j++)
+    {
+        DataAdded = false;
+        name_of_fiber=fibers[j];
+        header = name_of_fiber;
+        name_of_fiber = takeoffExtension(fibers[j]);
+        col = HeaderExisted(CSV,header);
+        if(col==-1)
+        {
+            CSV->AddData(header,0,col);
+            DataAdded = true;
+        }
+        /* Loop for all the Data */
+        for(unsigned int row=1;row<CSV->getRowSize();row++)
+        {
+            ExistedFile = false;
+            //Set the namecas and the outputname
+            namecase = NameOfCase(CSV,row,NameCol,DataCol);
+            outputname = outputCase + namecase + "/" +
+                    namecase + "_" + name_of_fiber + "_processed.vtk";
+            nameoffile = namecase + "_" + name_of_fiber +"_processed.vtk" ;
+            inputName = outputCase + namecase + "/" +
+                    namecase + "_" + name_of_fiber + ".vtk" ;
+            gzoutputname = outputname + ".gz";
+            if(FileExisted(outputname) || FileExisted(gzoutputname))
+            {
+                ExistedFile = true;
+                if(!skipdata[1])
+                    skipdata = MessageExistedFile(nogui, nameoffile, parent);
+            }
+            if(skipdata[2] == true)
+            {
+                if(DataAdded)
+                    (*CSV->getData())[0].pop_back();
+                return false;
+            }
+            else if(skipdata[0] && ExistedFile)
+            {
+                if(!DataExistedInFiberColumn(CSV,row,col,outputname))
+                    CSV->AddData(outputname,row,col);
+            }
+            else
+            {
+                //if there is a name
+                if(namecase.compare("")!=0)
+                {
+                    /* If the file is created */
+                    if(CreateDirectoryForData(OutputFolder+ "/" + outputcasefolder,namecase))
+                    {
+                        // if(DefCol!=-1)
+                        // {
+                        //     /* If fiberpostprocess worked */
+                        //     if(CallFiberPostProcess(pathFiberPostProcess, 
+                        //                             inputName, 
+                        //                             outputname, 
+                        //                             (*CSV->getData())[row][DataCol] ) == 0 )
+                        //     {
+                        //         //Check if the output exist
+                        //         if(FileExisted(outputname) || FileExisted(gzoutputname))
+                        //             CSV->AddData(outputname,row,col);
+                        //     }
+                        //     else
+                        //         std::cout<<"Fail during FiberPostProcess!"<< std::endl;
+                        // }
+                        // else
+                        // {
+                        //     /* If fiberpostprocess worked */
+                        //     if(CallFiberPostProcess(pathFiberPostProcess, AtlasFiberDir,
+                        //                             outputname,
+                        //                             (*CSV->getData())[row][DataCol] ) == 0 )
+                        //     {
+                        //         //Check if the output exist
+                        //         if(FileExisted(outputname) || FileExisted(gzoutputname))
+                        //             CSV->AddData(outputname,row,col);
+                        //     }
+                        //     else
+                        //         std::cout<<"Fail during fiberprocess!"<< std::endl;
+                        // }
+                        paramsQueue.push(CFPParams(pathFiberPostProcess,
+                                                   AtlasFiberDir,
+                                                   outputname,
+                                                   (*CSV->getData())[row][DataCol],
+                                                   (*CSV->getData())[row][DefCol],
+                                                   FieldType,
+                                                   fibers[j],
+                                                   false,name_of_fiber,col,row,DataCol,NameCol,OutputFolder
+                                                    ));
+                    }
+                    else
+                        std::cout<<"ERROR : Unable to create the output directory!"
+                                <<std::endl;
+                }
+                else
+                    CSV->AddData("no",row,col);
+            }
+        }
+    }
+
+    //Thread execution
+    std::cout << "Generating thread queue is finished" << std::endl;
+    //run queue in multithreaded way
+    FiberPostProcessor threadRunner(paramsQueue,numThreads,CSV);
+    threadRunner.run();
+    std::cout << "Threads are executed" << std::endl;
 
     //save
     std::string filename;
@@ -798,11 +1324,138 @@ std::string ExtensionofFile(std::string filename)
 
 
 /*********************************************************************************
+ * Thread classes (DTITractStat)
+ ********************************************************************************/
+
+void CTSParams::showParams(){
+    std::cout << "------------------------------" << std::endl;
+    std::cout << "pathdti_tract_stat : "<< pathdti_tract_stat << std::endl;
+    std::cout << "AtlasDirectory : "<< AtlasDirectory << std::endl;
+    std::cout << "Input_fiber_file : "<< Input_fiber_file << std::endl;
+    std::cout << "Output_fiber_file : "<< Output_fiber_file << std::endl;
+    std::cout << "plane : "<< plane << std::endl;
+    std::cout << "parameter : "<< parameter << std::endl;
+    std::cout << "bandWidth : "<< bandWidth << std::endl;
+    std::cout << "CoG : "<< CoG << std::endl;
+    std::cout << "sampling : "<< sampling << std::endl;
+    std::cout << "rodent : "<< rodent << std::endl;
+    std::cout << "clean : "<< clean << std::endl;
+    std::cout << "noNan : "<< noNan << std::endl;
+    std::cout << "useBandWidth : "<< useBandWidth << std::endl;
+    std::cout << "Parametrized : "<< Parametrized << std::endl;
+    std::cout << "------------------------------" << std::endl;
+}
+
+
+
+void Worker::process(){
+    try{
+        if(Calldti_tract_stat(params->pathdti_tract_stat,
+                           params->AtlasDirectory,
+                           params->Input_fiber_file,
+                           params->Output_fiber_file,
+                           params->plane,
+                           params->parameter,
+                           params->bandWidth,
+                           params->CoG,
+                           params->sampling,
+                           params->rodent,
+                           params->clean,
+                           params->noNan,
+                           params->useBandWidth,
+                           params->Parametrized)){
+
+            std::string name_of_fiber=params->name_of_fiber;
+            std::string header=params->name_of_fiber +".fvp";
+            std::string namecase = NameOfCase(CSV,params->row,params->NameCol,params->DataCol);
+            std::string nameoffile=namecase + "_" + params->name_of_fiber + "_" + params->parameter + ".fvp";;
+            std::string outputname = params->OutputFolder + "/Cases/" + namecase + "/" + namecase +
+                    "_" + params->name_of_fiber + "_"+params->parameter+".fvp";
+            if(FileExisted(outputname) && !params->isFinalOutput)
+            {
+                if(!DataExistedInFiberColumn(CSV,params->row,params->col,params->Output_fiber_file))
+                    CSV->AddData(params->Output_fiber_file,params->row,params->col);
+            }else
+            {
+                std::cout<<"Fail during dti_tract_stat!"<< std::endl;
+            }
+        }
+    }catch(int e){
+        std::cout << "Exception : " << e << std::endl;
+    }
+
+    emit finished();
+}
+
+void Worker::done(){
+    std::cout << "Work done : " << index << std::endl;
+    delete params;
+    ((DTITractWorker*)parent)->childFinished();
+}
+
+DTITractWorker::DTITractWorker(std::queue<CTSParams> q,int _numThreads,CSVClass* _CSV){
+  CSV=_CSV;
+  paramsQueue=q;
+  numThreads=_numThreads;
+  currentThreads=0;
+};
+
+void DTITractWorker::run(){
+
+    // std::vector<Worker*> workers;
+    // std::vector<QThread*> threads;
+    int index=0;
+    while( (!paramsQueue.empty()) || (currentThreads>0)){
+        if(currentThreads<numThreads){
+            //execute thread
+            if(!paramsQueue.empty()){
+                CTSParams* params=new CTSParams(paramsQueue.front());
+                Worker* worker=new Worker(this,params,index,CSV);
+                QThread* thread=new QThread();
+                params->showParams();
+                paramsQueue.pop();
+                std::cout << "Thread begins ..." << std::endl;
+                
+                try{
+                    worker->moveToThread(thread);
+                    connect(thread, SIGNAL (started()), worker, SLOT (process()));
+                    connect(worker, SIGNAL (finished()), worker, SLOT (done()));
+                    connect(worker, SIGNAL (finished()), thread, SLOT (quit()));
+                    connect(worker, SIGNAL (finished()), this, SLOT(childFinished()));
+                    connect(worker, SIGNAL (finished()), worker, SLOT (deleteLater()));
+                    connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+                    thread->start();
+                    currentThreads++;
+                    index++;                     
+                }catch(int e){
+                    std::cout << "Exception in run() : " << e << std::endl;
+                }
+                std::cout << "Thread sarted" << std::endl;
+                QThread::sleep(0.1);
+            }else{
+                QThread::sleep(1);
+            }
+
+        }else{
+            //sleep
+            //std::cout << "Current number of threads running : " << currentThreads << std::endl;
+            QThread::sleep(1);
+        }
+    }
+}
+
+void DTITractWorker::childFinished(){
+    std::cout <<"Child finished" << std::endl;
+    currentThreads--;
+}
+
+/*********************************************************************************
  * Call fiberprocess for every data/deformation and for every fiber in the atlas
  ********************************************************************************/
 bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
                          std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
-                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth , QWidget *parent)
+                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , 
+                         bool removeNanFibers, bool useBandWidth , QWidget *parent)
 {
     int col=-1;
     bool DataAdded = false;
@@ -972,6 +1625,355 @@ bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::str
 
 
 /*********************************************************************************
+ * Call fiberprocess for every data/deformation and for every fiber in the atlas (multi-threaded version)
+ ********************************************************************************/
+bool Applydti_tract_stat_mt_org(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
+                         std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
+                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , 
+                         bool removeNanFibers, bool useBandWidth , int numThreads, QWidget *parent)
+{
+    int col=-1;
+    bool DataAdded = false;
+    bool ExistedFile = false;
+    std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false, 2  cancel
+    skipdata.push_back(false);
+    skipdata.push_back(false);
+    std::string outputname, name_of_fiber, header, namecase, nameoffile, globalFile;
+    CreateDirectoryForData(OutputFolder,"Fibers");
+    vstring param;
+    LineInVector(parameters, param);
+    bool noNan = 1 ;
+    for(int i=0; i< ((int) param.size()); i++)
+    {
+        /* Loop for all the fibers */
+        for(unsigned int j=0;j<fibers.size();j++)
+        {
+            DataAdded = false;
+            name_of_fiber = takeoffExtension(fibers[j]);
+            //Column where there is the name of the fiber
+            //header for the new column
+            header = name_of_fiber +".fvp";
+            col = HeaderExisted(CSV,header);
+            if(col==-1)
+            {
+                CSV->AddData(header,0,col);
+                DataAdded = true;
+            }
+            /* Loop for all the Data */
+            for(unsigned int row=1;row<CSV->getRowSize();row++)
+            {
+                ExistedFile = false;
+                //Set the namecas and the outputname
+                namecase = NameOfCase(CSV,row,NameCol,DataCol);
+                outputname = OutputFolder + "/Cases/" + namecase + "/" + namecase +
+                        "_" + name_of_fiber + "_"+param[i]+".fvp";
+                std::cout<<outputname<<std::endl;
+                nameoffile = namecase + "_" + name_of_fiber + "_" + param[i] + ".fvp";
+                if(FileExisted(outputname))
+                {
+                    ExistedFile = true;
+                    if(!skipdata[1])
+                        skipdata = MessageExistedFile(nogui, nameoffile, parent);
+                }
+
+                if(skipdata[2] == true)
+                {
+                    if(DataAdded)
+                        (*CSV->getData())[0].pop_back();
+                    return false;
+                }
+                if(skipdata[0] && ExistedFile)
+                {
+                    globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase +
+                            "_" + name_of_fiber+".fvp";
+                    if(!DataExistedInFiberColumn(CSV,row,col,globalFile))
+                    {
+                        CSV->AddData(globalFile,row,col);
+                        //nouveau vtk
+                    }
+                }
+                else
+                {
+                    //if there is a name
+                    if(namecase.compare("")!=0)
+                    {
+                        int fibercol = HeaderExisted(CSV, fibers[j]);
+                        if(fibercol!=-1)
+                        {
+                            std::string input_fiber=OutputFolder+"/Cases/" + namecase + "/" + namecase +
+                                    "_" + name_of_fiber+"_processed.vtk";//std::string input_fiber = (*CSV->getData())[row][fibercol];
+                            globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase +
+                                    "_" + name_of_fiber+".fvp";
+                            /* If dti_tract_stat worked */
+                            if( removeNanFibers == 0 )
+                            {
+                                noNan = 0 ;
+                            }
+                            if(Calldti_tract_stat(pathdti_tract_stat, AtlasDirectory,
+                                                  input_fiber, globalFile, fibersplane[j],
+                                                  param[i], bandWidth, CoG, sampling , rodent , removeCleanFibers , noNan , useBandWidth,false ) == 0 )
+                            {
+                                if(FileExisted(outputname))
+                                {
+                                    if(!DataExistedInFiberColumn(CSV,row,col,globalFile))
+                                        CSV->AddData(globalFile,row,col);
+                                }
+                            }
+                            else
+                            {
+                                std::cout<<"Fail during dti_tract_stat!"<< std::endl;
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            std::cout<<"Header not found in csv file"<<std::endl;
+                            return false;
+                        }
+                    }
+                    else
+                        CSV->AddData("no",row,col);
+                }
+            }
+            // Add Calldti_tract_stat with parametrized = true , also change output folder that stores the parametrized vtk file NOTE
+            // refere the output path in below commented lines of call_dti
+            
+            std::string inputname=AtlasDirectory+"/"+fibers[j];
+            outputname=OutputFolder+"/Fibers/"+header;
+            if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory ,
+                             inputname , 
+                             outputname , 
+                             fibersplane[ j ] , 
+                             param[ i ] , 
+                             bandWidth, 
+                             CoG , 
+                             sampling , 
+                             rodent ,
+                             removeCleanFibers, 
+                             1 ,  //noNan
+                             useBandWidth, 
+                             true) != 0 ) // parametrized file generation
+            {
+                std::cout << "Fail during dti_tract_stat!" << std::endl ;
+                return false ;
+            } // NOTE (outputname )
+            if( FileExisted( outputname ) )
+            {
+                ExistedFile = true ;
+                if( !skipdata[ 1 ] )
+                {
+                    skipdata = MessageExistedFile(nogui, header, parent);
+                }
+
+            }
+            if( skipdata[ 2 ] == true )
+            {
+                return false ;
+            }
+            else if( !skipdata[ 0 ] || !ExistedFile )
+            {
+                bool removeCleanFibersAtlas = false ;
+                if( removeCleanFibers && i != 0 )
+                {
+                    removeCleanFibersAtlas = true ;
+                }
+                noNan = 1 ;
+                // if( Calldti_tract_stat( pathdti_tract_stat , AtlasDirectory , inputname , outputname , fibersplane[ j ] , param[ i ] , bandWidth, CoG , sampling , rodent ,removeCleanFibers, noNan , useBandWidth, removeCleanFibersAtlas ) != 0 )
+                // {
+                //     std::cout << "Fail during dti_tract_stat!" << std::endl ;
+                //     return false ;
+                // } NOTE (outputname )
+            }
+
+        }
+    }
+
+    //save
+    std::string filename;
+    filename = takeoffPath(CSV->getFilename());
+    filename = takeoffExtension(filename);
+    filename = OutputFolder+ "/" + filename + "_computed.csv";
+    CSV->SaveFile(filename);
+
+    return true;
+}
+
+bool Applydti_tract_stat_mt(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
+                         std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
+                         int DataCol, int NameCol , bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , 
+                         bool removeNanFibers, bool useBandWidth , int numThreads, QWidget *parent)
+{
+    int col=-1;
+    bool DataAdded = false;
+    bool ExistedFile = false;
+    std::vector<bool> skipdata; //0 is skip, 1 alldata, initializate to false, 2  cancel
+    skipdata.push_back(false);
+    skipdata.push_back(false);
+    std::string outputname, name_of_fiber, header, namecase, nameoffile, globalFile;
+    CreateDirectoryForData(OutputFolder,"Fibers");
+    vstring param;
+    LineInVector(parameters, param);
+    bool noNan = 1 ;
+
+    // Make work queue for threading schedule
+    std::queue<CTSParams> paramsQueue;
+
+    for(int i=0; i< ((int) param.size()); i++)
+    {
+        /* Loop for all the fibers */
+        for(unsigned int j=0;j<fibers.size();j++)
+        {
+            DataAdded = false;
+            name_of_fiber = takeoffExtension(fibers[j]);
+            //Column where there is the name of the fiber
+            //header for the new column
+            header = name_of_fiber +".fvp";
+            col = HeaderExisted(CSV,header);
+            if(col==-1)
+            {
+                CSV->AddData(header,0,col);
+                DataAdded = true;
+            }
+            /* Loop for all the Data */
+            for(unsigned int row=1;row<CSV->getRowSize();row++)
+            {
+                ExistedFile = false;
+                //Set the namecas and the outputname
+                namecase = NameOfCase(CSV,row,NameCol,DataCol);
+                outputname = OutputFolder + "/Cases/" + namecase + "/" + namecase +
+                        "_" + name_of_fiber + "_"+param[i]+".fvp";
+                std::cout<<outputname<<std::endl;
+                nameoffile = namecase + "_" + name_of_fiber + "_" + param[i] + ".fvp";
+                if(FileExisted(outputname))
+                {
+                    ExistedFile = true;
+                    if(!skipdata[1])
+                        skipdata = MessageExistedFile(nogui, nameoffile, parent);
+                }
+
+                if(skipdata[2] == true)
+                {
+                    if(DataAdded)
+                        (*CSV->getData())[0].pop_back();
+                    return false;
+                }
+                if(skipdata[0] && ExistedFile)
+                {
+                    globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase +
+                            "_" + name_of_fiber+".fvp";
+                    if(!DataExistedInFiberColumn(CSV,row,col,globalFile))
+                    {
+                        CSV->AddData(globalFile,row,col);
+                        //nouveau vtk
+                    }
+                }
+                else
+                {
+                    //if there is a name
+                    if(namecase.compare("")!=0)
+                    {
+                        int fibercol = HeaderExisted(CSV, fibers[j]);
+                        if(fibercol!=-1)
+                        {
+                            std::string input_fiber=OutputFolder+"/Cases/" + namecase + "/" + namecase +
+                                    "_" + name_of_fiber+"_processed.vtk";//std::string input_fiber = (*CSV->getData())[row][fibercol];
+                            globalFile=OutputFolder + "/Cases/" + namecase + "/" + namecase +
+                                    "_" + name_of_fiber+".fvp";
+                            /* If dti_tract_stat worked */
+                            if( removeNanFibers == 0 )
+                            {
+                                noNan = 0 ;
+                            }
+                            paramsQueue.push(CTSParams(pathdti_tract_stat, AtlasDirectory,
+                                                  input_fiber, globalFile, fibersplane[j],
+                                                  param[i], bandWidth, CoG, sampling , rodent , 
+                                                  removeCleanFibers , noNan , useBandWidth,false,
+                                                  false,name_of_fiber,
+                                                  col,row,DataCol,NameCol,OutputFolder ));
+
+                        }
+                        else
+                        {
+                            std::cout<<"Header not found in csv file"<<std::endl;
+                            return false;
+                        }
+                    }
+                    else
+                        CSV->AddData("no",row,col);
+                }
+            }
+            // Add Calldti_tract_stat with parametrized = true , also change output folder that stores the parametrized vtk file NOTE
+            // refere the output path in below commented lines of call_dti
+            
+            std::string inputname=AtlasDirectory+"/"+fibers[j];
+            outputname=OutputFolder+"/Fibers/"+header;
+
+
+
+            if( FileExisted( outputname ) )
+            {
+                ExistedFile = true ;
+                if( !skipdata[ 1 ] )
+                {
+                    skipdata = MessageExistedFile(nogui, header, parent);
+                }
+
+            }
+            if( skipdata[ 2 ] == true )
+            {
+                return false ;
+            }
+            else if( !skipdata[ 0 ] || !ExistedFile )
+            {
+                bool removeCleanFibersAtlas = false ;
+                if( removeCleanFibers && i != 0 )
+                {
+                    removeCleanFibersAtlas = true ;
+
+                }
+                noNan = 1 ;
+                paramsQueue.push(CTSParams(pathdti_tract_stat , AtlasDirectory ,
+                         inputname , 
+                         outputname , 
+                         fibersplane[ j ] , 
+                         param[ i ] , 
+                         bandWidth, 
+                         CoG , 
+                         sampling , 
+                         rodent ,
+                         removeCleanFibers, 
+                         1 ,  //noNan
+                         useBandWidth, 
+                         true,
+                         true,"",-1,-1,-1,-1,"")); // dummies.
+
+            }
+
+        }
+
+
+    }
+    std::cout << "Generating thread queue is finished" << std::endl;
+    //run queue in multithreaded way
+    DTITractWorker threadRunner(paramsQueue,numThreads,CSV);
+    threadRunner.run();
+
+    std::cout << "Threads are executed" << std::endl;
+    //save
+    std::string filename;
+    filename = takeoffPath(CSV->getFilename());
+    filename = takeoffExtension(filename);
+    filename = OutputFolder+ "/" + filename + "_computed.csv";
+    CSV->SaveFile(filename);
+
+    std::cout << "Applydti_tract_stat_mt finished" << std::endl;
+
+    return true;
+}
+
+
+
+/*********************************************************************************
  * Call dti_tract_stat
  ********************************************************************************/
 int Calldti_tract_stat(std::string pathdti_tract_stat,
@@ -991,7 +1993,13 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
                       )
 {
     int state=0;
-    QProcess *process= new QProcess();
+    QProcess* process;
+    try{
+        process= new QProcess();
+    }catch(int e){
+        std::cout << "Exception in Calldti_tract_stat : " << e << std::endl;
+    }
+    
     QStringList arguments;
 
     std::cout<<"Compute dti_tract_stat..."<< std::endl;
@@ -1059,6 +2067,9 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
         }
         std::cout<<"Command Line :  "<< pathdti_tract_stat.c_str() << " " << (arguments.join(" ")).toStdString() <<std::endl;
         state = process->execute( pathdti_tract_stat.c_str(), arguments);
+        // process->start( pathdti_tract_stat.c_str(), arguments);
+        // process->waitForFinished();
+        // state=process->state();
         std::cout<<"End of Dti Tract Stat."<<std::endl;
     }
     else
@@ -1073,8 +2084,15 @@ int Calldti_tract_stat(std::string pathdti_tract_stat,
  * It stocks the data in an vector(case) of vector(line) of vstring (data)
  ********************************************************************************/
 
-std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::string OutputFolder, int DataCol, int NameCol, bool transposeColRow, vstring fibers, bool& success)
+std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, 
+                                                            std::string OutputFolder, 
+                                                            int DataCol, 
+                                                            int NameCol, 
+                                                            bool transposeColRow, 
+                                                            vstring fibers, 
+                                                            bool& success)
 {
+
     // variables
     std::string fibername, filename, outputprofilefolder, fiberpath,globalDirectory;
     std::vector<std::vector<v2string> > FiberProfiles;
@@ -1082,64 +2100,71 @@ std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV, std::st
     vstring parameters;
     v2string profiles;
 
-    /* create the output folder where there will be all of the gathering data */
-    outputprofilefolder = "FiberProfiles";
-    CreateDirectoryForData(OutputFolder,outputprofilefolder);
-    globalDirectory=OutputFolder + "/Cases/" + NameOfCase(CSV, 1, NameCol, DataCol);
-    LineInVector(getParamFromDirectory(globalDirectory,takeoffExtension(fibers[0])),parameters);
-    fiberpath=OutputFolder + "/Fibers/" + takeoffExtension(fibers[0]) + ".fvp";
-    outputprofilefolder = OutputFolder + "/" + outputprofilefolder;
 
-    /* look for the header .fvp and create the folder for each fiber.fvp with the name of the fiber */
-    for(unsigned int col=0;col<CSV->getColSize(0);col++)
-    {
-        if(ExtensionofFile((*CSV->getData())[0][col]).compare("fvp")==0)
+    /* create the output folder where there will be all of the gathering data */
+    try{
+
+        outputprofilefolder = "FiberProfiles";
+        CreateDirectoryForData(OutputFolder,outputprofilefolder);
+        globalDirectory=OutputFolder + "/Cases/" + NameOfCase(CSV, 1, NameCol, DataCol);
+        LineInVector(getParamFromDirectory(globalDirectory,takeoffExtension(fibers[0])),parameters);
+        fiberpath=OutputFolder + "/Fibers/" + takeoffExtension(fibers[0]) + ".fvp";
+        outputprofilefolder = OutputFolder + "/" + outputprofilefolder;
+
+        /* look for the header .fvp and create the folder for each fiber.fvp with the name of the fiber */
+        for(unsigned int col=0;col<CSV->getColSize(0);col++)
         {
-            fibername = takeoffExtension((*CSV->getData())[0][col]);
-            if(CreateDirectoryForData(outputprofilefolder,fibername))
+            if(ExtensionofFile((*CSV->getData())[0][col]).compare("fvp")==0)
             {
-                /* read the data of every case and put it in the vector */
-                for(unsigned int row=1;row<CSV->getRowSize();row++)
+                fibername = takeoffExtension((*CSV->getData())[0][col]);
+                if(CreateDirectoryForData(outputprofilefolder,fibername))
                 {
-                    //read the profile information from the file and put it for the fiber and data
-                    if(ReadProfileInformation((*CSV->getData())[row][col],profiles, parameters))
+                    /* read the data of every case and put it in the vector */
+                    for(unsigned int row=1;row<CSV->getRowSize();row++)
+                    {
+                        std::cout <<"GatheringFiberProfile."<<std::endl; // problem
+                        //read the profile information from the file and put it for the fiber and data
+                        if(ReadProfileInformation((*CSV->getData())[row][col],profiles, parameters))
+                            v3profiles.push_back(profiles);
+                        profiles.clear();
+                    }
+                    fiberpath=OutputFolder+"/Fibers/"+(*CSV->getData())[0][col];
+                    if(ReadProfileInformation(fiberpath,profiles,parameters))
+                    {
                         v3profiles.push_back(profiles);
-                    profiles.clear();
-                }
-                fiberpath=OutputFolder+"/Fibers/"+(*CSV->getData())[0][col];
-                if(ReadProfileInformation(fiberpath,profiles,parameters))
-                {
-                    v3profiles.push_back(profiles);
-                    profiles.clear();
-                    if(v3profiles.size()!=0)
-                        std::cout<<"Informations of "<<fibername<<" read successfully"<<std::endl;
+                        profiles.clear();
+                        if(v3profiles.size()!=0)
+                            std::cout<<"Informations of "<<fibername<<" read successfully"<<std::endl;
+                        else
+                        {
+                            std::cout<<"Nothing was read."<<std::endl;
+                            success=false;
+                            return FiberProfiles;
+                        }
+                    }
                     else
                     {
-                        std::cout<<"Nothing was read."<<std::endl;
+                        std::cout<<"Read information from the fvp files failed for the fiber "<<fibername<<"!"<<std::endl;
                         success=false;
                         return FiberProfiles;
                     }
                 }
-                else
+                FiberProfiles.push_back(v3profiles);
+                for(unsigned int i=0; i<parameters.size(); i++)
                 {
-                    std::cout<<"Read information from the fvp files failed for the fiber "<<fibername<<"!"<<std::endl;
-                    success=false;
-                    return FiberProfiles;
+                    filename=outputprofilefolder+"/"+fibername+"/"+parameters[i]+"_"+fibername+".csv";
+                    WriteProfile(CSV, filename, v3profiles, DataCol, NameCol, i+1, transposeColRow);
                 }
+                if(ReadFiberPtInformation(fiberpath,profiles,parameters))
+                    FiberProfiles[FiberProfiles.size()-1].push_back(profiles);
+                profiles.clear();
+                v3profiles.clear();
             }
-            FiberProfiles.push_back(v3profiles);
-            for(unsigned int i=0; i<parameters.size(); i++)
-            {
-                filename=outputprofilefolder+"/"+fibername+"/"+parameters[i]+"_"+fibername+".csv";
-                WriteProfile(CSV, filename, v3profiles, DataCol, NameCol, i+1, transposeColRow);
-            }
-            if(ReadFiberPtInformation(fiberpath,profiles,parameters))
-                FiberProfiles[FiberProfiles.size()-1].push_back(profiles);
-            profiles.clear();
-            v3profiles.clear();
         }
+        success=true;
+    }catch(std::exception &e){
+        std::cout << e.what() << std::endl;
     }
-    success=true;
     return FiberProfiles;
 }
 

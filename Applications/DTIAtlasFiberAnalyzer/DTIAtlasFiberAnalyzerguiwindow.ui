@@ -162,7 +162,7 @@
         <item>
          <widget class="QLabel" name="lbl_numThreads">
           <property name="text">
-           <string>Number of Threades</string>
+           <string>Number of Threads</string>
           </property>
          </widget>
         </item>
