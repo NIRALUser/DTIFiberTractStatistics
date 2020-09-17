@@ -37,7 +37,7 @@ Data Column : 2
 Deformation Field Column : 3
 Field Type : displacement field
 Case Column : 1
-Output Folder : /BAND/USERS/skp78-dti/test-dtifb-20200827
+Output Folder : /outputDIR/
 ```
 
 ##### Analysisfile
