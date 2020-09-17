@@ -1363,7 +1363,7 @@ void Worker::process(){
                            params->clean,
                            params->noNan,
                            params->useBandWidth,
-                           params->Parametrized)){
+                           params->Parametrized)==0){
 
             std::string name_of_fiber=params->name_of_fiber;
             std::string header=params->name_of_fiber +".fvp";
@@ -1371,10 +1371,12 @@ void Worker::process(){
             std::string nameoffile=namecase + "_" + params->name_of_fiber + "_" + params->parameter + ".fvp";;
             std::string outputname = params->OutputFolder + "/Cases/" + namecase + "/" + namecase +
                     "_" + params->name_of_fiber + "_"+params->parameter+".fvp";
+            std::string globalFile=params->OutputFolder + "/Cases/" + namecase + "/" + namecase +
+                                    "_" + name_of_fiber+".fvp";
             if(FileExisted(outputname) && !params->isFinalOutput)
             {
-                if(!DataExistedInFiberColumn(CSV,params->row,params->col,params->Output_fiber_file))
-                    CSV->AddData(params->Output_fiber_file,params->row,params->col);
+                if(!DataExistedInFiberColumn(CSV,params->row,params->col,globalFile))
+                    CSV->AddData(globalFile,params->row,params->col);
             }else
             {
                 std::cout<<"Fail during dti_tract_stat!"<< std::endl;
@@ -2122,7 +2124,6 @@ std::vector<std::vector<v2string> > GatheringFiberProfile(CSVClass* CSV,
                     /* read the data of every case and put it in the vector */
                     for(unsigned int row=1;row<CSV->getRowSize();row++)
                     {
-                        std::cout <<"GatheringFiberProfile."<<std::endl; // problem
                         //read the profile information from the file and put it for the fiber and data
                         if(ReadProfileInformation((*CSV->getData())[row][col],profiles, parameters))
                             v3profiles.push_back(profiles);

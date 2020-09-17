@@ -14,7 +14,7 @@ Some documentation about the features available in this package are available he
 
 ## Dockerfile for developers
 
-Use below command in source directory to build docker image (Currently having only CentOS7 image.
+Use below command in source directory to build docker image (Currently having only CentOS7 image.)
 
 ```
 $ docker build . -t <image-name>
@@ -26,6 +26,11 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 - In OSX,  Qt5_DIR environment variable needs to be set (e.g. /usr/local/opt/qt5/lib/cmake/Qt5)
 
 ## Change Log:
+
+#### [v1.7.4-beta](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.4-beta) (09/17/2020)
+- Multithreading in fiberprocessing, dti-tract-stat. 
+- Minor bug fixed
+
 
 #### [v1.7.3c-beta](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3c-beta) (07/27/2020)
 - Merge Tab removed
