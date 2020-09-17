@@ -11,6 +11,48 @@ This package is also available as a 3D Slicer extension (http://www.slicer.org) 
 
 Some documentation about the features available in this package are available here: http://www.na-mic.org/Wiki/index.php/Projects:dtistatisticsfibers
 
+## Usage 
+
+#### GUI
+
+```
+	$ DTIAtlasFiberAnalyzer
+```
+
+#### CLI
+
+Example
+```
+	$ DTIAtlasFiberAnalyzer --datafile <datafilename> --analysisfile <analysisfilename> --removeCleanFibers --removeNanFibers --numthreads 8 --nogui
+```
+
+## Parameter file example
+
+##### Datafile
+```
+Data parameters for DTIAtlasFiberAnalyzer : 
+CSVFile : ../AtlasDIR/DTIAtlas_Result.csv
+#Data/Case/Deformation Column --> index starts at 1
+Data Column : 2
+Deformation Field Column : 3
+Field Type : displacement field
+Case Column : 1
+Output Folder : /BAND/USERS/skp78-dti/test-dtifb-20200827
+```
+
+##### Analysisfile
+```
+Analysis parameters for DTIAtlasFiberAnalyzer : 
+Atlas Fiber Folder : /FiberDIR/AutoTract/AllFinalCleanedFibers
+#Selected Fibers in the Atlas--> give the name of the file without the path
+Selected Fibers : ILF_L.vtk
+Selected Planes : 
+#Profile parameter --> choice between fa,md,fro,ad,l2,l3,ga,rd 
+Profile parameter : fa
+#What for col and row --> choice between 'Case' or 'Arc lenght' with after 'in row' or 'in column'/'in col'
+Col and Row : Case in row
+```
+
 
 ## Dockerfile for developers
 
@@ -27,9 +69,10 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
-#### [v1.7.4-beta](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.4-beta) (09/17/2020)
+#### [v1.8.0-beta](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.8.0-beta) (09/17/2020)
 - Multithreading in fiberprocessing, dti-tract-stat. 
 - Minor bug fixed
+- CLI bug fixed
 
 
 #### [v1.7.3c-beta](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3c-beta) (07/27/2020)

@@ -215,18 +215,12 @@ class FiberPostProcessor : public QObject{
 };
 
 /* Compute fiber process : take the parameters and call the software for every fiber/data */
-bool Applyfiberprocess(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
-               std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
-           bool nogui, int numThreads,QWidget* parent=NULL);
 
 bool Applyfiberprocess_mt(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
                std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
            bool nogui, int numThreads,QWidget* parent=NULL);
 
 /* Compute FiberPostProcess : take the parameters and call the software for every fiber/data */
-bool ApplyFiberPostProcess(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
-               std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
-           bool nogui, int numThreads, QWidget* parent=NULL);
 
 bool ApplyFiberPostProcess_mt(CSVClass* CSV, std::string pathFiberProcess, std::string AtlasFiberDir,
                std::string OutputFolder, int DataCol, int DefCol, bool FieldType, int NameCol, vstring fibers,
@@ -421,9 +415,6 @@ class DTITractWorker : public QObject{
 
 
 /* Compute dti_tract_stat : take the parameters and call the software for every fiber selected with its plane */
-bool Applydti_tract_stat(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
-             std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
-             int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth, QWidget *parent=NULL);
 
 bool Applydti_tract_stat_mt(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
              std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
