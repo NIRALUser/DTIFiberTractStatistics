@@ -228,7 +228,7 @@
          <string notr="true"/>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="usesScrollButtons">
          <bool>true</bool>
@@ -1062,6 +1062,16 @@
                    </property>
                   </spacer>
                  </item>
+                 <item>
+                  <widget class="QCheckBox" name="removeNanFibers_FiberProcess">
+                   <property name="text">
+                    <string>RemoveNanFibers</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </item>
                <item>
@@ -1707,7 +1717,7 @@
                        <bool>true</bool>
                       </property>
                       <property name="text">
-                       <string>Remove Fibers containing NaN</string>
+                       <string>Remove NoNaN Files</string>
                       </property>
                       <property name="checked">
                        <bool>true</bool>

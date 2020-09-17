@@ -103,7 +103,7 @@ DTIAtlasFiberAnalyzerguiwindow::DTIAtlasFiberAnalyzerguiwindow(std::string pathT
     connect(this->AddAllFiber, SIGNAL(clicked()), this, SLOT(SelectAllFiber()));
     connect(this->RemoveFiber, SIGNAL(clicked()), this, SLOT(RemoveFiberInList()));
     connect(this->Removeallfiber, SIGNAL(clicked()), this, SLOT(RemoveAllFiber()));
-
+    connect(this->removeNanFibers_FiberProcess, SIGNAL(stateChanged(int)), this, SLOT(toggleRemoveNanFiberProcess(int)) );
     /* Tab 3 Fibers properties */
     connect(this->FABox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
     connect(this->MDBox, SIGNAL(stateChanged(int)), this, SLOT(CheckNextStep()));
@@ -289,7 +289,10 @@ void DTIAtlasFiberAnalyzerguiwindow::ApplySlot()
     if(m_numberstep==1)
     {
         Computefiberprocess();
-        ComputeFiberPostProcess();
+        if(removeNanFibers_FiberProcess->isChecked()){
+            std::cout<<"Removing Nan Fibers"<<std::endl;
+            ComputeFiberPostProcess();
+        }
         nextstep->setEnabled(true);
     }
     //After computation we can go to next step
@@ -446,7 +449,11 @@ void DTIAtlasFiberAnalyzerguiwindow::AutoCompute()
                     NextStep();
                     if(!Computefiberprocess())
                     {
+
                         return;
+                    }else{
+                        if(removeNanFibers_FiberProcess->isChecked())
+                            ComputeFiberPostProcess();
                     }
                 }
                 NextStep();
@@ -1786,7 +1793,10 @@ bool DTIAtlasFiberAnalyzerguiwindow::Computedti_tract_stat()
         //Apply dti tract stat on CSV data
         if(!Applydti_tract_stat_mt(m_CSV, pathdti_tract_stat, m_AtlasFiberDir, m_OutputFolder, m_FiberSelectedname, m_SelectedPlane,m_parameters, sbBandwidth->value(),
                         m_DataCol, m_NameCol , false, CoG, FiberSampling->value() , checkRodent->isChecked() , 
-                        removeKeepCleanFibers->isChecked() , removeFibersContainingNan->isChecked() , checkBandwidth->isChecked(), sb_numThreads->value(), this))
+                        removeKeepCleanFibers->isChecked() , removeFibersContainingNan->isChecked() , 
+                        checkBandwidth->isChecked(), 
+                        removeNanFibers_FiberProcess->isChecked(),
+                        sb_numThreads->value(), this))
         {
             std::cout<<"dtitractstat has been canceled"<<std::endl;
             QApplication::restoreOverrideCursor();
@@ -1856,6 +1866,14 @@ bool DTIAtlasFiberAnalyzerguiwindow::toggleBandWidth(int event)
         sbBandwidth->setEnabled(true);
         return true;
     } 
+}
+
+bool DTIAtlasFiberAnalyzerguiwindow::toggleRemoveNanFiberProcess(int event){
+    // if(event==0){
+    //     removeFibersContainingNan->setCheckState(Qt::Unchecked);
+    // }else{
+    //     removeFibersContainingNan->setCheckState(Qt::Checked);
+    // }
 }
 
 /*********************************************************************************

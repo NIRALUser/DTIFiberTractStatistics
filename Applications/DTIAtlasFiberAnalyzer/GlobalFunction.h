@@ -418,7 +418,9 @@ class DTITractWorker : public QObject{
 
 bool Applydti_tract_stat_mt(CSVClass* CSV, std::string pathdti_tract_stat, std::string AtlasDirectory,
              std::string OutputFolder, vstring fibers, vstring fibersplane, std::string parameters, double bandWidth,
-             int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , bool removeCleanFibers , bool removeNanFibers, bool useBandWidth, int numThread=1,QWidget *parent=NULL);
+             int DataCol, int NameCol, bool nogui, bool CoG, double sampling , bool rodent , 
+             bool removeCleanFibers , bool removeNanFibers, bool useBandWidth, bool isFiberPostProcessed,
+             int numThread=1,QWidget *parent=NULL);
 
 
 /* Call dti_tract_stat */

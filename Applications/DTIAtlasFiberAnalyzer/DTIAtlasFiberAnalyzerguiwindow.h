@@ -81,6 +81,8 @@ private slots:
     bool ComputeFiberPostProcess();
     bool Computedti_tract_stat();
     bool toggleBandWidth(int event);
+    bool toggleRemoveNanFiberProcess(int event);
+
     bool OpenPlotWindow();
     void OpenDataFile();
     void OpenAnalysisFile();

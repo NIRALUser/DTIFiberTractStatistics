@@ -69,11 +69,11 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
-#### [v1.8.0-beta](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.8.0-beta) (09/17/2020)
+#### [v1.8.1](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.8.1) (09/17/2020)
 - Multithreading in fiberprocessing, dti-tract-stat. 
+- RemoveNan Checkbox added to FiberProcess tab
 - Minor bug fixed
 - CLI bug fixed
-
 
 #### [v1.7.3c-beta](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3c-beta) (07/27/2020)
 - Merge Tab removed
