@@ -74,6 +74,8 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 - RemoveNan Checkbox added to FiberProcess tab
 - Minor bug fixed
 - CLI bug fixed
+- ComputeAll bug fixed
+- GUI now can choose whether removeNanFibers in Fiberprocess tab.
 
 #### [v1.7.3c-beta](http://github.com/NIRALUser/DTIFiberTractStatistics/tree/v1.7.3c-beta) (07/27/2020)
 - Merge Tab removed

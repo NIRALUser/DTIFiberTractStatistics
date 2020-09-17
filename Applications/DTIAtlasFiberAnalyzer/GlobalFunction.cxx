@@ -68,7 +68,7 @@ bool CommandLine( std::string pathCurrentToExecutable ,
     DataCol = -1;
     DefCol = -1;
     NameCol = -1;
-    bool transposeColRow, success=false, CoG=false, FieldType=true; //FieldType=true -> H-Field false -> D-Field
+    bool transposeColRow, success=false, CoG=false, FieldType=true, rmNanFbr=true;//FieldType=true -> H-Field false -> D-Field
     bool useBandWidth=true;
     if (bandWidth == -1)
     {
@@ -76,7 +76,7 @@ bool CommandLine( std::string pathCurrentToExecutable ,
     }
 
     //read the parameters from the file
-    if(!ReadParametersFromFiles(datafile, analysisfile, csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol, FieldType, NameCol,SelectedFibers, SelectedPlanes, transposeColRow, CoG))
+    if(!ReadParametersFromFiles(datafile, analysisfile, csvfile,AtlasFiberDir,OutputFolder,parameters,DataCol, DefCol, FieldType, NameCol,SelectedFibers, SelectedPlanes, transposeColRow, CoG, rmNanFbr))
         return false;
 
     if(debug)
@@ -1700,7 +1700,7 @@ void SaveData(std::string filename,std::string CSVFilename, int DataCol, int Def
         std::cout<<"ERROR: Problem to open the file for saving parameters"<<std::endl;
 }
 
-void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, vstring RelevantPlane, std::string parameters, bool transposeColRow)
+void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring FiberSelectedname, vstring RelevantPlane, std::string parameters, bool transposeColRow, bool removeNanFibers)
 {
     std::string ListOfFiber = "", ListOfPlane = "";
     std::ofstream savefile(filename.c_str(), std::ios::out);
@@ -1725,6 +1725,10 @@ void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring Fi
             else
                 ListOfPlane = ListOfPlane + RelevantPlane[i];
         }
+        savefile << "#Remove NaN Fibers --> 0 false , 1 true" << std::endl;
+        int v=removeNanFibers? 1:0;
+        savefile << "Remove NaN Fibers : " << v <<std::endl;
+
         savefile << "Selected Planes : " << ListOfPlane <<std::endl;
         if(parameters.compare("")!=0)
         {
@@ -1751,7 +1755,7 @@ void SaveAnalysis(std::string filename, std::string AtlasFiberFolder, vstring Fi
 /*********************************************************************************
  * Read the parameters for DTIAtlasFiberAnalyzer from a file
  ********************************************************************************/
-bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, bool &FieldType, int &NameCol, vstring &SelectedFiber, vstring &SelectedPlanes, bool &transposeColRow, bool &CoG)
+bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std::string &CSVfilename, std::string &AtlasFiberDir, std::string &OutputFolder, std::string &parameters, int &DataCol, int &DefCol, bool &FieldType, int &NameCol, vstring &SelectedFiber, vstring &SelectedPlanes, bool &transposeColRow, bool &CoG, bool &removeNaNFibers)
 {
     //variables
     vstring fibers;
@@ -1854,6 +1858,15 @@ bool ReadParametersFromFiles(std::string datafile, std::string analysisfile, std
                         {
                             ListOfFiber = buf1.substr(18,buf1.size()-18);
                             LineInVector(ListOfFiber,SelectedFiber);
+                        }
+                        else if(buf1.compare(0,20,"Remove NaN Fibers : ")==0){
+                            str = buf1.substr(20,buf1.size());
+                            int v = atoi(str.c_str());
+                            if(v==0){
+                                removeNaNFibers=false;
+                            }else{
+                                removeNaNFibers=true;
+                            }
                         }
                         else if(buf1.compare(0,18,"Selected Planes : ")==0)
                         {

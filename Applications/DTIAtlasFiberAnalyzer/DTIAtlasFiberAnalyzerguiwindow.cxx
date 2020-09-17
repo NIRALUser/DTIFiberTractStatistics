@@ -2430,11 +2430,11 @@ void DTIAtlasFiberAnalyzerguiwindow::SaveAnalysisAction(std::string Filename)
     if( Filename.empty() )
     {
         QString filename = QFileDialog::getSaveFileName( this , "Save parameters file" , output , "Text (*.txt)" ) ;
-        SaveAnalysis( filename.toStdString() , m_AtlasFiberDir , m_FiberSelectedname , m_SelectedPlane , m_parameters , m_transposeColRow ) ;
+        SaveAnalysis( filename.toStdString() , m_AtlasFiberDir , m_FiberSelectedname , m_SelectedPlane , m_parameters , m_transposeColRow , removeNanFibers_FiberProcess->isChecked()) ;
     }
     else
     {
-        SaveAnalysis( output.toStdString() + "/" + Filename , m_AtlasFiberDir , m_FiberSelectedname , m_SelectedPlane , m_parameters , m_transposeColRow ) ;
+        SaveAnalysis( output.toStdString() + "/" + Filename , m_AtlasFiberDir , m_FiberSelectedname , m_SelectedPlane , m_parameters , m_transposeColRow, removeNanFibers_FiberProcess->isChecked() ) ;
     }
 }
 
@@ -2660,6 +2660,15 @@ void DTIAtlasFiberAnalyzerguiwindow::LoadAnalysisFile(std::string filename)
                                 // take the name of each fiber
                                 LineInVector(ListOfFiber, FiberSelectedName);
                                 SelectedFiberDone=true;
+                            }
+                        }
+                        else if(buf1.compare(0,20,"Remove NaN Fibers : ")==0){
+                            std::string vstr=buf1.substr(20,buf1.size());
+                            int v = atoi(vstr.c_str());
+                            if(v==0){
+                                removeNanFibers_FiberProcess->setChecked(false);
+                            }else{
+                                removeNanFibers_FiberProcess->setChecked(true);
                             }
                         }
                         else if(buf1.compare(0,18,"Selected Planes : ")==0)
