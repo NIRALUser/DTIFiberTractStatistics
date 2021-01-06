@@ -175,8 +175,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   # set(${proj}_GIT_TAG 74155d0b7059fde841832c92a9aec78c79bc68c0)
   # set(ITK_VERSION_ID ITK-4.8)
 
-  set(${proj}_GIT_TAG v4.12.0)
-  set(ITK_VERSION_ID ITK-4.12)
+  set(${proj}_GIT_TAG d92873e33e8a54e933e445b92151191f02feab42)
+  set(ITK_VERSION_ID ITK-4.13)
   
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}

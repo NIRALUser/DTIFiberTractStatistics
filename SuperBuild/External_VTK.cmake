@@ -24,14 +24,13 @@ ProjectDependancyPush(CACHED_proj ${proj})
 set(extProjName VTK) #The find_package known name
 set(proj        VTK) #This local name
 
-set(${extProjName}_REQUIRED_VERSION "5.10")  #If a required version is necessary, then set this, else leave blank
-
 # Sanity checks
 #if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 #  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
 #endif()
 
 # Set dependency list
+set(${proj}_DEPENDENCIES "")
 
 if(USE_QT4)
   set(${proj}_DEPENDENCIES Qt4)
@@ -41,12 +40,11 @@ else()
   set(${proj}_DEPENDENCIES Qt5)
 endif()
 
+
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
 
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
-  #message(STATUS "${__indent}Adding project ${proj}")
-
   # Set CMake OSX variable to pass down the external project
   set(CMAKE_OSX_EXTERNAL_PROJECT_ARGS)
   if(APPLE)
@@ -59,9 +57,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   set(${proj}_CMAKE_OPTIONS
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
-      -DCMAKE_INSTALL_LIBDIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/lib
       -DBUILD_EXAMPLES:BOOL=OFF
-      -DBUILD_TESTING:BOOL=OFF      
+      -DBUILD_TESTING:BOOL=OFF
+      -DBUILD_SHARED_LIBS:BOOL=OFF
+      -DVTK_USE_PARALLEL:BOOL=ON      
+      -DVTK_INSTALL_LIB_DIR:PATH=${${PROJECT_NAME}_INSTALL_LIB_DIR}
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       -DVTK_Group_Qt:BOOL=ON 
       -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
@@ -70,11 +70,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   ### --- End Project specific additions
 
-  
+  set(${proj}_GIT_TAG "v8.1.1")
   set(${proj}_REPOSITORY ${git_protocol}://github.com/Kitware/VTK.git)
-  set(${proj}_GIT_TAG "v8.2.0")
-  # set(${proj}_GIT_TAG "v5.10.0")
-  
+
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -96,16 +94,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_DEPENDENCIES}
     )
 
-  set(LIB_DIR lib)
-  # if(EXISTS ${CMAKE_BINARY_DIR}/${proj}-install/${LIB_DIR})
-  #   set(LIB_DIR lib)
-  # else()
-  #   set(LIB_DIR lib64)
-  # endif()
-  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/cmake/vtk-8.2)
-  set(${extProjName}_INCLUDE_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include/vtk-8.2)
-  # set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/vtk-5.10)
-  #set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+
+  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/vtk-8.1)
+  set(${extProjName}_INCLUDE_DIR ${CMAKE_BINARY_DIRECTORY}/${proj}-install/include/vtk-8.1)
 
 else()
   if(${USE_SYSTEM_${extProjName}})
@@ -118,9 +109,6 @@ else()
 endif()
 
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
-list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_INCLUDE_DIR:PATH)
 _expand_external_project_vars()
-set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
-
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)
